@@ -1,11 +1,14 @@
 {
   "name": "type-graph-orm",
-  "version": "0.1.0",
-  "main": "lib/index.js",
-  "types": "lib",
+  "version": "0.1.1",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "repository": "github:JeongHoJeong/type-graph-orm",
   "author": "Jeongho Jeong <fiil12@hotmail.com>",
   "license": "MIT",
+  "files": [
+    "lib"
+  ],
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
     "@types/graphql": "^14.2.0",
