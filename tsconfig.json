@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "outDir": ".build",
+    "declaration": true,
+    "noImplicitAny": true,
+    "alwaysStrict": true,
+    "strict": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "baseUrl": "./",
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["es2015"],
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
