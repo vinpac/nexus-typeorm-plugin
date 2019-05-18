@@ -1,0 +1,68 @@
+version: 2.1
+
+executors:
+  build-test-and-publish:
+    docker:
+      - image: circleci/node:10.14.1
+        environment:
+          TEST_DB_HOST: localhost
+          TEST_DB_TYPE: postgres
+          TEST_DB_NAME: circle-test
+          TEST_DB_USERNAME: root
+
+      - image: circleci/postgres:9.6.2-alpine
+        environment:
+          POSTGRES_USER: root
+          POSTGRES_DB: circle-test
+
+    working_directory: ~/repo
+
+jobs:
+  build:
+    executor: build-test-and-publish
+    steps:
+      - checkout
+
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+
+      - run: yarn install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run: yarn lint
+      - run: yarn test
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  publish:
+    executor: build-test-and-publish
+    steps:
+      - attach_workspace:
+          at: ~/repo
+
+      - run: yarn publish
+
+workflows:
+  version: 2
+  build-test-and-publish:
+    jobs:
+      - build
+      - publish:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
