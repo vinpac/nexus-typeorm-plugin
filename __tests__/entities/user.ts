@@ -11,17 +11,17 @@ import { Post } from './post'
 export class User {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
-  id: number
+  public id: number
 
   @Field(() => String)
   @Column()
-  name: string
+  public name: string
 
   @Field(() => Int)
   @Column()
-  age: number
+  public age: number
 
   @Field(() => [Post])
   @OneToMany(() => Post, post => post.user)
-  posts: Post[]
+  public posts: Post[]
 }

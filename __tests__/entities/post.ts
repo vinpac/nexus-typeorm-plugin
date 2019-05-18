@@ -10,12 +10,12 @@ import { User } from './user'
 export class Post {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
-  id: number
+  public id: number
 
   @Field(() => String)
   @Column()
-  title: string
+  public title: string
 
   @ManyToOne(() => User, user => user.posts)
-  user: User
+  public user: User
 }
