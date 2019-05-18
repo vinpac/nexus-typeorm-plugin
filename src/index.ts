@@ -17,11 +17,11 @@ interface Field<T, C> {
 }
 
 interface DatabaseObjectMetadata<T, C> {
-  fields: Array<Field<T, C>>
+  fields: Field<T, C>[]
   alias?: string
   // TODO: deprecate `relations`. It's temporal solution that makes its users manually
   // enter in what relations it have. This should be done automatically.
-  relations?: string[],
+  relations?: string[]
 }
 
 function makeDefaultDatabaseObjectMetadata<T, C>(): DatabaseObjectMetadata<T, C> {
@@ -43,9 +43,9 @@ export function getDatabaseObjectMetadata<T, C>(target: object): DatabaseObjectM
 }
 
 export function Field<T, C>(options: {
-  typeFunc: () => any,
-  addSelect: FieldQueryBuilder<T, C>,
-  resultToProperty(data: any): any,
+  typeFunc: () => any
+  addSelect: FieldQueryBuilder<T, C>
+  resultToProperty(data: any): any
 }): PropertyDecorator {
   return (...args: Parameters<PropertyDecorator>): void => {
     const [target, propertyKey] = args
@@ -63,8 +63,8 @@ export function DatabaseObjectType({
   alias,
   relations,
 }: {
-  alias: string,
-  relations?: string[],
+  alias: string
+  relations?: string[]
 }): ClassDecorator {
   return (...args: Parameters<ClassDecorator>): void => {
     const [target] = args
@@ -81,8 +81,8 @@ export function Resolver<T, C>({
   typeFunction,
   queryName,
 }: {
-  typeFunction: () => (new () => T),
-  queryName: string,
+  typeFunction: () => (new () => T)
+  queryName: string
 }): ClassDecorator {
   const targetType = typeFunction()
 
@@ -137,7 +137,7 @@ export function Resolver<T, C>({
     TypeGraphQL.Info()(target.prototype, queryName, 0)
     TypeGraphQL.Ctx()(target.prototype, queryName, 1)
     TypeGraphQL.Query(() => [targetType])
-      (target.prototype, queryName, { value: rootQueryResolver })
+    (target.prototype, queryName, { value: rootQueryResolver })
 
     TypeGraphQL.Resolver(typeFunction)(target)
   }
