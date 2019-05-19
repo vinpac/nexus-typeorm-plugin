@@ -21,9 +21,6 @@ interface Field<T, C> {
 interface DatabaseObjectMetadata<T, C> {
   fields: Field<T, C>[]
   alias?: string
-  // TODO: deprecate `relations`. It's temporal solution that makes its users manually
-  // enter in what relations it have. This should be done automatically.
-  relations?: string[]
 }
 
 function makeDefaultDatabaseObjectMetadata<T, C>(): DatabaseObjectMetadata<T, C> {
@@ -61,18 +58,13 @@ export function Field<T, C>(options: {
   }
 }
 
-export function DatabaseObjectType({
-  alias,
-  relations,
-}: {
-  alias: string
-  relations?: string[]
+export function DatabaseObjectType(options?: {
+  alias?: string
 }): ClassDecorator {
   return (...args: Parameters<ClassDecorator>): void => {
     const [target] = args
     const metadata = getDatabaseObjectMetadata(target.prototype)
-    metadata.alias = alias
-    metadata.relations = relations
+    metadata.alias = options && options.alias
 
     TypeGraphQL.ObjectType()(target)
     TypeORM.Entity()(target)
