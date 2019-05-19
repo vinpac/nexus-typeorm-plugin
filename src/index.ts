@@ -1,5 +1,7 @@
 import * as TypeGraphQL from 'type-graphql'
 import * as TypeORM from 'typeorm'
+import { GraphQLResolveInfo } from 'graphql'
+import { getRelationsForQuery } from './util'
 
 const databaseObjectMetadataKey = Symbol('databaseObjectMetadataKey')
 
@@ -124,12 +126,14 @@ export function Resolver<T, C>({
     Parameters will be used to compute context of the query and conditionally add subqueries.
     */
     async function rootQueryResolver(
-      // info: GraphQLResolveInfo,
+      info: GraphQLResolveInfo,
       // ctx: ResolverContext,
     ) {
       const conn = await TypeORM.getConnection()
+      const relations = getRelationsForQuery(targetType, info)
+
       return conn.getRepository(targetType).find({
-        relations: targetTypeMetadata.relations,
+        relations,
       })
     }
 
