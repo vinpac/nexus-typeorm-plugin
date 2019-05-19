@@ -1,11 +1,17 @@
 {
   "name": "type-graph-orm",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "repository": "github:JeongHoJeong/type-graph-orm",
   "author": "Jeongho Jeong <fiil12@hotmail.com>",
   "license": "MIT",
+  "keywords": [
+    "typescript",
+    "graphql",
+    "typeorm",
+    "type-graphql"
+  ],
   "files": [
     "lib"
   ],

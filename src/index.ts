@@ -1,5 +1,7 @@
 import * as TypeGraphQL from 'type-graphql'
 import * as TypeORM from 'typeorm'
+import { GraphQLResolveInfo } from 'graphql'
+import { getRelationsForQuery } from './util'
 
 const databaseObjectMetadataKey = Symbol('databaseObjectMetadataKey')
 
@@ -19,9 +21,6 @@ interface Field<T, C> {
 interface DatabaseObjectMetadata<T, C> {
   fields: Field<T, C>[]
   alias?: string
-  // TODO: deprecate `relations`. It's temporal solution that makes its users manually
-  // enter in what relations it have. This should be done automatically.
-  relations?: string[]
 }
 
 function makeDefaultDatabaseObjectMetadata<T, C>(): DatabaseObjectMetadata<T, C> {
@@ -59,18 +58,13 @@ export function Field<T, C>(options: {
   }
 }
 
-export function DatabaseObjectType({
-  alias,
-  relations,
-}: {
-  alias: string
-  relations?: string[]
+export function DatabaseObjectType(options?: {
+  alias?: string
 }): ClassDecorator {
   return (...args: Parameters<ClassDecorator>): void => {
     const [target] = args
     const metadata = getDatabaseObjectMetadata(target.prototype)
-    metadata.alias = alias
-    metadata.relations = relations
+    metadata.alias = options && options.alias
 
     TypeGraphQL.ObjectType()(target)
     TypeORM.Entity()(target)
@@ -124,12 +118,14 @@ export function Resolver<T, C>({
     Parameters will be used to compute context of the query and conditionally add subqueries.
     */
     async function rootQueryResolver(
-      // info: GraphQLResolveInfo,
+      info: GraphQLResolveInfo,
       // ctx: ResolverContext,
     ) {
       const conn = await TypeORM.getConnection()
+      const relations = getRelationsForQuery(targetType, info)
+
       return conn.getRepository(targetType).find({
-        relations: targetTypeMetadata.relations,
+        relations,
       })
     }
 
