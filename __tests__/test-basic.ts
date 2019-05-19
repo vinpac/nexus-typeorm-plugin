@@ -7,7 +7,7 @@ import { query, setupTest } from './util'
 describe('Basic', () => {
   setupTest()
 
-  it('handles basic query', async () => {
+  async function setupFixture() {
     const conn = getConnection()
     const user = new User()
 
@@ -16,6 +16,19 @@ describe('Basic', () => {
 
     await conn.getRepository(User).save(user)
 
+    const post = new Post()
+
+    post.title = 'hello'
+    post.user = user
+
+    await conn.getRepository(Post).save(post)
+  }
+
+  beforeEach(async () => {
+    await setupFixture()
+  })
+
+  it('handles basic query', async () => {
     const result = await query(`
 query {
   users {
@@ -37,21 +50,6 @@ query {
   })
 
   it('resolves 1:n query', async () => {
-    const conn = await getConnection()
-    const user = new User()
-
-    user.age = 3
-    user.name = 'Jeong'
-
-    await conn.getRepository(User).save(user)
-
-    const post = new Post()
-
-    post.title = 'hello'
-    post.user = user
-
-    await conn.getRepository(Post).save(post)
-
     const result = await query(`
 query {
   users {
@@ -76,6 +74,45 @@ query {
           ],
         },
       ],
+    })
+  })
+
+  it('resolves recursive query', async () => {
+    const result = await query(`
+query {
+  users {
+    id
+    posts {
+      id
+      user {
+        id
+        posts {
+          title
+        }
+      }
+    }
+  }
+}`)
+
+    expect(result.data).toMatchObject({
+      users: [
+        {
+          id: expect.any(Number),
+          posts: [
+            {
+              id: expect.any(Number),
+              user: {
+                id: expect.any(Number),
+                posts: [
+                  {
+                    title: 'hello',
+                  },
+                ],
+              },
+            },
+          ],
+        }
+      ]
     })
   })
 })

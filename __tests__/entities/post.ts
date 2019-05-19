@@ -4,9 +4,7 @@ import { Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import * as GraphORM from '@/index'
 import { User } from './user'
 
-@GraphORM.DatabaseObjectType({
-  alias: 'post',
-})
+@GraphORM.DatabaseObjectType()
 export class Post {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
@@ -16,6 +14,7 @@ export class Post {
   @Column()
   public title: string
 
+  @Field(() => User)
   @ManyToOne(() => User, user => user.posts)
   public user: User
 }
