@@ -6,6 +6,12 @@
   "repository": "github:JeongHoJeong/type-graph-orm",
   "author": "Jeongho Jeong <fiil12@hotmail.com>",
   "license": "MIT",
+  "keywords": [
+    "typescript",
+    "graphql",
+    "typeorm",
+    "type-graphql"
+  ],
   "files": [
     "lib"
   ],
