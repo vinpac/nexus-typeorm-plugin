@@ -3,7 +3,9 @@ import { Column, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import * as GraphORM from '@/index'
 import { Post } from './post'
 
-@GraphORM.DatabaseObjectType()
+@GraphORM.DatabaseObjectType({
+  queryFieldName: 'users'
+})
 export class User {
   @PrimaryGeneratedColumn()
   public id: number

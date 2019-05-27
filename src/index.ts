@@ -17,7 +17,7 @@ interface Field<T, C> {
 
 interface DatabaseObjectMetadata<T, C> {
   fields: Field<T, C>[]
-  alias?: string
+  queryFieldName?: string
 }
 
 function makeDefaultDatabaseObjectMetadata<T, C>(): DatabaseObjectMetadata<T, C> {
@@ -54,12 +54,12 @@ export function Field<T, C>(options: {
 }
 
 export function DatabaseObjectType(options?: {
-  alias?: string
+  queryFieldName?: string
 }): ClassDecorator {
   return (...args: Parameters<ClassDecorator>): void => {
     const [target] = args
     const metadata = getDatabaseObjectMetadata(target.prototype)
-    metadata.alias = options && options.alias
+    metadata.queryFieldName = options && options.queryFieldName
 
     TypeORM.Entity()(target)
   }
