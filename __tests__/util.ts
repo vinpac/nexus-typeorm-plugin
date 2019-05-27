@@ -1,12 +1,11 @@
 import * as dotenv from 'dotenv'
 import { graphql, GraphQLSchema } from 'graphql'
-import { buildSchema } from 'type-graphql'
-import { Connection, createConnection } from 'typeorm'
+import { Connection, createConnection, getConnection } from 'typeorm'
+
+import { buildExecutableSchema } from '@/schema'
 
 import { Post } from './entities/post'
 import { User } from './entities/user'
-import { PostResolver } from './resolvers/post'
-import { UserResolver } from './resolvers/user'
 
 let conn: Connection | undefined
 export let schema: GraphQLSchema | undefined
@@ -30,10 +29,10 @@ export function setupTest() {
     }
 
     if (!schema) {
-      schema = await buildSchema({
-        resolvers: [
-          UserResolver,
-          PostResolver,
+      schema = buildExecutableSchema({
+        entities: [
+          User,
+          Post,
         ],
       })
     }
