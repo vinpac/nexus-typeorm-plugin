@@ -13,6 +13,9 @@ export class Post {
   @Column()
   public title: string
 
+  @Column({ nullable: true })
+  public isPublic?: boolean
+
   @ManyToOne(() => User, user => user.posts)
   public user: User
 }
