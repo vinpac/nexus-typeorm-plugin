@@ -2,26 +2,17 @@ import { getConnection } from 'typeorm'
 
 import { Post } from './entities/post'
 import { User } from './entities/user'
-import { query, setupTest } from './util'
+import { query, setupTest, create } from './util'
 
 describe('Basic', () => {
   setupTest()
 
   async function setupFixture() {
-    const conn = getConnection()
-    const user = new User()
-
-    user.age = 3
-    user.name = 'Jeong'
-
-    await conn.getRepository(User).save(user)
-
-    const post = new Post()
-
-    post.title = 'hello'
-    post.user = user
-
-    await conn.getRepository(Post).save(post)
+    const user = await create<User>(User, { age: 3, name: 'Jeong' })
+    await create(Post, {
+      user,
+      title: 'hello',
+    })
   }
 
   beforeEach(async () => {
