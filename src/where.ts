@@ -58,14 +58,16 @@ function createBaseWhereInputFromColumns(columns: ColumnMetadata[]): GraphQLInpu
     const type = typeORMColumnTypeToGraphQLInputType(column.type)
     const { propertyName } = column
 
-    operations.forEach(operation => {
-      config[`${propertyName}_${operation}`] = {
+    if (type) {
+      operations.forEach(operation => {
+        config[`${propertyName}_${operation}`] = {
+          type,
+        }
+      })
+
+      config[column.propertyName] = {
         type,
       }
-    })
-
-    config[column.propertyName] = {
-      type,
     }
   })
 

@@ -51,13 +51,12 @@ export function setupTest() {
   })
 }
 
-export async function create<T>(entity: { new(): T }, content: T) {
+export async function create<T>(entity: { new(): T }, content: Partial<T>): Promise<T> {
   const conn = getConnection()
   const newObject = new entity()
 
-  Object.keys(content).forEach(_key => {
-    const key = _key as keyof T
-    newObject[key] = content[key]
+  Object.keys(content).forEach(key => {
+    (newObject as any)[key] = (content as any)[key]
   })
 
   return conn.getRepository(entity).save(newObject)

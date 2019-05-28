@@ -43,8 +43,12 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         const fields: GraphQLFieldConfigMap<TSource, TContext> = {}
 
         typeormMetadata.columns.forEach(column => {
-          fields[column.propertyName] = {
-            type: typeORMColumnTypeToGraphQLOutputType(column.type),
+          const graphqlType = typeORMColumnTypeToGraphQLOutputType(column.type)
+
+          if (graphqlType) {
+            fields[column.propertyName] = {
+              type: graphqlType,
+            }
           }
         })
 
