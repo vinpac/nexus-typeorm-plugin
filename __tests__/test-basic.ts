@@ -48,6 +48,7 @@ query {
     posts {
       id
       title
+      isPublic
     }
   }
 }
