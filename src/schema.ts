@@ -26,7 +26,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 
   const types: {[key: string]: GraphQLOutputType} = {}
 
-  function findGraphQLTypeByName(key: string) {
+  function findGraphQLTypeByName(key: string): GraphQLOutputType | undefined {
     return types[key]
   }
 
@@ -56,14 +56,17 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           const targetMeta = conn.getMetadata(relation.type)
           const targetGraphQLType = findGraphQLTypeByName(targetMeta.name)
           const { relationType } = relation
-          const type =
-            relationType === 'one-to-many' ? GraphQLList(targetGraphQLType) :
-              relationType === 'many-to-one' ? targetGraphQLType :
-                undefined
 
-          if (type) {
-            fields[relation.propertyName] = {
-              type,
+          if (targetGraphQLType) {
+            const type =
+              relationType === 'one-to-many' ? GraphQLList(targetGraphQLType) :
+                relationType === 'many-to-one' ? targetGraphQLType :
+                  undefined
+
+            if (type) {
+              fields[relation.propertyName] = {
+                type,
+              }
             }
           }
         })
