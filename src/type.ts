@@ -11,10 +11,10 @@ function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
   }
 }
 
-export function typeORMColumnTypeToGraphQLOutputType(columnType: TypeORM.ColumnType): GraphQLOutputType {
+export function typeORMColumnTypeToGraphQLOutputType(columnType: TypeORM.ColumnType): GraphQLOutputType | undefined {
   return _typeORMColumnTypeToGraphQLType(columnType)
 }
 
-export function typeORMColumnTypeToGraphQLInputType(columnType: TypeORM.ColumnType): GraphQLInputType {
+export function typeORMColumnTypeToGraphQLInputType(columnType: TypeORM.ColumnType): GraphQLInputType | undefined {
   return _typeORMColumnTypeToGraphQLType(columnType)
 }
