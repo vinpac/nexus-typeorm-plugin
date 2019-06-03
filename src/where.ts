@@ -18,37 +18,83 @@ function operationToOperator(operation: string): string | undefined {
   }
 }
 
-export function translateWhereClause(entity: string, where: any): TypeORM.Brackets {
-  return new TypeORM.Brackets(sq => {
-    Object.keys(where).forEach(key => {
+function combineExpressions(clauses: string[], operator: 'AND' | 'OR') {
+  return `(${clauses.filter(clause => clause).join(` ${operator} `)})`
+}
+
+function combineParams(params: {[key: string]: any}[]) {
+  return params.reduce<{[key: string]: any}>((merged, param) => {
+    Object.keys(param).forEach(key => {
+      merged[key] = param[key]
+    })
+    return merged
+  }, {})
+}
+
+export function translateWhereClause(
+  entity: string,
+  where: any,
+  conditionPrefix: string = '',
+): [string, {[key: string]: any}] {
+  const clauses = Object.keys(where).reduce<[string, {[key: string]: string}][]>(
+    (_clauses, key) => {
+      const uniqueKey = `${conditionPrefix}_${key}`
+
       if (key === 'OR' || key === 'AND') {
-        const groupFn = key === 'OR' ? sq.orWhere : sq.andWhere
-        const boundGroupFn = groupFn.bind(sq)
         const subclauses: any[] = where[key]
-        subclauses.forEach(clause => {
-          boundGroupFn(translateWhereClause(entity, clause))
-        })
+        const subExpAndParams = subclauses.map(
+          (subclause, idx) => translateWhereClause(entity, subclause, `${uniqueKey}_${idx}`),
+        )
+
+        const subexpression = combineExpressions(subExpAndParams.map(sub => sub[0]), key)
+        const subparams = combineParams(subExpAndParams.map(sub => sub[1]))
+
+        _clauses.push([
+          subexpression,
+          subparams,
+        ])
+      } else if (key === 'NOT') {
+        const subclause = where[key]
+        const [ subexp, subparams ] = translateWhereClause(entity, subclause, uniqueKey)
+
+        _clauses.push([
+          `NOT ${subexp}`,
+          subparams,
+        ])
       } else {
         const keySplitted = key.split('_')
         const operation = keySplitted[keySplitted.length - 1]
+        const operator =
+          (keySplitted.length > 1 && operations.includes(operation)) ?
+            operationToOperator(operation) :
+            '='
+        const targetKey = keySplitted.length === 1 ?
+          keySplitted[0] :
+          keySplitted.slice(0, -1).join('_')
 
-        if (keySplitted.length > 1 && operations.includes(operation)) {
-          const targetKey = keySplitted.slice(0, -1).join('_')
-          const operator = operationToOperator(operation)
-
-          if (operator) {
-            sq.andWhere(`${entity}.${targetKey} ${operator} :${key}`, { [key]: where[key] })
-          } else {
-            throw new Error(`Unknown operation: ${operation}`)
-          }
+        if (operator) {
+          _clauses.push([
+            `${entity}.${targetKey} ${operator} :${uniqueKey}`,
+            { [uniqueKey]: where[key] },
+          ])
         } else {
-          sq.andWhere(`${entity}.${key} = :${key}`, { [key]: where[key] })
+          throw new Error(`Unknown operation: ${operation}`)
         }
       }
-    })
 
-    return sq
-  })
+      return _clauses
+    },
+    [],
+  )
+
+  return [
+    combineExpressions(
+      clauses.map(clause => clause[0]), 'AND'
+    ),
+    combineParams(
+      clauses.map(clause => clause[1])
+    )
+  ]
 }
 
 function createBaseWhereInputFromColumns(columns: ColumnMetadata[]): GraphQLInputFieldConfigMap {
@@ -82,8 +128,10 @@ function createWhereInput(entityMeta: TypeORM.EntityMetadata): GraphQLInputObjec
   const config: GraphQLInputObjectTypeConfig = {
     name: `${name}WhereInput`,
     fields: () => ({
-      // TODO: implement NOT operator
       ...createBaseWhereInputFromColumns(columns),
+      NOT: {
+        type: inputType,
+      },
       OR: {
         type: GraphQLList(inputType),
       },

@@ -25,6 +25,9 @@ describe('Where', () => {
             },
             {
               name: "bar"
+            },
+            {
+              age: 50,
             }
           ]
         }) {
@@ -35,6 +38,7 @@ describe('Where', () => {
       }`
     )
 
+    expect(result.data!.users).toHaveLength(3)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
@@ -46,6 +50,11 @@ describe('Where', () => {
           age: 30,
           id: expect.any(Number),
           name: 'bar',
+        },
+        {
+          age: 50,
+          id: expect.any(Number),
+          name: 'quz',
         }
       ]),
     })
@@ -73,6 +82,39 @@ describe('Where', () => {
           name: 'baz',
         }
       ],
+    })
+  })
+
+  it('handles NOT operation', async () => {
+    const result = await query(`
+      query UsersExceptSomeAges($first: Int, $second: Int) {
+        users(where: {
+          NOT: {
+            OR: [{
+              age: $first,
+            }, {
+              age: $second,
+            }]
+          }
+        }) {
+          age
+        }
+      }
+    `, {
+      first: 30,
+      second: 40,
+    })
+
+    expect(result.data!.users).toHaveLength(2)
+    expect(result.data).toMatchObject({
+      users: expect.arrayContaining([
+        {
+          age: 20,
+        },
+        {
+          age: 50,
+        },
+      ]),
     })
   })
 })
