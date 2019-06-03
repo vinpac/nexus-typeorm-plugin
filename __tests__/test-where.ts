@@ -25,6 +25,9 @@ describe('Where', () => {
             },
             {
               name: "bar"
+            },
+            {
+              age: 50,
             }
           ]
         }) {
@@ -35,6 +38,7 @@ describe('Where', () => {
       }`
     )
 
+    expect(result.data!.users).toHaveLength(3)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
@@ -46,6 +50,11 @@ describe('Where', () => {
           age: 30,
           id: expect.any(Number),
           name: 'bar',
+        },
+        {
+          age: 50,
+          id: expect.any(Number),
+          name: 'quz',
         }
       ]),
     })
