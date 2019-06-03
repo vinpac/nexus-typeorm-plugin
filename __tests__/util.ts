@@ -62,9 +62,15 @@ export async function create<T>(entity: { new(): T }, content: Partial<T>): Prom
   return conn.getRepository(entity).save(newObject)
 }
 
-export async function query(queryString: string) {
+export async function query(queryString: string, variables?: {[key: string]: any}) {
   if (schema) {
-    return graphql(schema, queryString)
+    return graphql(
+      schema,
+      queryString,
+      undefined,
+      undefined,
+      variables,
+    )
   }
   throw new Error('GraphQL schema is not ready!')
 }
