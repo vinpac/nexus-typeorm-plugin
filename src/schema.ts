@@ -105,7 +105,8 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           })
 
           if (args.where) {
-            qb.where(translateWhereClause(typeormMetadata.name, args.where))
+            const [ clause, params ] = translateWhereClause(typeormMetadata.name, args.where)
+            qb.where(clause, params)
           }
 
           if (args.skip) {
