@@ -17,10 +17,14 @@ import { createArgs, translateWhereClause } from './where'
 
 interface BuildExecutableSchemaOptions {
   entities: any[]
+  defaultLimit?: number
+  maxLimit?: number
 }
 
 export function buildExecutableSchema<TSource = any, TContext = any>({
   entities,
+  defaultLimit,
+  maxLimit,
 }: BuildExecutableSchemaOptions): GraphQLSchema {
   const conn = TypeORM.getConnection()
 
@@ -108,9 +112,8 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
             qb.skip(args.skip)
           }
 
-          if (args.first) {
-            qb.take(args.first)
-          }
+          const take = Math.max(args.first || defaultLimit || 30, maxLimit || 100)
+          qb.take(take)
 
           return qb.getMany()
         },
