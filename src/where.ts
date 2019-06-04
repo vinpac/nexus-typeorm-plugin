@@ -3,10 +3,12 @@ import { GraphQLInputObjectType, GraphQLInputObjectTypeConfig, GraphQLInt, Graph
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 
 import { typeORMColumnTypeToGraphQLInputType } from './type'
+import { SchemaInfo } from './schema'
 
-const operations = ['lt', 'lte', 'gt', 'gte']
+const singleOperandOperations = ['lt', 'lte', 'gt', 'gte']
+const multipleOperandOperations = ['in']
 
-function operationToOperator(operation: string): string | undefined {
+function singleOperandOperationToOperator(operation: string): string | undefined {
   if (operation === 'lt') {
     return '<'
   } else if (operation === 'lte') {
@@ -36,7 +38,7 @@ export function translateWhereClause(
   where: any,
   conditionPrefix: string = '',
 ): [string, {[key: string]: any}] {
-  const clauses = Object.keys(where).reduce<[string, {[key: string]: string}][]>(
+  const clauses = Object.keys(where).reduce<[string, {[key: string]: any}][]>(
     (_clauses, key) => {
       const uniqueKey = `${conditionPrefix}_${key}`
 
@@ -64,19 +66,27 @@ export function translateWhereClause(
       } else {
         const keySplitted = key.split('_')
         const operation = keySplitted[keySplitted.length - 1]
-        const operator =
-          (keySplitted.length > 1 && operations.includes(operation)) ?
-            operationToOperator(operation) :
+        const singleOperandOperator =
+          keySplitted.length > 1 ?
+            singleOperandOperationToOperator(operation) :
             '='
         const targetKey = keySplitted.length === 1 ?
           keySplitted[0] :
           keySplitted.slice(0, -1).join('_')
 
-        if (operator) {
+        if (singleOperandOperator) {
           _clauses.push([
-            `${entity}.${targetKey} ${operator} :${uniqueKey}`,
+            `${entity}.${targetKey} ${singleOperandOperator} :${uniqueKey}`,
             { [uniqueKey]: where[key] },
           ])
+        } else if (operation === 'in') {
+          const operands: any[] = where[key]
+          if (operands && operands.length) {
+            _clauses.push([
+              `${entity}.${targetKey} IN (:...${uniqueKey})`,
+              { [uniqueKey]: operands },
+            ])
+          }
         } else {
           throw new Error(`Unknown operation: ${operation}`)
         }
@@ -105,9 +115,15 @@ function createBaseWhereInputFromColumns(columns: ColumnMetadata[]): GraphQLInpu
     const { propertyName } = column
 
     if (type) {
-      operations.forEach(operation => {
+      singleOperandOperations.forEach(operation => {
         config[`${propertyName}_${operation}`] = {
           type,
+        }
+      })
+
+      multipleOperandOperations.forEach(operation => {
+        config[`${propertyName}_${operation}`] = {
+          type: GraphQLList(type),
         }
       })
 
@@ -120,10 +136,13 @@ function createBaseWhereInputFromColumns(columns: ColumnMetadata[]): GraphQLInpu
   return config
 }
 
-function createWhereInput(entityMeta: TypeORM.EntityMetadata): GraphQLInputObjectType {
+function createWhereInput(schemaInfo: SchemaInfo, entityMeta: TypeORM.EntityMetadata): GraphQLInputObjectType {
   let inputType: GraphQLInputObjectType
-
   const { name, columns } = entityMeta
+
+  if (name in schemaInfo.whereInputTypes) {
+    return schemaInfo.whereInputTypes[name]
+  }
 
   const config: GraphQLInputObjectTypeConfig = {
     name: `${name}WhereInput`,
@@ -142,16 +161,19 @@ function createWhereInput(entityMeta: TypeORM.EntityMetadata): GraphQLInputObjec
   }
 
   inputType = new GraphQLInputObjectType(config)
+
+  schemaInfo.whereInputTypes[name] = inputType
+
   return inputType
 }
 
-export function createArgs(entity: any): GraphQLFieldConfigArgumentMap {
+export function createArgs(schemaInfo: SchemaInfo, entity: any): GraphQLFieldConfigArgumentMap {
   const conn = TypeORM.getConnection()
   const typeormMetadata = conn.getMetadata(entity)
 
   const args: GraphQLFieldConfigArgumentMap = {
     where: {
-      type: createWhereInput(typeormMetadata),
+      type: createWhereInput(schemaInfo, typeormMetadata),
     },
     skip: {
       type: GraphQLInt,
