@@ -1,14 +1,17 @@
 import { User } from './entities/user'
+import { Post } from './entities/post'
 import { query, setupTest, create } from './util'
 
 describe('Where', () => {
   setupTest()
 
   async function setupFixture() {
-    await create(User, {age: 20, name: 'foo'})
-    await create(User, {age: 30, name: 'bar'})
+    const userFoo = await create(User, {age: 20, name: 'foo'})
+    const userBar = await create(User, {age: 30, name: 'bar'})
     await create(User, {age: 40, name: 'baz'})
     await create(User, {age: 50, name: 'quz'})
+    await create(Post, {user: userFoo, title: 'foo post'})
+    await create(Post, {user: userBar, title: 'bar post'})
   }
 
   beforeEach(async () => {
@@ -115,6 +118,46 @@ describe('Where', () => {
           age: 50,
         },
       ]),
+    })
+  })
+
+  it('handles nested where', async () => {
+    const result = await query(`
+      query {
+        users(where: {
+          name_in: ["foo", "bar"]
+        }) {
+          id
+          name
+          posts(where: {
+            title: "foo post"
+          }) {
+            id
+            title
+          }
+        }
+      }
+    `)
+
+    expect(result.data!.users).toHaveLength(2)
+    expect(result.data).toMatchObject({
+      users: expect.arrayContaining([
+        {
+          id: expect.any(Number),
+          name: 'foo',
+          posts: [
+            {
+              id: expect.any(Number),
+              title: 'foo post',
+            }
+          ]
+        },
+        {
+          id: expect.any(Number),
+          name: 'bar',
+          posts: []
+        }
+      ])
     })
   })
 })
