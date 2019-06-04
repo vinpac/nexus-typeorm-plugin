@@ -8,11 +8,12 @@ import {
   GraphQLOutputType,
   GraphQLSchema,
   GraphQLSchemaConfig,
+  GraphQLInputObjectType,
 } from 'graphql'
 
 import { getDatabaseObjectMetadata } from '.'
 import { typeORMColumnTypeToGraphQLOutputType } from './type'
-import { getRelationsForQuery } from './util'
+import { getRelationsForQuery, graphQLObjectValueToObject } from './util'
 import { createArgs, translateWhereClause } from './where'
 
 interface BuildExecutableSchemaOptions {
@@ -21,17 +22,20 @@ interface BuildExecutableSchemaOptions {
   maxLimit?: number
 }
 
+export interface SchemaInfo {
+  whereInputTypes: {[key: string]: GraphQLInputObjectType}
+  types: {[key: string]: GraphQLOutputType}
+}
+
 export function buildExecutableSchema<TSource = any, TContext = any>({
   entities,
   defaultLimit,
   maxLimit,
 }: BuildExecutableSchemaOptions): GraphQLSchema {
   const conn = TypeORM.getConnection()
-
-  const types: {[key: string]: GraphQLOutputType} = {}
-
-  function findGraphQLTypeByName(key: string): GraphQLOutputType | undefined {
-    return types[key]
+  const schemaInfo: SchemaInfo = {
+    whereInputTypes: {},
+    types: {},
   }
 
   const rootQueryFields: GraphQLFieldConfigMap<TSource, TContext> = {}
@@ -40,6 +44,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
     const meta = getDatabaseObjectMetadata(entity.prototype)
     const typeormMetadata = conn.getMetadata(entity)
     const { name } = typeormMetadata
+    const args = createArgs(schemaInfo, entity)
 
     const type = new GraphQLObjectType({
       name,
@@ -58,7 +63,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 
         typeormMetadata.relations.forEach(relation => {
           const targetMeta = conn.getMetadata(relation.type)
-          const targetGraphQLType = findGraphQLTypeByName(targetMeta.name)
+          const targetGraphQLType = schemaInfo.types[targetMeta.name]
           const { relationType } = relation
 
           if (targetGraphQLType) {
@@ -69,6 +74,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 
             if (type) {
               fields[relation.propertyName] = {
+                args: createArgs(schemaInfo, relation.type),
                 type,
               }
             }
@@ -79,11 +85,11 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
       }
     })
 
-    types[name] = type
+    schemaInfo.types[name] = type
 
     if (meta.queryFieldName) {
       rootQueryFields[meta.queryFieldName] = {
-        args: createArgs(entity),
+        args,
         type: GraphQLList(type),
         async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
           const [, args, , info] = _args
@@ -94,14 +100,32 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           const qb = _conn.getRepository(entity).createQueryBuilder()
 
           relations.forEach(relation => {
-            const entities = relation.split('.')
+            const entities = relation.relationPath.split('.')
             const lastPath = entities[entities.length - 1]
             const prevEntities = [typeormMetadata.name].concat(entities.slice(0, entities.length - 1))
 
             const joinPath = `${prevEntities.join('_')}.${lastPath}`
             const alias = `${prevEntities.join('_')}_${lastPath}`
 
-            qb.leftJoinAndSelect(joinPath, alias)
+            const { arguments: fieldArgs } = relation.fieldNode
+
+            const [clause, params] = (() => {
+              if (fieldArgs) {
+                const whereArg = fieldArgs.find(arg => arg.name.value === 'where')
+
+                if (whereArg) {
+                  const whereArgObject = graphQLObjectValueToObject(whereArg.value)
+                  return translateWhereClause(
+                    alias,
+                    whereArgObject,
+                    relation.relationPath,
+                  )
+                }
+              }
+              return []
+            })()
+
+            qb.leftJoinAndSelect(joinPath, alias, clause, params)
           })
 
           if (args.where) {
