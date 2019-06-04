@@ -3,6 +3,7 @@ import { GraphQLInputObjectType, GraphQLInputObjectTypeConfig, GraphQLInt, Graph
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 
 import { typeORMColumnTypeToGraphQLInputType } from './type'
+import { SchemaInfo } from './schema'
 
 const operations = ['lt', 'lte', 'gt', 'gte']
 
@@ -120,10 +121,13 @@ function createBaseWhereInputFromColumns(columns: ColumnMetadata[]): GraphQLInpu
   return config
 }
 
-function createWhereInput(entityMeta: TypeORM.EntityMetadata): GraphQLInputObjectType {
+function createWhereInput(schemaInfo: SchemaInfo, entityMeta: TypeORM.EntityMetadata): GraphQLInputObjectType {
   let inputType: GraphQLInputObjectType
-
   const { name, columns } = entityMeta
+
+  if (name in schemaInfo.whereInputTypes) {
+    return schemaInfo.whereInputTypes[name]
+  }
 
   const config: GraphQLInputObjectTypeConfig = {
     name: `${name}WhereInput`,
@@ -142,16 +146,19 @@ function createWhereInput(entityMeta: TypeORM.EntityMetadata): GraphQLInputObjec
   }
 
   inputType = new GraphQLInputObjectType(config)
+
+  schemaInfo.whereInputTypes[name] = inputType
+
   return inputType
 }
 
-export function createArgs(entity: any): GraphQLFieldConfigArgumentMap {
+export function createArgs(schemaInfo: SchemaInfo, entity: any): GraphQLFieldConfigArgumentMap {
   const conn = TypeORM.getConnection()
   const typeormMetadata = conn.getMetadata(entity)
 
   const args: GraphQLFieldConfigArgumentMap = {
     where: {
-      type: createWhereInput(typeormMetadata),
+      type: createWhereInput(schemaInfo, typeormMetadata),
     },
     skip: {
       type: GraphQLInt,

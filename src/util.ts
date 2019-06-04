@@ -1,15 +1,23 @@
-import { GraphQLResolveInfo, NameNode, SelectionNode, SelectionSetNode, FieldNode } from 'graphql'
+import { GraphQLResolveInfo, NameNode, SelectionNode, FieldNode, ValueNode } from 'graphql'
 import { getConnection } from 'typeorm'
 
-function _getRelationsForSelectionSet<T>(
+export interface Relation {
+  relationPath: string
+  fieldNode: FieldNode
+}
+
+function _getRelationsForFieldNode<T>(
   rootType: new () => T,
-  selectionSet: SelectionSetNode,
-): string[] {
+  fieldNode: FieldNode,
+): Relation[] {
+  const { selectionSet } = fieldNode
+  const results: Relation[] = []
+
+  if (selectionSet) {
   const conn = getConnection()
   const meta = conn.getMetadata(rootType)
 
   const { relations } = meta
-  const relationStrings: string[] = []
 
   selectionSet.selections.forEach((selection: SelectionNode) => {
     if ('name' in selection) {
@@ -19,47 +27,39 @@ function _getRelationsForSelectionSet<T>(
       )
 
       if (targetRelation) {
-        relationStrings.push(targetRelation.propertyPath)
+          if (selection.kind === 'Field') {
+            results.push({
+              relationPath: targetRelation.propertyPath,
+              fieldNode: selection,
+            })
 
         if ('selectionSet' in selection && selection.selectionSet) {
-          const subselections = _getRelationsForSelectionSet(
+              const subselections = _getRelationsForFieldNode(
             targetRelation.type as any,
-            selection.selectionSet,
+                selection,
           )
 
           subselections.forEach(
-            subselection => relationStrings.push(
-              `${targetRelation.propertyPath}.${subselection}`
-            ),
+                subselection => results.push({
+                  relationPath: `${targetRelation.propertyPath}.${subselection.relationPath}`,
+                  fieldNode: subselection.fieldNode,
+                }),
           )
         }
       }
     }
+      }
   })
-
-  return relationStrings
 }
 
-function _getRelationsForFieldNode<T>(
-  rootType: new () => T,
-  fieldNode: FieldNode,
-): string[] {
-  const { selectionSet } = fieldNode
-
-  if (selectionSet) {
-    return _getRelationsForSelectionSet(
-      rootType,
-      selectionSet,
-    )
-  }
-  return []
+  return results
 }
 
 export function getRelationsForQuery<T>(
   rootType: new () => T,
   info: GraphQLResolveInfo,
-) {
-  return info.fieldNodes.reduce<string[]>((relations, fieldNode) => {
+): Relation[] {
+  return info.fieldNodes.reduce<Relation[]>((relations, fieldNode) => {
     return relations.concat(_getRelationsForFieldNode(
       rootType,
       fieldNode,
