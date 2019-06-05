@@ -5,18 +5,16 @@ const databaseObjectMetadataKey = Symbol('databaseObjectMetadataKey')
 type FieldQueryBuilder<T, C> = (
   qb: TypeORM.SelectQueryBuilder<T>,
   ctx: C,
+  alias: string,
 ) => TypeORM.SelectQueryBuilder<T>
-type ResultToProperty = (data: any) => any
 
-interface Field<T, C> {
-  propertyKey: string | symbol
+export interface TypeGraphORMField<T, C> {
+  propertyKey: string
   addSelect: FieldQueryBuilder<T, C>
-  resultToProperty: ResultToProperty
-  typeFunc: () => (new () => {})
 }
 
 interface DatabaseObjectMetadata<T, C> {
-  fields: Field<T, C>[]
+  fields: TypeGraphORMField<T, C>[]
   queryFieldName?: string
 }
 
@@ -39,17 +37,18 @@ export function getDatabaseObjectMetadata<T, C>(target: object): DatabaseObjectM
 }
 
 export function Field<T, C>(options: {
-  typeFunc: () => any
   addSelect: FieldQueryBuilder<T, C>
-  resultToProperty(data: any): any
 }): PropertyDecorator {
   return (...args: Parameters<PropertyDecorator>): void => {
     const [target, propertyKey] = args
     const metadata = getDatabaseObjectMetadata<T, C>(target)
-    metadata.fields.push({
-      ...options,
-      propertyKey,
-    })
+
+    if (typeof propertyKey === 'string') {
+      metadata.fields.push({
+        ...options,
+        propertyKey,
+      })
+    }
   }
 }
 

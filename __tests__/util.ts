@@ -6,6 +6,7 @@ import { buildExecutableSchema } from '@/schema'
 
 import { Post } from './entities/post'
 import { User } from './entities/user'
+import { UserLikesPost } from './entities/user-likes-post'
 
 let conn: Connection | undefined
 export let schema: GraphQLSchema | undefined
@@ -14,13 +15,16 @@ export function setupTest() {
   dotenv.config()
 
   beforeAll(async () => {
+    const entities = [
+      User,
+      Post,
+      UserLikesPost,
+    ]
+
     if (!conn) {
       conn = await createConnection({
         database: process.env.TEST_DB_NAME,
-        entities: [
-          User,
-          Post,
-        ],
+        entities,
         host: process.env.TEST_DB_HOST,
         port: parseInt(process.env.TEST_DB_PORT || '5432', 10),
         type: process.env.TEST_DB_TYPE as any,
@@ -30,10 +34,7 @@ export function setupTest() {
 
     if (!schema) {
       schema = buildExecutableSchema({
-        entities: [
-          User,
-          Post,
-        ],
+        entities,
       })
     }
   })

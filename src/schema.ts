@@ -9,9 +9,10 @@ import {
   GraphQLSchema,
   GraphQLSchemaConfig,
   GraphQLInputObjectType,
+  GraphQLString,
 } from 'graphql'
 
-import { getDatabaseObjectMetadata } from '.'
+import { getDatabaseObjectMetadata, TypeGraphORMField } from '.'
 import { typeORMColumnTypeToGraphQLOutputType } from './type'
 import { getRelationsForQuery, graphQLObjectValueToObject } from './util'
 import { createArgs, translateWhereClause } from './where'
@@ -40,6 +41,21 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 
   const rootQueryFields: GraphQLFieldConfigMap<TSource, TContext> = {}
 
+  function addSubqueries(
+    qb: TypeORM.SelectQueryBuilder<any>,
+    fields: TypeGraphORMField<any, any>[],
+    alias: string,
+  ) {
+    fields.forEach(field => {
+      if (field.addSelect) {
+        qb.addSelect(
+          sq => field.addSelect(sq, {}, alias),
+          `${alias}_${field.propertyKey}`,
+        )
+      }
+    })
+  }
+
   for (const entity of entities) {
     const meta = getDatabaseObjectMetadata(entity.prototype)
     const typeormMetadata = conn.getMetadata(entity)
@@ -50,6 +66,12 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
       name,
       fields: () => {
         const fields: GraphQLFieldConfigMap<TSource, TContext> = {}
+
+        meta.fields.forEach(field => {
+          fields[field.propertyKey] = {
+            type: GraphQLString,
+          }
+        })
 
         typeormMetadata.columns.forEach(column => {
           const graphqlType = typeORMColumnTypeToGraphQLOutputType(column.type)
@@ -100,33 +122,44 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           const qb = _conn.getRepository(entity).createQueryBuilder()
 
           relations.forEach(relation => {
-            const entities = relation.relationPath.split('.')
-            const lastPath = entities[entities.length - 1]
-            const prevEntities = [typeormMetadata.name].concat(entities.slice(0, entities.length - 1))
+            if (typeof relation.type === 'string') {
+              // TODO: support string typed relation
+              throw new Error(`String typed relation is not supported yet.`)
+            } else {
+              const relationMeta = getDatabaseObjectMetadata(relation.type.prototype)
 
-            const joinPath = `${prevEntities.join('_')}.${lastPath}`
-            const alias = `${prevEntities.join('_')}_${lastPath}`
+              const entities = relation.relationPath.split('.')
+              const lastPath = entities[entities.length - 1]
+              const prevEntities = [typeormMetadata.name].concat(entities.slice(0, entities.length - 1))
 
-            const { arguments: fieldArgs } = relation.fieldNode
+              const joinPath = `${prevEntities.join('_')}.${lastPath}`
+              const alias = `${prevEntities.join('_')}_${lastPath}`
 
-            const [clause, params] = (() => {
-              if (fieldArgs) {
-                const whereArg = fieldArgs.find(arg => arg.name.value === 'where')
+              addSubqueries(qb, relationMeta.fields, alias)
 
-                if (whereArg) {
-                  const whereArgObject = graphQLObjectValueToObject(whereArg.value)
-                  return translateWhereClause(
-                    alias,
-                    whereArgObject,
-                    relation.relationPath,
-                  )
+              const { arguments: fieldArgs } = relation.fieldNode
+
+              const [clause, params] = (() => {
+                if (fieldArgs) {
+                  const whereArg = fieldArgs.find(arg => arg.name.value === 'where')
+
+                  if (whereArg) {
+                    const whereArgObject = graphQLObjectValueToObject(whereArg.value)
+                    return translateWhereClause(
+                      alias,
+                      whereArgObject,
+                      relation.relationPath,
+                    )
+                  }
                 }
-              }
-              return []
-            })()
+                return []
+              })()
 
-            qb.leftJoinAndSelect(joinPath, alias, clause, params)
+              qb.leftJoinAndSelect(joinPath, alias, clause, params)
+            }
           })
+
+          addSubqueries(qb, meta.fields, typeormMetadata.name)
 
           if (args.where) {
             const [ clause, params ] = translateWhereClause(typeormMetadata.name, args.where)
