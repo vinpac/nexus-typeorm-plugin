@@ -19,5 +19,10 @@ module.exports = {
     '@/(.*)$': '<rootDir>/src/$1'
   },
   testEnvironment: 'node',
-  testPathIgnorePatterns: ['/node_modules/', '/lib/']
+  testPathIgnorePatterns: ['/node_modules/', '/lib/'],
+  globals: {
+    'ts-jest': {
+      tsConfig: './tsconfig.test.json'
+    }
+  }
 }
