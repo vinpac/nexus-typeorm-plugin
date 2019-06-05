@@ -1,5 +1,3 @@
-import { getConnection } from 'typeorm'
-
 import { Post } from './entities/post'
 import { User } from './entities/user'
 import { query, setupTest, create } from './util'
