@@ -9,7 +9,7 @@ type FieldQueryBuilder<T, C> = (
 type ResultToProperty = (data: any) => any
 
 interface Field<T, C> {
-  propertyKey: string | symbol
+  propertyKey: string
   addSelect: FieldQueryBuilder<T, C>
   resultToProperty: ResultToProperty
   typeFunc: () => (new () => {})
@@ -46,10 +46,13 @@ export function Field<T, C>(options: {
   return (...args: Parameters<PropertyDecorator>): void => {
     const [target, propertyKey] = args
     const metadata = getDatabaseObjectMetadata<T, C>(target)
-    metadata.fields.push({
-      ...options,
-      propertyKey,
-    })
+
+    if (typeof propertyKey === 'string') {
+      metadata.fields.push({
+        ...options,
+        propertyKey,
+      })
+    }
   }
 }
 
