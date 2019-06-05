@@ -7,13 +7,13 @@ type FieldQueryBuilder<T, C> = (
   ctx: C,
 ) => TypeORM.SelectQueryBuilder<T>
 
-interface Field<T, C> {
+export interface TypeGraphORMField<T, C> {
   propertyKey: string
   addSelect: FieldQueryBuilder<T, C>
 }
 
 interface DatabaseObjectMetadata<T, C> {
-  fields: Field<T, C>[]
+  fields: TypeGraphORMField<T, C>[]
   queryFieldName?: string
 }
 
