@@ -4,6 +4,7 @@ import { getConnection } from 'typeorm'
 export interface Relation {
   relationPath: string
   fieldNode: FieldNode
+  type: string | Function
 }
 
 function _getRelationsForFieldNode<T>(
@@ -31,6 +32,7 @@ function _getRelationsForFieldNode<T>(
             results.push({
               relationPath: targetRelation.propertyPath,
               fieldNode: selection,
+              type: targetRelation.type,
             })
 
             if ('selectionSet' in selection && selection.selectionSet) {
@@ -43,6 +45,7 @@ function _getRelationsForFieldNode<T>(
                 subselection => results.push({
                   relationPath: `${targetRelation.propertyPath}.${subselection.relationPath}`,
                   fieldNode: subselection.fieldNode,
+                  type: subselection.type,
                 }),
               )
             }
