@@ -5,6 +5,7 @@ const databaseObjectMetadataKey = Symbol('databaseObjectMetadataKey')
 type FieldQueryBuilder<T, C> = (
   qb: TypeORM.SelectQueryBuilder<T>,
   ctx: C,
+  alias: string,
 ) => TypeORM.SelectQueryBuilder<T>
 
 export interface TypeGraphORMField<T, C> {
