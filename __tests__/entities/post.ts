@@ -18,6 +18,9 @@ export class Post {
   @Column({ nullable: true })
   public isPublic?: boolean
 
+  @Column({ nullable: true })
+  public viewCount?: number
+
   @ManyToOne(() => User, user => user.posts)
   public user: User
 
