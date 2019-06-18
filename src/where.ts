@@ -4,6 +4,7 @@ import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 
 import { typeORMColumnTypeToGraphQLInputType } from './type'
 import { SchemaInfo } from './schema'
+import { createOrderByInput } from './order'
 
 const singleOperandOperations = ['lt', 'lte', 'gt', 'gte']
 const multipleOperandOperations = ['in']
@@ -180,6 +181,9 @@ export function createArgs(schemaInfo: SchemaInfo, entity: any): GraphQLFieldCon
     },
     first: {
       type: GraphQLInt,
+    },
+    orderBy: {
+      type: GraphQLList(createOrderByInput(schemaInfo, entity)),
     },
   }
 

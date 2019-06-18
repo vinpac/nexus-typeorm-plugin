@@ -10,12 +10,14 @@ import {
   GraphQLSchemaConfig,
   GraphQLInputObjectType,
   GraphQLString,
+  GraphQLEnumType,
 } from 'graphql'
 
 import { getDatabaseObjectMetadata, TypeGraphORMField } from '.'
 import { typeORMColumnTypeToGraphQLOutputType } from './type'
 import { getRelationsForQuery, graphQLObjectValueToObject } from './util'
 import { createArgs, translateWhereClause } from './where'
+import { orderNamesToOrderInfos } from './order'
 
 interface BuildExecutableSchemaOptions {
   entities: any[]
@@ -26,6 +28,7 @@ interface BuildExecutableSchemaOptions {
 export interface SchemaInfo {
   whereInputTypes: {[key: string]: GraphQLInputObjectType}
   types: {[key: string]: GraphQLOutputType}
+  orderByInputTypes: {[key: string]: GraphQLEnumType}
 }
 
 export function buildExecutableSchema<TSource = any, TContext = any>({
@@ -37,6 +40,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
   const schemaInfo: SchemaInfo = {
     whereInputTypes: {},
     types: {},
+    orderByInputTypes: {},
   }
 
   const rootQueryFields: GraphQLFieldConfigMap<TSource, TContext> = {}
@@ -139,8 +143,8 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 
               const { arguments: fieldArgs } = relation.fieldNode
 
-              const [clause, params] = (() => {
-                if (fieldArgs) {
+              if (fieldArgs) {
+                const [clause, params] = (() => {
                   const whereArg = fieldArgs.find(arg => arg.name.value === 'where')
 
                   if (whereArg) {
@@ -151,11 +155,23 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
                       relation.relationPath,
                     )
                   }
-                }
-                return []
-              })()
+                  return []
+                })()
+                qb.leftJoinAndSelect(joinPath, alias, clause, params)
 
-              qb.leftJoinAndSelect(joinPath, alias, clause, params)
+                const orderByArg = fieldArgs.find(arg => arg.name.value === 'orderBy')
+
+                if (orderByArg) {
+                  const orderByArgObject = graphQLObjectValueToObject(orderByArg.value)
+                  const orderByNames = orderByArgObject instanceof Array ? orderByArgObject : [orderByArgObject]
+                  const orders = orderNamesToOrderInfos(orderByNames)
+                  orders.forEach(order => {
+                    if (order) {
+                      qb.addOrderBy(`${alias}.${order.propertyName}`, order.orderType)
+                    }
+                  })
+                }
+              }
             }
           })
 
@@ -168,6 +184,15 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 
           if (args.skip) {
             qb.skip(args.skip)
+          }
+
+          if (args.orderBy) {
+            const orders = orderNamesToOrderInfos(args.orderBy)
+            orders.forEach(order => {
+              if (order) {
+                qb.addOrderBy(`${name}.${order.propertyName}`, order.orderType)
+              }
+            })
           }
 
           const take = Math.max(args.first || defaultLimit || 30, maxLimit || 100)
