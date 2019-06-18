@@ -72,7 +72,3 @@ query {
 
 ## Notes
 Implementation is now at experimental stage. It's currently tested on the simplest cases.
-
-### TODO List
-- Automatic filter generation
-- Cursor based pagination with best practices
