@@ -1,4 +1,5 @@
 import * as TypeORM from 'typeorm'
+import { GraphQLFieldConfigArgumentMap } from 'graphql'
 
 const databaseObjectMetadataKey = Symbol('databaseObjectMetadataKey')
 
@@ -13,9 +14,27 @@ export interface TypeGraphORMField<T, C> {
   addSelect: FieldQueryBuilder<T, C>
 }
 
+interface BaseView {
+  name: string
+  args?: GraphQLFieldConfigArgumentMap
+}
+
+interface DirectView extends BaseView {
+  isDirectView: true
+}
+
+interface IdView extends BaseView {
+  getIds: (options: {
+    ctx: any
+    args: any
+  }) => Promise<any[]>
+}
+
+type View = DirectView | IdView
+
 interface DatabaseObjectMetadata<T, C> {
   fields: TypeGraphORMField<T, C>[]
-  queryFieldName?: string
+  views?: View[]
 }
 
 function makeDefaultDatabaseObjectMetadata<T, C>(): DatabaseObjectMetadata<T, C> {
@@ -53,12 +72,12 @@ export function Field<T, C>(options: {
 }
 
 export function DatabaseObjectType(options?: {
-  queryFieldName?: string
+  views?: View[]
 }): ClassDecorator {
   return (...args: Parameters<ClassDecorator>): void => {
     const [target] = args
     const metadata = getDatabaseObjectMetadata(target.prototype)
-    metadata.queryFieldName = options && options.queryFieldName
+    metadata.views = options && options.views
 
     TypeORM.Entity()(target)
   }
