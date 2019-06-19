@@ -37,11 +37,13 @@ function combineParams(params: {[key: string]: any}[]) {
   }, {})
 }
 
+export type Where = [string, {[key: string]: any}]
+
 export function translateWhereClause(
   entity: string,
   where: any,
   conditionPrefix: string = '',
-): [string, {[key: string]: any}] {
+): Where {
   const clauses = Object.keys(where).reduce<[string, {[key: string]: any}][]>(
     (_clauses, key) => {
       const uniqueKey = `${conditionPrefix}_${key}`
