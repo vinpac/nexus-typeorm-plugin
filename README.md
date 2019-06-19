@@ -17,7 +17,11 @@ import { graphql } from 'graphql'
 
 // Define TypeORM entities
 @GraphORM.DatabaseObjectType({
-  queryFieldName: 'users'
+  views: [{
+    // API users can directly query `users` field via this *view*.
+    isDirectView: true,
+    name: 'users'
+  }]
 })
 export class User {
   @PrimaryGeneratedColumn()
@@ -33,9 +37,7 @@ export class User {
   public posts: Post[]
 }
 
-@GraphORM.DatabaseObjectType({
-  queryFieldName: 'posts'
-})
+@GraphORM.DatabaseObjectType()
 class Post {
   @PrimaryGeneratedColumn()
   public id: number
@@ -55,19 +57,33 @@ const schema = await buildExecutableSchema({
   ],
 })
 
-// Run query!
+// Simple query
 const result = await graphql(schema, `
-query {
-  users {
-    id
-    name
-    age
-    posts {
+  query {
+    users {
       id
-      title
+      name
+      age
+      posts {
+        id
+        title
+      }
     }
-  }
-}`)
+  }`
+)
+
+// Complex filters
+const result = await graphql(schema, `
+  query {
+    users(where: {name: "Foo"}) {
+      id
+      age
+      posts(where: {id: 2}) {
+        title
+      }
+    }
+  }`
+)
 ```
 
 ## Notes
