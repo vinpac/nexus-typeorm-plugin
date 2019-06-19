@@ -1,5 +1,8 @@
 import * as TypeORM from 'typeorm'
-import { GraphQLInputObjectType, GraphQLInputObjectTypeConfig, GraphQLInt, GraphQLInputFieldConfigMap, GraphQLList, GraphQLFieldConfigArgumentMap } from 'graphql'
+import {
+  GraphQLInputObjectType, GraphQLInputObjectTypeConfig, GraphQLInt, GraphQLInputFieldConfigMap, GraphQLList,
+  GraphQLFieldConfigArgumentMap,
+} from 'graphql'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 
 import { typeORMColumnTypeToGraphQLInputType } from './type'
