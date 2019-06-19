@@ -1,5 +1,6 @@
 import { GraphQLResolveInfo, NameNode, SelectionNode, FieldNode, ValueNode } from 'graphql'
 import { getConnection } from 'typeorm'
+import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 
 export interface Relation {
   relationPath: string
@@ -92,4 +93,35 @@ export function graphQLObjectValueToObject(value: ValueNode) {
       return values
     }, [])
   }
+}
+
+export function orderItemsByPrimaryColumns<T>(
+  primaryColumns: ColumnMetadata[],
+  items: T[],
+  ids: any[],
+): T[] {
+  const [primaryColumn] = primaryColumns
+
+  if (primaryColumn) {
+    const { propertyName } = primaryColumn
+
+    const idToItemMap = items.reduce<any>((map, item) => {
+      if (propertyName in item) {
+        const id = (item as any)[propertyName]
+        map[id] = item
+      }
+      return map
+    }, {})
+
+    const ordered = ids.reduce<T[]>((array, id) => {
+      if (id in idToItemMap) {
+        array.push(idToItemMap[id])
+      }
+      return array
+    }, [])
+
+    return ordered
+  }
+
+  return items
 }

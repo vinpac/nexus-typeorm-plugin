@@ -6,7 +6,10 @@ import { User } from './user'
 import { UserLikesPost } from './user-likes-post'
 
 @GraphORM.DatabaseObjectType({
-  queryFieldName: 'posts'
+  views: [{
+    name: 'posts',
+    isDirectView: true,
+  }],
 })
 export class Post {
   @PrimaryGeneratedColumn()

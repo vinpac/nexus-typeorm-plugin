@@ -1,4 +1,5 @@
-import { Column, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, OneToMany, PrimaryGeneratedColumn, getConnection } from 'typeorm'
+import { GraphQLInt } from 'graphql'
 
 import * as GraphORM from '@/index'
 
@@ -6,7 +7,32 @@ import { Post } from './post'
 import { UserLikesPost } from './user-likes-post'
 
 @GraphORM.DatabaseObjectType({
-  queryFieldName: 'users'
+  views: [{
+    name: 'users',
+    isDirectView: true,
+  }, {
+    name: 'searchUsers',
+    args: {
+      age: {
+        type: GraphQLInt,
+      },
+    },
+    getIds: async ({
+      args,
+    }) => {
+      const conn = getConnection()
+      const users = await conn.getRepository(User).find({  // eslint-disable-line
+        where: {
+          age: args.age,
+        },
+        order: {
+          name: 'ASC',
+        },
+      })
+
+      return users.map(user => user.id)
+    },
+  }],
 })
 export class User {
   @PrimaryGeneratedColumn()
