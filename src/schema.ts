@@ -122,20 +122,32 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         } else {
           rootQueryFields[view.name] = {
             args: view.args,
-            type: GraphQLList(type),
+            type: 'getIds' in view ? GraphQLList(type) : type,
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
               const [, args, ctx, info] = _args
-              const ids = await view.getIds({
-                args,
-                ctx,
-              })
+              const ids = await (async () => {
+                if ('getIds' in view) {
+                  return view.getIds({
+                    args,
+                    ctx,
+                  })
+                }
+                return [await view.getId({
+                  args,
+                  ctx,
+                })]
+              })()
 
               const resolved = await resolve({
                 entity,
                 info,
                 ids,
               })
+
+              if ('getId' in view) {
+                return resolved[0]
+              }
 
               if (typeormMetadata.hasMultiplePrimaryKeys) {
                 return resolved
