@@ -8,7 +8,7 @@ describe('View', () => {
   async function setupFixture() {
     await create(User, {name: 'E', age: 30})
     await create(User, {name: 'C', age: 30})
-    await create(User, {name: 'D', age: 20})
+    await create(User, {name: 'D', age: 50})
     await create(User, {name: 'A', age: 30})
     const userB = await create(User, {name: 'B', age: 25})
 
@@ -70,5 +70,35 @@ describe('View', () => {
         ],
       },
     ])
+  })
+
+  it('handles single item query', async () => {
+    const result = await query(`
+      query {
+        oldestUser {
+          name
+        }
+      }
+    `)
+
+    expect(result.data).toMatchObject({
+      oldestUser: {
+        name: 'D',
+      },
+    })
+  })
+
+  it('handles single item query with result of null', async () => {
+    const result = await query(`
+      query {
+        noUser {
+          name
+        }
+      }
+    `)
+
+    expect(result.data).toMatchObject({
+      noUser: null,
+    })
   })
 })
