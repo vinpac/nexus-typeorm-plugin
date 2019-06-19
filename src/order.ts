@@ -5,23 +5,27 @@ import { SchemaInfo } from './schema'
 
 const orderTypes = ['ASC', 'DESC']
 
-export function orderNamesToOrderInfos(orderNames: string[]): ({
+export interface OrderInfo {
   propertyName: string
-  orderType: 'ASC' | 'DESC'
-} | undefined)[] {
-  return orderNames.map(orderName => {
+  type: 'ASC' | 'DESC'
+}
+
+export function orderNamesToOrderInfos(orderNames: string[]): OrderInfo[] {
+  return orderNames.reduce<OrderInfo[]>((result, orderName) => {
     const splitted = orderName.split('_')
     const { length } = splitted
     if (length > 0) {
-      const orderType = splitted[splitted.length - 1]
-      if (orderType === 'ASC' || orderType === 'DESC') {
-        return {
+      const type = splitted[splitted.length - 1]
+      if (type === 'ASC' || type === 'DESC') {
+        result.push({
           propertyName: splitted.slice(0, length - 1).join('_'),
-          orderType,
-        }
+          type,
+        })
       }
     }
-  })
+
+    return result
+  }, [])
 }
 
 export function createOrderByInput(schemaInfo: SchemaInfo, entity: any): GraphQLEnumType {
