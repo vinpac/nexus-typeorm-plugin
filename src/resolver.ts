@@ -121,5 +121,9 @@ export async function resolve({
     qb.skip(skip)
   }
 
+  if (process.env.__TGO_SHOW_SQL) {
+    console.log(qb.getQueryAndParameters())  // eslint-disable-line no-console
+  }
+
   return qb.getMany()
 }
