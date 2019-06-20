@@ -8,12 +8,13 @@ describe('View', () => {
   async function setupFixture() {
     await create(User, {name: 'E', age: 30})
     await create(User, {name: 'C', age: 30})
-    await create(User, {name: 'D', age: 50})
+    const userD = await create(User, {name: 'D', age: 50})
     await create(User, {name: 'A', age: 30})
     const userB = await create(User, {name: 'B', age: 25})
 
     await create(Post, { user: userB, title: 'X' })
     await create(Post, { user: userB, title: 'Y' })
+    await create(Post, { user: userD, title: 'Z' })
   }
 
   beforeEach(async () => {
@@ -77,6 +78,9 @@ describe('View', () => {
       query {
         oldestUser {
           name
+          posts(where: { title: "Z" }) {
+            title
+          }
         }
       }
     `)
@@ -84,6 +88,11 @@ describe('View', () => {
     expect(result.data).toMatchObject({
       oldestUser: {
         name: 'D',
+        posts: [
+          {
+            title: 'Z',
+          },
+        ],
       },
     })
   })
