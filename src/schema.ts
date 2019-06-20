@@ -22,8 +22,6 @@ import { orderItemsByPrimaryColumns } from './util'
 
 interface BuildExecutableSchemaOptions {
   entities: any[]
-  defaultLimit?: number
-  maxLimit?: number
 }
 
 export interface SchemaInfo {
@@ -34,8 +32,6 @@ export interface SchemaInfo {
 
 export function buildExecutableSchema<TSource = any, TContext = any>({
   entities,
-  defaultLimit,
-  maxLimit,
 }: BuildExecutableSchemaOptions): GraphQLSchema {
   const conn = TypeORM.getConnection()
   const schemaInfo: SchemaInfo = {
@@ -112,8 +108,8 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
               return resolve({
                 where: args.where ? translateWhereClause(typeormMetadata.name, args.where) : undefined,
                 entity,
-                skip: args.skip || 0,
-                take: Math.max(args.first || defaultLimit || 30, maxLimit || 100),
+                skip: args.skip || undefined,
+                take: args.first || undefined,
                 orders: args.orderBy ? orderNamesToOrderInfos(args.orderBy) : undefined,
                 info,
               })

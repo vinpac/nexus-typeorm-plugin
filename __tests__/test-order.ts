@@ -6,16 +6,16 @@ describe('Order', () => {
   setupTest()
 
   async function setupFixture() {
-    const userFoo = await create(User, {name: 'A', age: 30})
+    const userA = await create(User, {name: 'A', age: 30})
     await create(User, {name: 'B', age: 20})
     await create(User, {name: 'C', age: 30})
     await create(User, {name: 'D', age: 20})
     await create(User, {name: 'E', age: 30})
 
-    await create(Post, {user: userFoo, viewCount: 20, title: 'foo'})
-    await create(Post, {user: userFoo, viewCount: 30, title: 'bar'})
-    await create(Post, {user: userFoo, viewCount: 50, title: 'baz'})
-    await create(Post, {user: userFoo, viewCount: 40, title: 'qux'})
+    await create(Post, {user: userA, viewCount: 20, title: 'foo'})
+    await create(Post, {user: userA, viewCount: 30, title: 'bar'})
+    await create(Post, {user: userA, viewCount: 50, title: 'baz'})
+    await create(Post, {user: userA, viewCount: 40, title: 'qux'})
   }
 
   beforeEach(async () => {

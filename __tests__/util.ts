@@ -29,6 +29,7 @@ export function setupTest() {
         port: parseInt(process.env.TEST_DB_PORT || '5432', 10),
         type: process.env.TEST_DB_TYPE as any,
         username: process.env.TEST_DB_USERNAME,
+        ...process.env.TEST_DB_PASSWORD && { password: process.env.TEST_DB_PASSWORD },
       })
     }
 

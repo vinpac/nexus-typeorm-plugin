@@ -29,10 +29,18 @@ export class Post {
 
   @Column({ nullable: true })
   @GraphORM.Field({
-    addSelect: (sq, _, alias) =>
+    addSelect(sq, _, alias) {
       sq.select('COUNT(*)', 'count')
         .from(UserLikesPost, 'userLikesPost')
-        .where(`"userLikesPost"."postId" = ${alias}.id`),
+
+      if (process.env.TEST_DB_TYPE === 'postgres') {
+        sq.where(`"userLikesPost"."postId" = ${alias}.id`)
+      } else {
+        sq.where(`userLikesPost.postId = ${alias}.id`)
+      }
+
+      return sq
+    }
   })
   public totalLikes?: number
 
