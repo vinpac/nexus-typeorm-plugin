@@ -43,6 +43,15 @@ export async function resolve({
   const typeormMetadata = _conn.getMetadata(entity)
   const { name } = typeormMetadata
   const relations = getRelationsForQuery(entity, info)
+  const ordersWithDepth: {
+    alias: string
+    depth: number
+    order: OrderInfo
+  }[] = orders && orders.map(order => ({
+    alias: name,
+    depth: 0,
+    order,
+  })) || []
 
   const qb = _conn.getRepository(entity).createQueryBuilder()
 
@@ -54,6 +63,8 @@ export async function resolve({
       const relationMeta = getDatabaseObjectMetadata(relation.type.prototype)
 
       const entities = relation.relationPath.split('.')
+      const depth = entities.length
+
       const lastPath = entities[entities.length - 1]
       const prevEntities = [typeormMetadata.name].concat(entities.slice(0, entities.length - 1))
 
@@ -88,7 +99,11 @@ export async function resolve({
           const orders = orderNamesToOrderInfos(orderByNames)
           orders.forEach(order => {
             if (order) {
-              qb.addOrderBy(`${alias}.${order.propertyName}`, order.type)
+              ordersWithDepth.push({
+                alias,
+                depth,
+                order,
+              })
             }
           })
         }
@@ -99,19 +114,27 @@ export async function resolve({
   addSubqueries(qb, meta.fields, typeormMetadata.name)
 
   if (ids) {
-    qb.whereInIds(ids)
+    if (!typeormMetadata.hasMultiplePrimaryKeys) {
+      const [primaryColumn] = typeormMetadata.primaryColumns
+      if (primaryColumn) {
+        const idsKey = '__IDS'
+        qb.andWhere(
+          `${typeormMetadata.name}.${primaryColumn.propertyName} IN (:...${idsKey})`,
+          { [idsKey]: ids },
+        )
+      }
+    }
   } else if (where) {
     const [ clause, params ] = where
     qb.where(clause, params)
   }
 
-  if (orders) {
-    orders.forEach(order => {
-      if (order) {
-        qb.addOrderBy(`${name}.${order.propertyName}`, order.type)
-      }
-    })
-  }
+  const sortedOrdersWithDepth = ordersWithDepth.sort((a, b) => a.depth - b.depth)
+
+  sortedOrdersWithDepth.forEach(order => {
+    const { alias, order: { propertyName, type } } = order
+    qb.addOrderBy(`${alias}.${propertyName}`, type)
+  })
 
   if (take) {
     qb.take(take)
