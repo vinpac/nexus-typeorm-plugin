@@ -15,6 +15,8 @@ executors:
           POSTGRES_USER: root
           POSTGRES_DB: circle-test
 
+      - image: circleci/mysql:5.7.26
+
     working_directory: ~/repo
 
 jobs:
@@ -41,6 +43,7 @@ jobs:
 
       - run: yarn lint
       - run: yarn test
+      - run: TEST_DB_TYPE=mysql TEST_DB_NAME=circle_test TEST_DB_HOST=127.0.0.1 TEST_DB_PORT=3306 yarn test
 
       - persist_to_workspace:
           root: .
