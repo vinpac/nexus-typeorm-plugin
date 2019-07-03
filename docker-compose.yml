@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  db:
+    image: mysql:5.7.14
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --max_allowed_packet=32505856
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+    ports:
+      - "${TEST_DB_PORT}:3306"
+
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${TEST_DB_PASSWORD}
+      MYSQL_DATABASE: ${TEST_DB_NAME}

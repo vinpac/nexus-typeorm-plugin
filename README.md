@@ -86,5 +86,29 @@ const result = await graphql(schema, `
 )
 ```
 
+## To run tests
+Create `.env` file at the project root and fill it with database information.
+
+```bash
+TEST_DB_HOST=localhost
+TEST_DB_TYPE=mysql
+TEST_DB_NAME=test
+TEST_DB_USERNAME=root
+TEST_DB_PASSWORD=mypassword
+TEST_DB_PORT=3316
+```
+
+If you want, you can run a Docker container of MySQL for test based on `.env` file.
+
+```bash
+docker-compose up -d
+```
+
+Now you can run tests.
+
+```bash
+yarn test
+```
+
 ## Notes
 Implementation is now at experimental stage. It's currently tested on the simplest cases.
