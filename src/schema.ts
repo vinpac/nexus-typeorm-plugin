@@ -14,10 +14,10 @@ import {
 } from 'graphql'
 
 import { getDatabaseObjectMetadata } from '.'
-import { typeORMColumnTypeToGraphQLOutputType } from './type'
+import { columnToGraphQLType } from './type'
 import { createArgs, translateWhereClause } from './where'
 import { orderNamesToOrderInfos } from './order'
-import { resolve } from './resolver'
+import { resolve, resolveSingleItem } from './resolver'
 import { orderItemsByPrimaryColumns } from './util'
 
 interface BuildExecutableSchemaOptions {
@@ -29,6 +29,7 @@ interface BuildExecutableSchemaOptions {
 }
 
 export interface SchemaInfo {
+  enumTypes: {[key: string]: GraphQLEnumType}
   whereInputTypes: {[key: string]: GraphQLInputObjectType}
   types: {[key: string]: GraphQLOutputType}
   orderByInputTypes: {[key: string]: GraphQLEnumType}
@@ -40,6 +41,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 }: BuildExecutableSchemaOptions): GraphQLSchema {
   const conn = TypeORM.getConnection()
   const schemaInfo: SchemaInfo = {
+    enumTypes: {},
     whereInputTypes: {},
     types: {},
     orderByInputTypes: {},
@@ -59,7 +61,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         const fields: GraphQLFieldConfigMap<TSource, TContext> = {}
 
         typeormMetadata.columns.forEach(column => {
-          const graphqlType = typeORMColumnTypeToGraphQLOutputType(column.type)
+          const graphqlType = columnToGraphQLType(column, entity, schemaInfo)
 
           if (graphqlType) {
             fields[column.propertyName] = {
