@@ -11,6 +11,7 @@ import {
   GraphQLInputObjectType,
   GraphQLString,
   GraphQLEnumType,
+  GraphQLNonNull,
 } from 'graphql'
 
 import { getDatabaseObjectMetadata } from '.'
@@ -100,7 +101,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         if ('isDirectView' in view) {
           rootQueryFields[view.name] = {
             args,
-            type: GraphQLList(type),
+            type: GraphQLNonNull(GraphQLList(type)),
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
               const [, args, , info] = _args
@@ -118,7 +119,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         } else {
           rootQueryFields[view.name] = {
             args: view.args,
-            type: 'getIds' in view ? GraphQLList(type) : type,
+            type: 'getIds' in view ? GraphQLNonNull(GraphQLList(type)) : type,
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
               const [, args, ctx, info] = _args
