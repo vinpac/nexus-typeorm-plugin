@@ -9,7 +9,6 @@ import {
   GraphQLSchema,
   GraphQLSchemaConfig,
   GraphQLInputObjectType,
-  GraphQLString,
   GraphQLEnumType,
   GraphQLNonNull,
 } from 'graphql'
@@ -58,12 +57,6 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
       name,
       fields: () => {
         const fields: GraphQLFieldConfigMap<TSource, TContext> = {}
-
-        meta.fields.forEach(field => {
-          fields[field.propertyKey] = {
-            type: GraphQLString,
-          }
-        })
 
         typeormMetadata.columns.forEach(column => {
           const graphqlType = typeORMColumnTypeToGraphQLOutputType(column.type)
