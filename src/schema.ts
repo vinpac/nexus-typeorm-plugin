@@ -23,6 +23,10 @@ import { orderItemsByPrimaryColumns } from './util'
 
 interface BuildExecutableSchemaOptions {
   entities: any[]
+  enhanceConfig?: (
+    config: GraphQLSchemaConfig,
+    schemaInfo: SchemaInfo,
+  ) => GraphQLSchemaConfig
 }
 
 export interface SchemaInfo {
@@ -32,6 +36,7 @@ export interface SchemaInfo {
 }
 
 export function buildExecutableSchema<TSource = any, TContext = any>({
+  enhanceConfig,
   entities,
 }: BuildExecutableSchemaOptions): GraphQLSchema {
   const conn = TypeORM.getConnection()
@@ -168,5 +173,9 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
     query,
   }
 
-  return new GraphQLSchema(config)
+  return new GraphQLSchema(
+    enhanceConfig ?
+      enhanceConfig(config, schemaInfo) :
+      config
+  )
 }
