@@ -16,7 +16,8 @@ module.exports = {
     'node',
   ],
   moduleNameMapper: {
-    '@/(.*)$': '<rootDir>/src/$1'
+    '@/(.*)$': '<rootDir>/src/$1',
+    '__tests__/(.*)$': '<rootDir>/__tests__/$1',
   },
   testEnvironment: 'node',
   testPathIgnorePatterns: ['/node_modules/', '/lib/'],
