@@ -1,12 +1,16 @@
 import { Post } from './entities/post'
-import { User } from './entities/user'
+import { User, UserType } from './entities/user'
 import { query, setupTest, create } from './util'
 
 describe('Basic', () => {
   setupTest()
 
   async function setupFixture() {
-    const user = await create<User>(User, { age: 3, name: 'Jeong' })
+    const user = await create<User>(User, {
+      age: 3,
+      name: 'Jeong',
+      type: UserType.NORMAL,
+    })
     await create(Post, {
       user,
       title: 'hello',
@@ -18,12 +22,12 @@ describe('Basic', () => {
   })
 
   it('handles basic query', async () => {
-    const result = await query(`
-query {
+    const result = await query(`{
   users {
     id
     name
     age
+        type
   }
 }`)
 
@@ -33,6 +37,7 @@ query {
           age: 3,
           id: expect.any(Number),
           name: 'Jeong',
+          type: UserType.NORMAL,
         },
       ],
     })
