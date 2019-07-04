@@ -125,3 +125,9 @@ export function orderItemsByPrimaryColumns<T>(
 
   return items
 }
+
+export function makeFirstLetterUpperCase(s: string): string {
+  return typeof s === 'string' && s.length ?
+    (s[0].toUpperCase() + s.substr(1)) :
+    s
+}

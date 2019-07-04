@@ -9,32 +9,39 @@ import {
   GraphQLSchema,
   GraphQLSchemaConfig,
   GraphQLInputObjectType,
-  GraphQLString,
   GraphQLEnumType,
+  GraphQLNonNull,
 } from 'graphql'
 
 import { getDatabaseObjectMetadata } from '.'
-import { typeORMColumnTypeToGraphQLOutputType } from './type'
+import { columnToGraphQLType } from './type'
 import { createArgs, translateWhereClause } from './where'
 import { orderNamesToOrderInfos } from './order'
-import { resolve } from './resolver'
+import { resolve, resolveSingleField } from './resolver'
 import { orderItemsByPrimaryColumns } from './util'
 
 interface BuildExecutableSchemaOptions {
   entities: any[]
+  enhanceConfig?: (
+    config: GraphQLSchemaConfig,
+    schemaInfo: SchemaInfo,
+  ) => GraphQLSchemaConfig
 }
 
 export interface SchemaInfo {
+  enumTypes: {[key: string]: GraphQLEnumType}
   whereInputTypes: {[key: string]: GraphQLInputObjectType}
   types: {[key: string]: GraphQLOutputType}
   orderByInputTypes: {[key: string]: GraphQLEnumType}
 }
 
 export function buildExecutableSchema<TSource = any, TContext = any>({
+  enhanceConfig,
   entities,
 }: BuildExecutableSchemaOptions): GraphQLSchema {
   const conn = TypeORM.getConnection()
   const schemaInfo: SchemaInfo = {
+    enumTypes: {},
     whereInputTypes: {},
     types: {},
     orderByInputTypes: {},
@@ -53,18 +60,15 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
       fields: () => {
         const fields: GraphQLFieldConfigMap<TSource, TContext> = {}
 
-        meta.fields.forEach(field => {
-          fields[field.propertyKey] = {
-            type: GraphQLString,
-          }
-        })
-
         typeormMetadata.columns.forEach(column => {
-          const graphqlType = typeORMColumnTypeToGraphQLOutputType(column.type)
+          const graphqlType = columnToGraphQLType(column, entity, schemaInfo)
 
           if (graphqlType) {
             fields[column.propertyName] = {
-              type: graphqlType,
+              type: column.isNullable ? graphqlType : GraphQLNonNull(graphqlType),
+              async resolve(source: any) {
+                return resolveSingleField(source, column.propertyName, entity)
+              }
             }
           }
         })
@@ -83,7 +87,10 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
             if (type) {
               fields[relation.propertyName] = {
                 args: createArgs(schemaInfo, relation.type),
-                type,
+                type: relation.isNullable ? type : GraphQLNonNull(type),
+                async resolve(source: any) {
+                  return resolveSingleField(source, relation.propertyName, entity)
+                }
               }
             }
           }
@@ -100,7 +107,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         if ('isDirectView' in view) {
           rootQueryFields[view.name] = {
             args,
-            type: GraphQLList(type),
+            type: GraphQLNonNull(GraphQLList(type)),
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
               const [, args, , info] = _args
@@ -118,7 +125,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         } else {
           rootQueryFields[view.name] = {
             args: view.args,
-            type: 'getIds' in view ? GraphQLList(type) : type,
+            type: 'getIds' in view ? GraphQLNonNull(GraphQLList(type)) : type,
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
               const [, args, ctx, info] = _args
@@ -167,5 +174,9 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
     query,
   }
 
-  return new GraphQLSchema(config)
+  return new GraphQLSchema(
+    enhanceConfig ?
+      enhanceConfig(config, schemaInfo) :
+      config
+  )
 }

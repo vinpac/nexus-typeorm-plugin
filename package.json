@@ -1,6 +1,6 @@
 {
   "name": "type-graph-orm",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "repository": "github:JeongHoJeong/type-graph-orm",
@@ -32,7 +32,7 @@
   },
   "scripts": {
     "lint": "eslint src/**/* __tests__/**/*",
-    "test": "jest --runInBand",
+    "test": "TZ=UTC jest --runInBand",
     "build": "tsc",
     "prepublishOnly": "tsc && rm -rf lib && mv .build/src lib && rm -rf .build"
   }

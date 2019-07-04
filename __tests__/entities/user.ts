@@ -6,6 +6,11 @@ import * as GraphORM from '@/index'
 import { Post } from './post'
 import { UserLikesPost } from './user-likes-post'
 
+export enum UserType {
+  ADMIN = 'ADMIN',
+  NORMAL = 'NORMAL',
+}
+
 @GraphORM.DatabaseObjectType({
   views: [
     {
@@ -66,6 +71,9 @@ export class User {
 
   @Column()
   public age: number
+
+  @Column({ enum: UserType, type: 'enum', default: UserType.NORMAL  })
+  public type: UserType
 
   @OneToMany(() => Post, post => post.user)
   public posts: Post[]

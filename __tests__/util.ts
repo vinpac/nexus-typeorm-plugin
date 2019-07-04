@@ -2,11 +2,8 @@ import * as dotenv from 'dotenv'
 import { graphql, GraphQLSchema } from 'graphql'
 import { Connection, createConnection, getConnection } from 'typeorm'
 
-import { buildExecutableSchema } from '@/schema'
-
-import { Post } from './entities/post'
-import { User } from './entities/user'
-import { UserLikesPost } from './entities/user-likes-post'
+import { getTestSchema } from '__tests__/schema'
+import { entities } from '__tests__/entities'
 
 let conn: Connection | undefined
 export let schema: GraphQLSchema | undefined
@@ -15,12 +12,6 @@ export function setupTest() {
   dotenv.config()
 
   beforeAll(async () => {
-    const entities = [
-      User,
-      Post,
-      UserLikesPost,
-    ]
-
     if (!conn) {
       conn = await createConnection({
         database: process.env.TEST_DB_NAME,
@@ -34,9 +25,7 @@ export function setupTest() {
     }
 
     if (!schema) {
-      schema = buildExecutableSchema({
-        entities,
-      })
+      schema = getTestSchema()
     }
   })
 
