@@ -27,6 +27,9 @@ export class Post {
   @ManyToOne(() => User, user => user.posts)
   public user: User
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  public createdAt: Date
+
   @Column({ nullable: true })
   @GraphORM.Field({
     addSelect(sq, _, alias) {

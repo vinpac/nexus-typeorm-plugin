@@ -39,18 +39,23 @@ query {
   })
 
   it('resolves 1:n query', async () => {
-    const result = await query(`
-query {
+    const result = await query(`{
   users {
     id
     posts {
       id
       title
       isPublic
-    }
+          createdAt
   }
 }
-`)
+    }`)
+
+    const postCreatedAtString = result.data!.users[0].posts[0].createdAt
+    const postCreatedAt = new Date(postCreatedAtString)
+    const now = new Date()
+
+    expect(Math.abs(now.getTime() - postCreatedAt.getTime())).toBeLessThan(1000)
 
     expect(result.data).toMatchObject({
       users: [
