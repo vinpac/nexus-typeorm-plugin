@@ -21,6 +21,29 @@ function addSubqueries(
   })
 }
 
+export async function resolveSingleField(
+  source: any,
+  fieldName: string,
+  entity: any,
+) {
+  if (fieldName in source) {
+    return source[fieldName]
+  }
+
+  const conn = TypeORM.getConnection()
+  const typeormMetadata = conn.getMetadata(entity)
+
+  const { relations } = typeormMetadata
+  const isRelation = relations.some(relation => relation.propertyName === fieldName)
+
+  const data: any = await conn.getRepository(entity).findOne({
+    relations: isRelation ? [fieldName] : undefined,
+    where: source,
+  })
+
+  return data && data[fieldName]
+}
+
 export async function resolve({
   entity,
   where,

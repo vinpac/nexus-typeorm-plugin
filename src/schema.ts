@@ -17,7 +17,7 @@ import { getDatabaseObjectMetadata } from '.'
 import { columnToGraphQLType } from './type'
 import { createArgs, translateWhereClause } from './where'
 import { orderNamesToOrderInfos } from './order'
-import { resolve, resolveSingleItem } from './resolver'
+import { resolve, resolveSingleField } from './resolver'
 import { orderItemsByPrimaryColumns } from './util'
 
 interface BuildExecutableSchemaOptions {
@@ -65,7 +65,10 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 
           if (graphqlType) {
             fields[column.propertyName] = {
-              type: graphqlType,
+              type: column.isNullable ? graphqlType : GraphQLNonNull(graphqlType),
+              async resolve(source: any) {
+                return resolveSingleField(source, column.propertyName, entity)
+              }
             }
           }
         })
@@ -84,7 +87,10 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
             if (type) {
               fields[relation.propertyName] = {
                 args: createArgs(schemaInfo, relation.type),
-                type,
+                type: relation.isNullable ? type : GraphQLNonNull(type),
+                async resolve(source: any) {
+                  return resolveSingleField(source, relation.propertyName, entity)
+                }
               }
             }
           }
