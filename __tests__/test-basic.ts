@@ -23,13 +23,13 @@ describe('Basic', () => {
 
   it('handles basic query', async () => {
     const result = await query(`{
-  users {
-    id
-    name
-    age
+      users {
+        id
+        name
+        age
         type
-  }
-}`)
+      }
+    }`)
 
     expect(result.data).toMatchObject({
       users: [
@@ -45,15 +45,15 @@ describe('Basic', () => {
 
   it('resolves 1:n query', async () => {
     const result = await query(`{
-  users {
-    id
-    posts {
-      id
-      title
-      isPublic
+      users {
+        id
+        posts {
+          id
+          title
+          isPublic
           createdAt
-  }
-}
+        }
+      }
     }`)
 
     const postCreatedAtString = result.data!.users[0].posts[0].createdAt
@@ -78,21 +78,20 @@ describe('Basic', () => {
   })
 
   it('resolves recursive query', async () => {
-    const result = await query(`
-query {
-  users {
-    id
-    posts {
-      id
-      user {
+    const result = await query(`{
+      users {
         id
         posts {
-          title
+          id
+          user {
+            id
+            posts {
+              title
+            }
+          }
         }
       }
-    }
-  }
-}`)
+    }`)
 
     expect(result.data).toMatchObject({
       users: [
