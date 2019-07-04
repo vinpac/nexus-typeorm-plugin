@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv'
 import { graphql, GraphQLSchema } from 'graphql'
 import { Connection, createConnection, getConnection } from 'typeorm'
 
+import { getTestSchema } from '__tests__/schema'
 import { entities } from '__tests__/entities'
 
 let conn: Connection | undefined
@@ -24,9 +25,7 @@ export function setupTest() {
     }
 
     if (!schema) {
-      schema = buildExecutableSchema({
-        entities,
-      })
+      schema = getTestSchema()
     }
   })
 
