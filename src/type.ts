@@ -1,6 +1,8 @@
 import * as TypeORM from 'typeorm'
 import { GraphQLString, GraphQLInt, GraphQLOutputType, GraphQLInputType, GraphQLBoolean } from 'graphql'
 
+import { GraphQLCustomDate } from './scalars'
+
 function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
   if (columnType === String) {
     return GraphQLString
@@ -8,6 +10,8 @@ function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
     return GraphQLInt
   } else if (columnType === Boolean) {
     return GraphQLBoolean
+  } else if (columnType === 'timestamp') {
+    return GraphQLCustomDate
   }
 }
 
