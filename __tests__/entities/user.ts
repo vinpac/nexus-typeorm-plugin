@@ -72,7 +72,7 @@ export class User {
   @Column()
   public age: number
 
-  @Column({ enum: UserType, type: 'enum', default: UserType.NORMAL  })
+  @Column({ enum: UserType, type: 'enum', default: UserType.NORMAL })
   public type: UserType
 
   @OneToMany(() => Post, post => post.user)
