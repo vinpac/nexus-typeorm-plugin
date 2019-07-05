@@ -28,6 +28,7 @@ describe('Basic', () => {
         name
         age
         type
+        reversedName
       }
     }`)
 
@@ -38,6 +39,7 @@ describe('Basic', () => {
           id: expect.any(Number),
           name: 'Jeong',
           type: UserType.NORMAL,
+          reversedName: 'gnoeJ',
         },
       ],
     })

@@ -1,5 +1,5 @@
 import { Column, OneToMany, PrimaryGeneratedColumn, getRepository } from 'typeorm'
-import { GraphQLInt } from 'graphql'
+import { GraphQLInt, GraphQLString } from 'graphql'
 
 import * as GraphORM from '@/index'
 
@@ -80,4 +80,12 @@ export class User {
 
   @OneToMany(() => UserLikesPost, like => like.user)
   public userLikesPosts: UserLikesPost[]
+
+  @GraphORM.Field<User, {}>({
+    type: GraphQLString,
+    resolve: source => {
+      return [...source.name].reverse().join('')
+    },
+  })
+  public reversedName: string
 }
