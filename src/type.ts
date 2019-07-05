@@ -12,7 +12,15 @@ import { GraphQLCustomDate } from './scalars'
 function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
   if (columnType === String) {
     return GraphQLString
-  } else if (columnType === Number) {
+  } else if (
+    columnType === Number ||
+    columnType === 'int' ||
+    columnType === 'int2' ||
+    columnType === 'int4' ||
+    columnType === 'int8' ||
+    columnType === 'integer' ||
+    columnType === 'unsigned big int'
+  ) {
     return GraphQLInt
   } else if (columnType === Boolean) {
     return GraphQLBoolean

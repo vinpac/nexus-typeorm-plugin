@@ -32,6 +32,7 @@ export class Post {
 
   @Column({ nullable: true })
   @GraphORM.Field({
+    nullable: false,
     addSelect(sq, _, alias) {
       sq.select('COUNT(*)', 'count')
         .from(UserLikesPost, 'userLikesPost')

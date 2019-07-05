@@ -12,6 +12,7 @@ type FieldQueryBuilder<T, C> = (
 
 export interface TypeGraphORMField<T, C> {
   propertyKey: string
+  nullable?: boolean
   addSelect: FieldQueryBuilder<T, C>
 }
 
@@ -40,6 +41,7 @@ export function getDatabaseObjectMetadata<T, C>(target: object): DatabaseObjectM
 
 export function Field<T, C>(options: {
   addSelect: FieldQueryBuilder<T, C>
+  nullable?: boolean
 }): PropertyDecorator {
   return (...args: Parameters<PropertyDecorator>): void => {
     const [target, propertyKey] = args
