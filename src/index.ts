@@ -1,4 +1,5 @@
 import * as TypeORM from 'typeorm'
+import { GraphQLFieldResolver, GraphQLOutputType } from 'graphql'
 
 import { View } from './view'
 
@@ -13,7 +14,9 @@ type FieldQueryBuilder<T, C> = (
 export interface TypeGraphORMField<T, C> {
   propertyKey: string
   nullable?: boolean
-  addSelect: FieldQueryBuilder<T, C>
+  resolve?: GraphQLFieldResolver<T, C>
+  type?: GraphQLOutputType
+  addSelect?: FieldQueryBuilder<T, C>
 }
 
 interface DatabaseObjectMetadata<T, C> {
@@ -40,7 +43,9 @@ export function getDatabaseObjectMetadata<T, C>(target: object): DatabaseObjectM
 }
 
 export function Field<T, C>(options: {
-  addSelect: FieldQueryBuilder<T, C>
+  addSelect?: FieldQueryBuilder<T, C>
+  resolve?: GraphQLFieldResolver<T, C>
+  type?: GraphQLOutputType
   nullable?: boolean
 }): PropertyDecorator {
   return (...args: Parameters<PropertyDecorator>): void => {
