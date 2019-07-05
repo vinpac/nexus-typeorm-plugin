@@ -60,6 +60,16 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
       fields: () => {
         const fields: GraphQLFieldConfigMap<TSource, TContext> = {}
 
+        meta.fields.forEach(field => {
+          if (field.type && field.resolve) {
+            const { type, resolve } = field
+            fields[field.propertyKey] = {
+              type,
+              resolve,
+            }
+          }
+        })
+
         typeormMetadata.columns.forEach(column => {
           const graphqlType = columnToGraphQLType(column, entity, schemaInfo)
           const isNullable = (() => {

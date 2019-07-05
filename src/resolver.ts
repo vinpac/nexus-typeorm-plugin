@@ -14,7 +14,7 @@ function addSubqueries(
   fields.forEach(field => {
     if (field.addSelect) {
       qb.addSelect(
-        sq => field.addSelect(sq, {}, alias),
+        sq => field.addSelect!(sq, {}, alias),
         `${alias}_${field.propertyKey}`,
       )
     }
