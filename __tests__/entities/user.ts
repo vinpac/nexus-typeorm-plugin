@@ -81,6 +81,24 @@ export class User {
   @OneToMany(() => UserLikesPost, like => like.user)
   public userLikesPosts: UserLikesPost[]
 
+  @Column({ nullable: true })
+  @GraphORM.Field({
+    nullable: false,
+    addSelect(sq, _, alias) {
+      sq.select('COUNT(*)', 'count')
+        .from(Post, 'postForCount')
+
+      if (process.env.TEST_DB_TYPE === 'postgres') {
+        sq.where(`"postForCount"."userId" = ${alias}.id`)
+      } else {
+        sq.where(`postForCount.userId = ${alias}.id`)
+      }
+
+      return sq
+    }
+  })
+  public numPosts?: number
+
   @GraphORM.Field<User, {}>({
     type: GraphQLString,
     resolve: source => {

@@ -29,6 +29,7 @@ describe('Basic', () => {
         age
         type
         reversedName
+        numPosts
       }
     }`)
 
@@ -40,6 +41,7 @@ describe('Basic', () => {
           name: 'Jeong',
           type: UserType.NORMAL,
           reversedName: 'gnoeJ',
+          numPosts: 1,
         },
       ],
     })
