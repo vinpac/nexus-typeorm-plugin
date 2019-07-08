@@ -1,6 +1,7 @@
-import { User } from './entities/user'
-import { Post } from './entities/post'
-import { query, setupTest, create } from './util'
+import { User } from '__tests__/entities/user'
+import { Post } from '__tests__/entities/post'
+import { query, setupTest, create } from '__tests__/util'
+import { UserLikesPost } from '__tests__/entities/user-likes-post'
 
 describe('Custom query', () => {
   setupTest()
@@ -9,7 +10,8 @@ describe('Custom query', () => {
     const userFoo = await create(User, {age: 20, name: 'foo'})
     const userBar = await create(User, {age: 30, name: 'bar'})
     await create(Post, {user: userFoo, title: 'foo post'})
-    await create(Post, {user: userBar, title: 'bar post'})
+    const postBar = await create(Post, {user: userBar, title: 'bar post'})
+    await create(UserLikesPost, {user: userFoo, post: postBar})
   }
 
   beforeEach(async () => {
@@ -25,6 +27,7 @@ describe('Custom query', () => {
           posts {
             id
             title
+            totalLikes
           }
         }
       }`
@@ -37,6 +40,7 @@ describe('Custom query', () => {
         posts: [{
           id: expect.any(Number),
           title: 'bar post',
+          totalLikes: 1,
         }],
       }
     })
