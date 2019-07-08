@@ -184,14 +184,28 @@ export async function resolveSingleField(
       })
 
       if (data && data[fieldName]) {
-        const relatedEntries: any[] = data[fieldName]
-        const targetIds: any[] = relatedEntries.map(entry => entry[idColumnName])
+        if (relation.relationType === 'many-to-one') {
+          const relatedEntry: any = data[fieldName]
 
-        return resolve({
-          entity: relation.type,
-          info,
-          where: [`${idColumnName} IN (:...ids)`, {ids: targetIds}],
-        })
+          const result = await resolve({
+            entity: relation.type,
+            info,
+            where: [`${idColumnName} = :id`, {id: relatedEntry[idColumnName]}],
+          })
+
+          if (result && result.length > 0) {
+            return result[0]
+          }
+        } else if (relation.relationType === 'one-to-many') {
+          const relatedEntries: any[] = data[fieldName]
+          const targetIds: any[] = relatedEntries.map(entry => entry[idColumnName])
+
+          return resolve({
+            entity: relation.type,
+            info,
+            where: [`${idColumnName} IN (:...ids)`, {ids: targetIds}],
+          })
+        }
       }
     }
   } else {

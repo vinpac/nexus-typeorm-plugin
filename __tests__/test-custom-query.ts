@@ -18,7 +18,7 @@ describe('Custom query', () => {
     await setupFixture()
   })
 
-  it('handles custom resolver', async () => {
+  it('handles custom resolver - one to many', async () => {
     const result = await query(`
       {
         userWithName(name: "bar") {
@@ -45,5 +45,33 @@ describe('Custom query', () => {
       }
     })
     expect(result.data!.userWithName.posts).toHaveLength(1)
+  })
+
+  it('handles custom resolver - many to one', async () => {
+    const result = await query(`
+      {
+        postWithTitle(title: "bar post") {
+          id
+          title
+          user {
+            id
+            name
+            numPosts
+          }
+        }
+      }`
+    )
+
+    expect(result.data!).toMatchObject({
+      postWithTitle: {
+        id: expect.any(Number),
+        title: 'bar post',
+        user: {
+          id: expect.any(Number),
+          name: 'bar',
+          numPosts: 1,
+        },
+      }
+    })
   })
 })
