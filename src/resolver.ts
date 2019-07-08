@@ -137,6 +137,10 @@ export async function resolve({
   addSubqueries(qb, meta.fields, typeormMetadata.name)
 
   if (ids) {
+    if (ids.length === 0) {
+      return []
+    }
+
     if (!typeormMetadata.hasMultiplePrimaryKeys) {
       const [primaryColumn] = typeormMetadata.primaryColumns
       if (primaryColumn) {

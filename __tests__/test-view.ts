@@ -73,6 +73,18 @@ describe('View', () => {
     ])
   })
 
+  it('handles case without any result', async () => {
+    const result = await query(`
+      query {
+        searchUsers(age: 100) {
+          name
+        }
+      }
+    `)
+
+    expect(result.data && result.data.searchUsers).toMatchObject([])
+  })
+
   it('handles single item query', async () => {
     const result = await query(`
       query {
