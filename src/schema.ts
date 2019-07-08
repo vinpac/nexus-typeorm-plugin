@@ -83,8 +83,8 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           if (graphqlType) {
             fields[column.propertyName] = {
               type: isNullable ? graphqlType : GraphQLNonNull(graphqlType),
-              async resolve(source: any) {
-                return resolveSingleField(source, column.propertyName, entity)
+              async resolve(source: any, _, __, info) {
+                return resolveSingleField(source, column.propertyName, entity, info)
               }
             }
           }
@@ -105,8 +105,8 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
               fields[relation.propertyName] = {
                 args: createArgs(schemaInfo, relation.type),
                 type: relation.isNullable ? type : GraphQLNonNull(type),
-                async resolve(source: any) {
-                  return resolveSingleField(source, relation.propertyName, entity)
+                async resolve(source: any, _, __, info) {
+                  return resolveSingleField(source, relation.propertyName, entity, info)
                 }
               }
             }
