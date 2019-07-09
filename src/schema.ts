@@ -70,10 +70,15 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           }
         })
 
+        function getFieldMetadata(name: string) {
+          return meta.fields.find(field => field.propertyKey === name)
+        }
+
         typeormMetadata.columns.forEach(column => {
-          const graphqlType = columnToGraphQLType(column, entity, schemaInfo)
+          const field = getFieldMetadata(column.propertyName)
+          const graphqlType = (field && field.type) || columnToGraphQLType(column, entity, schemaInfo)
+
           const isNullable = (() => {
-            const field = meta.fields.find(field => field.propertyKey === column.propertyName)
             if (field && typeof field.nullable === 'boolean') {
               return field.nullable
             }
@@ -83,8 +88,8 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           if (graphqlType) {
             fields[column.propertyName] = {
               type: isNullable ? graphqlType : GraphQLNonNull(graphqlType),
-              async resolve(source: any, _, __, info) {
-                return resolveSingleField(source, column.propertyName, entity, info)
+              async resolve(source: any, _, ctx, info) {
+                return resolveSingleField(column.propertyName, entity, source, ctx, info)
               }
             }
           }
@@ -105,8 +110,8 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
               fields[relation.propertyName] = {
                 args: createArgs(schemaInfo, relation.type),
                 type: relation.isNullable ? type : GraphQLNonNull(type),
-                async resolve(source: any, _, __, info) {
-                  return resolveSingleField(source, relation.propertyName, entity, info)
+                async resolve(source: any, _, ctx, info) {
+                  return resolveSingleField(relation.propertyName, entity, source, ctx, info)
                 }
               }
             }

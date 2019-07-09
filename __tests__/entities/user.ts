@@ -83,6 +83,7 @@ export class User {
 
   @Column({ nullable: true })
   @GraphORM.Field({
+    type: GraphQLInt,
     nullable: false,
     addSelect(sq, _, alias) {
       sq.select('COUNT(*)', 'count')

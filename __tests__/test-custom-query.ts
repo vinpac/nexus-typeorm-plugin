@@ -24,6 +24,7 @@ describe('Custom query', () => {
         userWithName(name: "bar") {
           id
           name
+          numPosts
           posts {
             id
             title

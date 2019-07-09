@@ -156,9 +156,10 @@ export async function resolve({
 }
 
 export async function resolveSingleField(
-  source: any,
   fieldName: string,
   entity: any,
+  source: any,
+  ctx: any,
   info: GraphQLResolveInfo,
 ) {
   if (fieldName in source) {
@@ -209,10 +210,23 @@ export async function resolveSingleField(
       }
     }
   } else {
-    const data: any = await conn.getRepository(entity).findOne({
-      where: source,
-    })
+    const databaseObjectMetadata = getDatabaseObjectMetadata(entity.prototype)
+    const field = databaseObjectMetadata.fields.find(_field => _field.propertyKey === fieldName)
 
-    return data && data[fieldName]
+    if (field && field.addSelect) {
+      const alias = 'SUBQUERY'
+      const targetColumnName = 'TARGET'
+      const data: any = await conn.getRepository(entity)
+        .createQueryBuilder(alias)
+        .addSelect(sq => field.addSelect!(sq, ctx, alias), targetColumnName)
+        .getRawOne()
+      return data[targetColumnName]
+    } else {
+      const data: any = await conn.getRepository(entity).findOne({
+        where: source,
+      })
+
+      return data && data[fieldName]
+    }
   }
 }
