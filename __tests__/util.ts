@@ -4,6 +4,11 @@ import { Connection, createConnection, getConnection } from 'typeorm'
 
 import { getTestSchema } from '__tests__/schema'
 import { entities } from '__tests__/entities'
+import { TestContext } from '__tests__/types'
+
+function getDefaultTestContext(): TestContext {
+  return {}
+}
 
 let conn: Connection | undefined
 export let schema: GraphQLSchema | undefined
@@ -53,13 +58,13 @@ export async function create<T>(entity: { new(): T }, content: Partial<T>): Prom
   return conn.getRepository(entity).save(newObject)
 }
 
-export async function query(queryString: string, variables?: {[key: string]: any}) {
+export async function query(queryString: string, variables?: {[key: string]: any}, context?: TestContext) {
   if (schema) {
     return graphql(
       schema,
       queryString,
       undefined,
-      undefined,
+      context || getDefaultTestContext(),
       variables,
     )
   }

@@ -17,3 +17,16 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${TEST_DB_PASSWORD}
       MYSQL_DATABASE: ${TEST_DB_NAME}
+
+  postgres:
+    image: postgres:11.3
+
+    ports:
+      - "${TEST_POSTGRES_PORT}:5432"
+
+    restart: always
+
+    environment:
+      POSTGRES_USER: ${TEST_DB_USERNAME}
+      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD}
+      POSTGRES_DB: ${TEST_DB_NAME}

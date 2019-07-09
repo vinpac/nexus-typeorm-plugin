@@ -10,11 +10,12 @@ function addSubqueries(
   qb: TypeORM.SelectQueryBuilder<any>,
   fields: TypeGraphORMField<any, any>[],
   alias: string,
+  ctx: any,
 ) {
   fields.forEach(field => {
     if (field.addSelect) {
       qb.addSelect(
-        sq => field.addSelect!(sq, {}, alias),
+        sq => field.addSelect!(sq, ctx || {}, alias),
         `${alias}_${field.propertyKey}`,
       )
     }
@@ -29,6 +30,7 @@ export async function resolve({
   skip,
   orders,
   ids,
+  ctx,
 }: {
   entity: any
   info: GraphQLResolveInfo
@@ -37,6 +39,7 @@ export async function resolve({
   take?: number
   orders?: OrderInfo[]
   ids?: any[]
+  ctx: any
 }) {
   const meta = getDatabaseObjectMetadata(entity.prototype)
   const _conn = TypeORM.getConnection()
@@ -71,7 +74,7 @@ export async function resolve({
       const joinPath = `${prevEntities.join('_')}.${lastPath}`
       const alias = `${prevEntities.join('_')}_${lastPath}`
 
-      addSubqueries(qb, relationMeta.fields, alias)
+      addSubqueries(qb, relationMeta.fields, alias, ctx)
 
       const { arguments: fieldArgs } = relation.fieldNode
 
@@ -111,7 +114,7 @@ export async function resolve({
     }
   })
 
-  addSubqueries(qb, meta.fields, typeormMetadata.name)
+  addSubqueries(qb, meta.fields, typeormMetadata.name, ctx)
 
   if (ids) {
     if (ids.length === 0) {
@@ -192,6 +195,7 @@ export async function resolveSingleField(
             entity: relation.type,
             info,
             where: [`${idColumnName} = :id`, {id: relatedEntry[idColumnName]}],
+            ctx,
           })
 
           if (result && result.length > 0) {
@@ -205,6 +209,7 @@ export async function resolveSingleField(
             entity: relation.type,
             info,
             where: [`${idColumnName} IN (:...ids)`, {ids: targetIds}],
+            ctx,
           })
         }
       }

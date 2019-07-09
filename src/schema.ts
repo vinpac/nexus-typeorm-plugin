@@ -132,7 +132,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
             type: GraphQLNonNull(GraphQLList(type)),
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
-              const [, args, , info] = _args
+              const [, args, ctx, info] = _args
 
               return resolve({
                 where: args.where ? translateWhereClause(typeormMetadata.name, args.where) : undefined,
@@ -141,6 +141,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
                 take: args.first || undefined,
                 orders: args.orderBy ? orderNamesToOrderInfos(args.orderBy) : undefined,
                 info,
+                ctx,
               })
             }
           }
@@ -168,6 +169,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
                 entity,
                 info,
                 ids,
+                ctx,
               })
 
               if ('getId' in view) {
