@@ -70,10 +70,15 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           }
         })
 
+        function getFieldMetadata(name: string) {
+          return meta.fields.find(field => field.propertyKey === name)
+        }
+
         typeormMetadata.columns.forEach(column => {
-          const graphqlType = columnToGraphQLType(column, entity, schemaInfo)
+          const field = getFieldMetadata(column.propertyName)
+          const graphqlType = (field && field.type) || columnToGraphQLType(column, entity, schemaInfo)
+
           const isNullable = (() => {
-            const field = meta.fields.find(field => field.propertyKey === column.propertyName)
             if (field && typeof field.nullable === 'boolean') {
               return field.nullable
             }
