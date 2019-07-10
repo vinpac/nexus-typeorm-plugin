@@ -109,7 +109,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           if (targetGraphQLType) {
             const type =
               relationType === 'one-to-many' ? GraphQLList(targetGraphQLType) :
-                relationType === 'many-to-one' ? targetGraphQLType :
+                (relationType === 'many-to-one' || relationType === 'one-to-one') ? targetGraphQLType :
                   undefined
 
             if (type) {
