@@ -6,7 +6,7 @@ import { UserLikesPost } from '__tests__/entities/user-likes-post'
 describe('Context', () => {
   setupTest()
 
-  it('handles OR clause', async () => {
+  it('passes context to the resolver', async () => {
     const userFoo = await create(User, {age: 20, name: 'foo'})
     const userBar = await create(User, {age: 30, name: 'bar'})
     const postFoo = await create(Post, {user: userFoo, title: 'foo post'})
