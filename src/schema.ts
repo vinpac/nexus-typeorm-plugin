@@ -55,7 +55,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
     const { name } = typeormMetadata
     const args = createArgs(schemaInfo, entity)
 
-    const type = new GraphQLObjectType({
+    const entityGraphQLType = new GraphQLObjectType({
       name,
       fields: () => {
         const fields: GraphQLFieldConfigMap<TSource, TContext> = {}
@@ -64,7 +64,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
           if (field.type && field.resolve) {
             const { type, resolve } = field
             fields[field.propertyKey] = {
-              type,
+              type: typeof type === 'string' ? schemaInfo.types[type] : type,
               resolve,
             }
           }
@@ -76,7 +76,13 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 
         typeormMetadata.columns.forEach(column => {
           const field = getFieldMetadata(column.propertyName)
-          const graphqlType = (field && field.type) || columnToGraphQLType(column, entity, schemaInfo)
+          const graphqlType =
+            (field && (
+              typeof field.type === 'string' ?
+                schemaInfo.types[field.type] :
+                field.type
+            )) ||
+            columnToGraphQLType(column, entity, schemaInfo)
 
           const isNullable = (() => {
             if (field && typeof field.nullable === 'boolean') {
@@ -122,14 +128,14 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
       }
     })
 
-    schemaInfo.types[name] = type
+    schemaInfo.types[name] = entityGraphQLType
 
     if (meta.views) {
       meta.views.forEach(view => {
         if ('isDirectView' in view) {
           rootQueryFields[view.name] = {
             args,
-            type: GraphQLNonNull(GraphQLList(type)),
+            type: GraphQLNonNull(GraphQLList(entityGraphQLType)),
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
               const [, args, ctx, info] = _args
@@ -148,7 +154,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         } else {
           rootQueryFields[view.name] = {
             args: view.args,
-            type: 'getIds' in view ? GraphQLNonNull(GraphQLList(type)) : type,
+            type: 'getIds' in view ? GraphQLNonNull(GraphQLList(entityGraphQLType)) : entityGraphQLType,
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
               const [, args, ctx, info] = _args
