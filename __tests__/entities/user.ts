@@ -107,4 +107,27 @@ export class User {
     },
   })
   public reversedName: string
+
+  @GraphORM.Field<User, {}>({
+    type: 'Post',
+    async resolve(source) {
+      const mostRecentPost = await getRepository(Post).findOne({
+        order: {
+          id: 'DESC',
+        },
+        where: {
+          user: {
+            id: source.id,
+          },
+        }
+      })
+
+      if (mostRecentPost) {
+        return {
+          id: mostRecentPost.id,
+        }
+      }
+    }
+  })
+  public mostRecentPost?: Post
 }
