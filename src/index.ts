@@ -15,7 +15,7 @@ export interface TypeGraphORMField<T, C> {
   propertyKey: string
   nullable?: boolean
   resolve?: GraphQLFieldResolver<T, C>
-  type?: GraphQLOutputType
+  type?: GraphQLOutputType | string
   addSelect?: FieldQueryBuilder<T, C>
 }
 
@@ -42,12 +42,14 @@ export function getDatabaseObjectMetadata<T, C>(target: object): DatabaseObjectM
   }
 }
 
-export function Field<T, C>(options: {
+interface FieldOptions<T, C> {
   addSelect?: FieldQueryBuilder<T, C>
   resolve?: GraphQLFieldResolver<T, C>
-  type?: GraphQLOutputType
+  type?: GraphQLOutputType | string
   nullable?: boolean
-}): PropertyDecorator {
+}
+
+export function Field<T, C>(options: FieldOptions<T, C>): PropertyDecorator {
   return (...args: Parameters<PropertyDecorator>): void => {
     const [target, propertyKey] = args
     const metadata = getDatabaseObjectMetadata<T, C>(target)
