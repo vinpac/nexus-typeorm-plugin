@@ -165,7 +165,7 @@ export async function resolveSingleField(
   ctx: any,
   info: GraphQLResolveInfo,
 ) {
-  if (fieldName in source) {
+  if (fieldName in source && source[fieldName]) {
     return source[fieldName]
   }
 
@@ -188,7 +188,7 @@ export async function resolveSingleField(
       })
 
       if (data && data[fieldName]) {
-        if (relation.relationType === 'many-to-one') {
+        if (relation.relationType === 'many-to-one' || relation.relationType === 'one-to-one') {
           const relatedEntry: any = data[fieldName]
 
           const result = await resolve({

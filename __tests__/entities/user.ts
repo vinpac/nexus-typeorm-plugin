@@ -1,10 +1,11 @@
-import { Column, OneToMany, PrimaryGeneratedColumn, getRepository } from 'typeorm'
+import { Column, OneToMany, PrimaryGeneratedColumn, getRepository, OneToOne, JoinColumn } from 'typeorm'
 import { GraphQLInt, GraphQLString } from 'graphql'
 
 import * as GraphORM from '@/index'
 
-import { Post } from './post'
-import { UserLikesPost } from './user-likes-post'
+import { Post } from '__tests__/entities/post'
+import { UserLikesPost } from '__tests__/entities/user-likes-post'
+import { Email } from '__tests__/entities/email'
 
 export enum UserType {
   ADMIN = 'ADMIN',
@@ -80,6 +81,10 @@ export class User {
 
   @OneToMany(() => UserLikesPost, like => like.user)
   public userLikesPosts: UserLikesPost[]
+
+  @OneToOne(() => Email, email => email.user, { nullable: true })
+  @JoinColumn()
+  public email?: Email
 
   @Column({ nullable: true })
   @GraphORM.Field({
