@@ -22,7 +22,11 @@ function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
     columnType === 'unsigned big int'
   ) {
     return GraphQLInt
-  } else if (columnType === Boolean) {
+  } else if (
+    columnType === Boolean ||
+    columnType === 'bool' ||
+    columnType === 'boolean'
+  ) {
     return GraphQLBoolean
   } else if (columnType === 'timestamp') {
     return GraphQLCustomDate

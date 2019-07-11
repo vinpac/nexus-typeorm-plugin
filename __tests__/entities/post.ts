@@ -19,8 +19,8 @@ export class Post {
   @Column()
   public title: string
 
-  @Column({ nullable: true })
-  public isPublic?: boolean
+  @Column({ nullable: false, default: false })
+  public isPublic: boolean
 
   @Column({ nullable: true })
   public viewCount?: number
