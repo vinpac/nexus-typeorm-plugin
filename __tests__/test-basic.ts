@@ -74,6 +74,7 @@ describe('Basic', () => {
             {
               id: expect.any(Number),
               title: 'hello',
+              isPublic: false,
             },
           ],
         },

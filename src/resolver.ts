@@ -165,7 +165,11 @@ export async function resolveSingleField(
   ctx: any,
   info: GraphQLResolveInfo,
 ) {
-  if (fieldName in source && source[fieldName]) {
+  if (
+    fieldName in source &&
+    source[fieldName] !== null &&
+    typeof source[fieldName] !== 'undefined'
+  ) {
     return source[fieldName]
   }
 
