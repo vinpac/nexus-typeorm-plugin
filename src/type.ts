@@ -1,7 +1,7 @@
 import * as TypeORM from 'typeorm'
 import {
   GraphQLString, GraphQLInt, GraphQLOutputType, GraphQLInputType, GraphQLBoolean,
-  GraphQLEnumValueConfig, GraphQLEnumType,
+  GraphQLEnumValueConfig, GraphQLEnumType, GraphQLFloat,
 } from 'graphql'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 
@@ -10,7 +10,15 @@ import { makeFirstLetterUpperCase } from './util'
 import { GraphQLCustomDate } from './scalars'
 
 function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
-  if (columnType === String) {
+  if (
+    columnType === String ||
+    columnType === 'varchar' ||
+    columnType === 'varchar2' ||
+    columnType === 'varying character' ||
+    columnType === 'char' ||
+    columnType === 'character' ||
+    columnType === 'character varying'
+  ) {
     return GraphQLString
   } else if (
     columnType === Number ||
@@ -18,17 +26,30 @@ function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
     columnType === 'int2' ||
     columnType === 'int4' ||
     columnType === 'int8' ||
+    columnType === 'int64' ||
     columnType === 'integer' ||
-    columnType === 'unsigned big int'
+    columnType === 'unsigned big int' ||
+    columnType === 'bigint'
   ) {
     return GraphQLInt
+  } else if (
+    columnType === 'float' ||
+    columnType === 'float4' ||
+    columnType === 'float8'
+  ) {
+    return GraphQLFloat
   } else if (
     columnType === Boolean ||
     columnType === 'bool' ||
     columnType === 'boolean'
   ) {
     return GraphQLBoolean
-  } else if (columnType === 'timestamp') {
+  } else if (
+    columnType === 'timestamp' ||
+    columnType === 'date' ||
+    columnType === 'datetime' ||
+    columnType === 'datetime2'
+  ) {
     return GraphQLCustomDate
   }
 }
