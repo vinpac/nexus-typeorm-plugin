@@ -25,7 +25,7 @@ export class Post {
   @Column({ nullable: true })
   public viewCount?: number
 
-  @ManyToOne(() => User, user => user.posts)
+  @ManyToOne(() => User, user => user.posts, { nullable: false })
   public user: User
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

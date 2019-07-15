@@ -108,14 +108,15 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
 
           if (targetGraphQLType) {
             const type =
-              relationType === 'one-to-many' ? GraphQLList(targetGraphQLType) :
+              relationType === 'one-to-many' ? GraphQLList(GraphQLNonNull(targetGraphQLType)) :
                 (relationType === 'many-to-one' || relationType === 'one-to-one') ? targetGraphQLType :
                   undefined
 
             if (type) {
+              const isNullable: boolean = relationType === 'one-to-many' ? false : relation.isNullable
               fields[relation.propertyName] = {
                 args: createArgs(schemaInfo, relation.type),
-                type: relation.isNullable ? type : GraphQLNonNull(type),
+                type: isNullable ? type : GraphQLNonNull(type),
                 async resolve(source: any, _, ctx, info) {
                   return resolveSingleField(relation.propertyName, entity, source, ctx, info)
                 }
@@ -135,7 +136,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         if ('isDirectView' in view) {
           rootQueryFields[view.name] = {
             args,
-            type: GraphQLNonNull(GraphQLList(entityGraphQLType)),
+            type: GraphQLNonNull(GraphQLList(GraphQLNonNull(entityGraphQLType))),
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
               const [, args, ctx, info] = _args
@@ -154,7 +155,7 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
         } else {
           rootQueryFields[view.name] = {
             args: view.args,
-            type: 'getIds' in view ? GraphQLNonNull(GraphQLList(entityGraphQLType)) : entityGraphQLType,
+            type: 'getIds' in view ? GraphQLNonNull(GraphQLList(GraphQLNonNull(entityGraphQLType))) : entityGraphQLType,
 
             async resolve(..._args: Parameters<GraphQLFieldResolver<any, any, any>>) {
               const [, args, ctx, info] = _args
