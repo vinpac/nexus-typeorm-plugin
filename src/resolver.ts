@@ -185,6 +185,7 @@ export async function resolveSingleField(
     if (relationTypeormMetadata.primaryColumns.length === 1) {
       const [primaryColumnMeta] = relationTypeormMetadata.primaryColumns
       const idColumnName = primaryColumnMeta.propertyName
+      const idColumnNameInRelation = `${relationTypeormMetadata.name}.${idColumnName}`
 
       const data: any = await conn.getRepository(entity).findOne({
         relations: [fieldName],
@@ -198,7 +199,7 @@ export async function resolveSingleField(
           const result = await resolve({
             entity: relation.type,
             info,
-            where: [`${idColumnName} = :id`, {id: relatedEntry[idColumnName]}],
+            where: [`${idColumnNameInRelation} = :id`, {id: relatedEntry[idColumnName]}],
             ctx,
           })
 
@@ -212,7 +213,7 @@ export async function resolveSingleField(
           return resolve({
             entity: relation.type,
             info,
-            where: [`${idColumnName} IN (:...ids)`, {ids: targetIds}],
+            where: [`${idColumnNameInRelation} IN (:...ids)`, {ids: targetIds}],
             ctx,
           })
         }
