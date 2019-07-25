@@ -6,6 +6,7 @@ import * as GraphORM from '@/index'
 import { Post } from '__tests__/entities/post'
 import { UserLikesPost } from '__tests__/entities/user-likes-post'
 import { Email } from '__tests__/entities/email'
+import { UserFollows } from '__tests__/entities/user-follows'
 
 export enum UserType {
   ADMIN = 'ADMIN',
@@ -78,6 +79,16 @@ export class User {
 
   @OneToMany(() => Post, post => post.user)
   public posts: Post[]
+
+  @OneToMany(() => UserFollows, follow => follow.user)
+  @GraphORM.Field<User, {}>({
+    type: 'UserFollows',
+    isList: true,
+    async resolve(source) {
+      return getRepository(UserFollows).find({ user: { id: source.id }})
+    }
+  })
+  public followees: UserFollows[]
 
   @OneToMany(() => UserLikesPost, like => like.user)
   public userLikesPosts: UserLikesPost[]
