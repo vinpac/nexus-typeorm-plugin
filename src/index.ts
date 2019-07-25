@@ -17,6 +17,7 @@ export interface TypeGraphORMField<T, C> {
   resolve?: GraphQLFieldResolver<T, C>
   type?: GraphQLOutputType | string
   addSelect?: FieldQueryBuilder<T, C>
+  isList?: boolean
 }
 
 interface DatabaseObjectMetadata<T, C> {
@@ -47,6 +48,7 @@ interface FieldOptions<T, C> {
   resolve?: GraphQLFieldResolver<T, C>
   type?: GraphQLOutputType | string
   nullable?: boolean
+  isList?: boolean
 }
 
 export function Field<T, C>(options: FieldOptions<T, C>): PropertyDecorator {

@@ -60,16 +60,6 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
       fields: () => {
         const fields: GraphQLFieldConfigMap<TSource, TContext> = {}
 
-        meta.fields.forEach(field => {
-          if (field.type && field.resolve) {
-            const { type, resolve } = field
-            fields[field.propertyKey] = {
-              type: typeof type === 'string' ? schemaInfo.types[type] : type,
-              resolve,
-            }
-          }
-        })
-
         function getFieldMetadata(name: string) {
           return meta.fields.find(field => field.propertyKey === name)
         }
@@ -121,6 +111,18 @@ export function buildExecutableSchema<TSource = any, TContext = any>({
                   return resolveSingleField(relation.propertyName, entity, source, ctx, info)
                 }
               }
+            }
+          }
+        })
+
+        meta.fields.forEach(field => {
+          if (field.type && field.resolve) {
+            const { type, resolve, isList } = field
+            const baseType = typeof type === 'string' ? schemaInfo.types[type] : type
+
+            fields[field.propertyKey] = {
+              type: isList ? GraphQLNonNull(GraphQLList(baseType)) : baseType,
+              resolve,
             }
           }
         })
