@@ -2,6 +2,7 @@ import { User } from './entities/user'
 import { Post } from './entities/post'
 import { query, setupTest, create } from './utils'
 import { translateWhereClause } from '@/args/arg-where'
+import { getConnection } from 'typeorm'
 
 describe('Where', () => {
   setupTest()
@@ -20,13 +21,18 @@ describe('Where', () => {
   })
 
   it('handles AND clause', async () => {
+    const {
+      driver: { escape },
+    } = getConnection()
     expect(
       translateWhereClause('User', {
         age: 32,
         name: 'baz',
       }),
     ).toEqual({
-      expression: `"User"."age" = :age1 AND "User"."name" = :name2`,
+      expression: `${escape('User')}.${escape('age')} = :age1 AND ${escape('User')}.${escape(
+        'name',
+      )} = :name2`,
       params: { age1: 32, name2: 'baz' },
     })
   })

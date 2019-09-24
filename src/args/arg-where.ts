@@ -104,6 +104,9 @@ export interface TranslatedWhere {
 }
 
 export function translateWhereClause(entityName: string, where: any, idx = 0): TranslatedWhere {
+  const {
+    driver: { escape },
+  } = getConnection()
   const translated: TranslatedWhere = {
     expression: '',
     params: {},
@@ -135,7 +138,7 @@ export function translateWhereClause(entityName: string, where: any, idx = 0): T
     if (translated.expression) {
       translated.expression += ' AND '
     }
-    const columnSelection = `"${entityName}"."${fieldName}"`
+    const columnSelection = `${escape(entityName)}.${escape(fieldName)}`
 
     if (operation === 'contains') {
       translated.expression += `${columnSelection} LIKE '%:${paramName}%'`
