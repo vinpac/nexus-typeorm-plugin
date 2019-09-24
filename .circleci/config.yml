@@ -34,14 +34,18 @@ jobs:
             - v1-dependencies-{{ checksum "package.json" }}
             - v1-dependencies-
 
-      - run: yarn install
+      - run:
+        name: Install dependencies
+        command: yarn install
 
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      - run: yarn lint
+      - run:
+        name: Lint
+        command: yarn lint
       - run:
         name: Run tests with Postgres
         command: yarn test
