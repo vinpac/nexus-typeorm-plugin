@@ -5,7 +5,9 @@ import { getDatabaseObjectMetadata } from './decorators'
 import { SchemaBuilder } from './schema-builder'
 
 function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
-  if (
+  if (columnType === 'uuid') {
+    return 'ID'
+  } else if (
     columnType === String ||
     columnType === 'varchar' ||
     columnType === 'varchar2' ||
@@ -78,6 +80,10 @@ export const createEntityEnumColumnTypeDefs = (
 }
 
 export function columnToGraphQLTypeDef(column: ColumnMetadata, entity: Function): string {
+  if (column.isPrimary) {
+    return 'ID'
+  }
+
   const typeName = typeORMColumnTypeToGraphQLType(column.type)
   if (!typeName) {
     throw new Error(
