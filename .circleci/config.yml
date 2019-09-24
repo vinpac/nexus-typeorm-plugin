@@ -35,8 +35,8 @@ jobs:
             - v1-dependencies-
 
       - run:
-        name: Install dependencies
-        command: yarn install
+          name: Install dependencies
+          command: yarn install
 
       - save_cache:
           paths:
@@ -44,14 +44,14 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
-        name: Lint
-        command: yarn lint
+          name: Lint
+          command: yarn lint
       - run:
-        name: Run tests with Postgres
-        command: yarn test
+          name: Run tests with Postgres
+          command: yarn test
       - run:
-        name: Run tests with Mysql
-        command: TEST_DB_TYPE=mysql TEST_DB_NAME=circle_test TEST_DB_HOST=127.0.0.1 TEST_DB_PORT=3306 yarn test
+          name: Run tests with Mysql
+          command: TEST_DB_TYPE=mysql TEST_DB_NAME=circle_test TEST_DB_HOST=127.0.0.1 TEST_DB_PORT=3306 yarn test
 
       - persist_to_workspace:
           root: .
