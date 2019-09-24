@@ -1,7 +1,7 @@
 import { User } from './entities/user'
 import { Post } from './entities/post'
 import { query, setupTest, create } from './utils'
-import { translateWhereClause } from '@/args/arg-where'
+import { translateWhereClause } from 'src/args/arg-where'
 import { getConnection } from 'typeorm'
 
 describe('Where', () => {

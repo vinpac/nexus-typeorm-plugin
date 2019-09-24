@@ -1,7 +1,7 @@
 import { SchemaBuilder } from '../schema-builder'
 import { getConnection } from 'typeorm'
 import { columnToGraphQLTypeDef, createEntityEnumColumnTypeDefs } from '../type'
-import { getEntityName } from '@/util'
+import { getEntityName } from '../util'
 
 const singleOperandOperations = ['contains']
 const numberOperandOperations = ['lt', 'lte', 'gt', 'gte']

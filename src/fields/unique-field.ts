@@ -1,11 +1,11 @@
 import { SchemaBuilder, TypeResolversMap } from '../schema-builder'
-import { getDatabaseObjectMetadata } from '@/decorators'
-import { makeFirstLetterLowerCase } from '@/util'
-import { ArgWhere, translateWhereClause, createWhereInputTypeDef } from '@/args/arg-where'
+import { getDatabaseObjectMetadata } from '../decorators'
+import { makeFirstLetterLowerCase } from '../util'
+import { ArgWhere, translateWhereClause, createWhereInputTypeDef } from '../args/arg-where'
 import { GraphQLFieldResolver } from 'graphql'
 import { createQueryBuilder } from '../query-builder'
-import { createOrderByInputTypeDef, orderNamesToOrderInfos } from '@/args/arg-order-by'
-import { ORMResolverContext } from '@/dataloader/entity-dataloader'
+import { createOrderByInputTypeDef, orderNamesToOrderInfos } from '../args/arg-order-by'
+import { ORMResolverContext } from '../dataloader/entity-dataloader'
 
 interface EntityUniqueFieldOptions {
   onType?: string

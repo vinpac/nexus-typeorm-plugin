@@ -2,7 +2,7 @@ import { Column, ManyToOne, PrimaryGeneratedColumn, OneToMany, CreateDateColumn 
 
 import { User } from 'test/entities/user'
 import { UserLikesPost } from 'test/entities/user-likes-post'
-import { GraphQLEntity } from '@/index'
+import { GraphQLEntity } from 'src/index'
 
 @GraphQLEntity()
 export class Post {

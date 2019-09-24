@@ -14,10 +14,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "lib": ["es2015"],
-    "strictPropertyInitialization": false,
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "strictPropertyInitialization": false
   },
   "exclude": ["examples", "dist"]
 }

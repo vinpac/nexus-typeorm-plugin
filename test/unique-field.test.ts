@@ -2,8 +2,8 @@ import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
 import { query, setupTest, create } from './utils'
 import { getConnection } from 'typeorm'
-import { CustomLogger } from '@/queries-counter-logger'
-import { createORMContext } from '@/dataloader/entity-dataloader'
+import { CustomLogger } from 'src/queries-counter-logger'
+import { createORMContext } from 'src/dataloader/entity-dataloader'
 
 describe('UniqueField', () => {
   setupTest()

@@ -1,7 +1,7 @@
 import { SchemaBuilder, TypeResolversMap } from '../schema-builder'
-import { getDatabaseObjectMetadata } from '@/decorators'
-import { makeFirstLetterLowerCase } from '@/util'
-import { ORMResolverContext } from '@/dataloader/entity-dataloader'
+import { getDatabaseObjectMetadata } from '../decorators'
+import { makeFirstLetterLowerCase } from '../util'
+import { ORMResolverContext } from '../dataloader/entity-dataloader'
 import { getConnection } from 'typeorm'
 
 interface RelatedEntityUniqueFieldOptions {

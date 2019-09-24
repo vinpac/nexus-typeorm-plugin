@@ -1,9 +1,9 @@
 import * as DataLoader from 'dataloader'
 import { getConnection } from 'typeorm'
-import { ArgWhere, translateWhereClause } from '@/args/arg-where'
-import { ArgOrder, orderNamesToOrderInfos } from '@/args/arg-order-by'
-import { createQueryBuilder } from '@/query-builder'
-import { getEntityName, getEntityPrimaryColumn } from '@/util'
+import { ArgWhere, translateWhereClause } from '../args/arg-where'
+import { ArgOrder, orderNamesToOrderInfos } from '../args/arg-order-by'
+import { createQueryBuilder } from '../query-builder'
+import { getEntityName, getEntityPrimaryColumn } from '../util'
 
 export const generateCacheKeyFromORMDataLoaderRequest = (req: QueryDataLoaderRequest<any>) => {
   let key = `${JSON.stringify(req.where)};${JSON.stringify(req.orderBy)}`

@@ -3,7 +3,7 @@ import { graphql, GraphQLSchema } from 'graphql'
 import { Connection, createConnection, getConnection } from 'typeorm'
 import { getTestSchema } from 'test/utils/schema-test-utils'
 import { entities } from 'test/entities'
-import { CustomLogger } from '@/queries-counter-logger'
+import { CustomLogger } from 'src/queries-counter-logger'
 
 let connection: Connection | undefined
 let logger: CustomLogger | undefined

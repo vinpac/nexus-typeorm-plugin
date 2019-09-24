@@ -1,6 +1,6 @@
 import { Column, OneToMany, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm'
 
-import { GraphQLEntity } from '@/index'
+import { GraphQLEntity } from 'src/index'
 
 import { Post } from 'test/entities/post'
 import { UserLikesPost } from 'test/entities/user-likes-post'

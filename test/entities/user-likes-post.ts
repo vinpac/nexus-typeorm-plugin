@@ -2,7 +2,7 @@ import { ManyToOne } from 'typeorm'
 
 import { User } from './user'
 import { Post } from './post'
-import { GraphQLEntity } from '@/index'
+import { GraphQLEntity } from 'src/index'
 
 @GraphQLEntity({
   tableName: 'UserLIKESpost',

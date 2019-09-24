@@ -1,6 +1,6 @@
 import * as TypeORM from 'typeorm'
 import { SchemaBuilder } from '../schema-builder'
-import { getEntityName } from '@/util'
+import { getEntityName } from '../util'
 
 const orderTypes = ['ASC', 'DESC']
 

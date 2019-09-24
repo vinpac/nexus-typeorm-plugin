@@ -1,9 +1,9 @@
 import { getConnection } from 'typeorm'
-import { SchemaBuilder } from '@/schema-builder'
-import { columnToGraphQLTypeDef, createEntityEnumColumnTypeDefs } from '@/type'
-import { getDatabaseObjectMetadata } from '@/decorators'
-import { createPaginationField } from '@/fields/pagination-field'
-import { createRelatedUniqueField } from '@/fields/related-unique-field'
+import { SchemaBuilder } from '../schema-builder'
+import { columnToGraphQLTypeDef, createEntityEnumColumnTypeDefs } from '../type'
+import { getDatabaseObjectMetadata } from '../decorators'
+import { createPaginationField } from '../fields/pagination-field'
+import { createRelatedUniqueField } from '../fields/related-unique-field'
 
 export const createEntityTypeDefs = (
   entity: Function,
