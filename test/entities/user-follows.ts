@@ -1,9 +1,8 @@
-import * as GraphORM from '@/index'
-
 import { PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm'
-import { User } from '__tests__/entities/user'
+import { User } from 'test/entities/user'
+import { GraphQLEntity } from '@/index'
 
-@GraphORM.DatabaseObjectType()
+@GraphQLEntity()
 export class UserFollows {
   @PrimaryGeneratedColumn()
   public id: number

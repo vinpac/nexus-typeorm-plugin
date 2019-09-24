@@ -1,6 +1,7 @@
 import { GraphQLResolveInfo, NameNode, SelectionNode, FieldNode, ValueNode } from 'graphql'
 import { getConnection } from 'typeorm'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
+import { getDatabaseObjectMetadata } from './decorators'
 
 export interface Relation {
   relationPath: string
@@ -8,10 +9,7 @@ export interface Relation {
   type: string | Function
 }
 
-function _getRelationsForFieldNode<T>(
-  rootType: new () => T,
-  fieldNode: FieldNode,
-): Relation[] {
+function _getRelationsForFieldNode<T>(rootType: new () => T, fieldNode: FieldNode): Relation[] {
   const { selectionSet } = fieldNode
   const results: Relation[] = []
 
@@ -24,9 +22,7 @@ function _getRelationsForFieldNode<T>(
     selectionSet.selections.forEach((selection: SelectionNode) => {
       if ('name' in selection) {
         const name: NameNode = selection.name
-        const targetRelation = relations.find(relation =>
-          relation.propertyPath === name.value
-        )
+        const targetRelation = relations.find(relation => relation.propertyPath === name.value)
 
         if (targetRelation) {
           if (selection.kind === 'Field') {
@@ -37,13 +33,10 @@ function _getRelationsForFieldNode<T>(
             })
 
             if ('selectionSet' in selection && selection.selectionSet) {
-              const subselections = _getRelationsForFieldNode(
-                targetRelation.type as any,
-                selection,
-              )
+              const subselections = _getRelationsForFieldNode(targetRelation.type as any, selection)
 
-              subselections.forEach(
-                subselection => results.push({
+              subselections.forEach(subselection =>
+                results.push({
                   relationPath: `${targetRelation.propertyPath}.${subselection.relationPath}`,
                   fieldNode: subselection.fieldNode,
                   type: subselection.type,
@@ -64,10 +57,7 @@ export function getRelationsForQuery<T>(
   info: GraphQLResolveInfo,
 ): Relation[] {
   return info.fieldNodes.reduce<Relation[]>((relations, fieldNode) => {
-    return relations.concat(_getRelationsForFieldNode(
-      rootType,
-      fieldNode,
-    ))
+    return relations.concat(_getRelationsForFieldNode(rootType, fieldNode))
   }, [])
 }
 
@@ -83,7 +73,7 @@ export function graphQLObjectValueToObject(value: ValueNode) {
   } else if (value.kind === 'NullValue') {
     return null
   } else if (value.kind === 'ObjectValue') {
-    return value.fields.reduce<{[key: string]: any}>((values, field) => {
+    return value.fields.reduce<{ [key: string]: any }>((values, field) => {
       values[field.name.value] = graphQLObjectValueToObject(field.value)
       return values
     }, {})
@@ -127,7 +117,25 @@ export function orderItemsByPrimaryColumns<T>(
 }
 
 export function makeFirstLetterUpperCase(s: string): string {
-  return typeof s === 'string' && s.length ?
-    (s[0].toUpperCase() + s.substr(1)) :
-    s
+  return typeof s === 'string' && s.length ? s[0].toUpperCase() + s.substr(1) : s
+}
+
+export function makeFirstLetterLowerCase(s: string): string {
+  return typeof s === 'string' && s.length ? s[0].toLowerCase() + s.substr(1) : s
+}
+
+export const gql = (templateStringArray: TemplateStringsArray) => {
+  return templateStringArray[0]
+}
+
+export const getEntityName = (entity: Function) => getDatabaseObjectMetadata(entity).name
+
+export const getEntityPrimaryColumn = (entity: Function) => {
+  const primaryColumn = getConnection().getMetadata(entity).primaryColumns[0]
+
+  if (!primaryColumn) {
+    throw new Error(`Entity ${entity.name} is missing a primary column`)
+  }
+
+  return primaryColumn
 }

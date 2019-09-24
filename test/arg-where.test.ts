@@ -1,21 +1,34 @@
 import { User } from './entities/user'
 import { Post } from './entities/post'
-import { query, setupTest, create } from './util'
+import { query, setupTest, create } from './lib/test-utils'
+import { translateWhereClause } from '@/args/arg-where'
 
 describe('Where', () => {
   setupTest()
 
   async function setupFixture() {
-    const userFoo = await create(User, {age: 20, name: 'foo'})
-    const userBar = await create(User, {age: 30, name: 'bar'})
-    await create(User, {age: 40, name: 'baz'})
-    await create(User, {age: 50, name: 'quz'})
-    await create(Post, {user: userFoo, title: 'foo post'})
-    await create(Post, {user: userBar, title: 'bar post'})
+    const userFoo = await create(User, { age: 20, name: 'foo' })
+    const userBar = await create(User, { age: 30, name: 'bar' })
+    await create(User, { age: 40, name: 'baz' })
+    await create(User, { age: 50, name: 'quz' })
+    await create(Post, { user: userFoo, title: 'foo post' })
+    await create(Post, { user: userBar, title: 'bar post' })
   }
 
   beforeEach(async () => {
     await setupFixture()
+  })
+
+  it('handles AND clause', async () => {
+    expect(
+      translateWhereClause('User', {
+        age: 32,
+        name: 'baz',
+      }),
+    ).toEqual({
+      expression: `\`User\`.\`age\` = :age1 AND \`User\`.\`name\` = :name2`,
+      params: { age1: 32, name2: 'baz' },
+    })
   })
 
   it('handles OR clause', async () => {
@@ -38,9 +51,9 @@ describe('Where', () => {
           name
           age
         }
-      }`
-    )
+      }`)
 
+    expect(result.errors).toEqual(undefined)
     expect(result.data!.users).toHaveLength(3)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
@@ -58,7 +71,7 @@ describe('Where', () => {
           age: 50,
           id: expect.any(Number),
           name: 'quz',
-        }
+        },
       ]),
     })
   })
@@ -74,8 +87,7 @@ describe('Where', () => {
           name
           age
         }
-      }`
-    )
+      }`)
 
     expect(result.data).toMatchObject({
       users: [
@@ -83,13 +95,14 @@ describe('Where', () => {
           age: 40,
           id: expect.any(Number),
           name: 'baz',
-        }
+        },
       ],
     })
   })
 
   it('handles NOT operation', async () => {
-    const result = await query(`
+    const result = await query(
+      `
       query UsersExceptSomeAges($first: Int, $second: Int) {
         users(where: {
           NOT: {
@@ -103,10 +116,12 @@ describe('Where', () => {
           age
         }
       }
-    `, {
-      first: 30,
-      second: 40,
-    })
+    `,
+      {
+        first: 30,
+        second: 40,
+      },
+    )
 
     expect(result.data!.users).toHaveLength(2)
     expect(result.data).toMatchObject({
@@ -149,15 +164,15 @@ describe('Where', () => {
             {
               id: expect.any(Number),
               title: 'foo post',
-            }
-          ]
+            },
+          ],
         },
         {
           id: expect.any(Number),
           name: 'bar',
-          posts: []
-        }
-      ])
+          posts: [],
+        },
+      ]),
     })
   })
 })

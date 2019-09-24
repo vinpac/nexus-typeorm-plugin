@@ -1,6 +1,6 @@
 import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
-import { query, setupTest, create } from './util'
+import { query, setupTest, create } from './lib/test-utils'
 
 describe('Basic', () => {
   setupTest()
@@ -28,8 +28,6 @@ describe('Basic', () => {
         name
         age
         type
-        reversedName
-        numPosts
       }
     }`)
 
@@ -40,8 +38,6 @@ describe('Basic', () => {
           id: expect.any(Number),
           name: 'Jeong',
           type: UserType.NORMAL,
-          reversedName: 'gnoeJ',
-          numPosts: 1,
         },
       ],
     })
@@ -115,8 +111,8 @@ describe('Basic', () => {
               },
             },
           ],
-        }
-      ]
+        },
+      ],
     })
   })
 })

@@ -1,10 +1,9 @@
 import { PrimaryGeneratedColumn, OneToOne, Column } from 'typeorm'
 
-import * as GraphORM from '@/index'
+import { User } from 'test/entities/user'
+import { GraphQLEntity } from '@/index'
 
-import { User } from '__tests__/entities/user'
-
-@GraphORM.DatabaseObjectType()
+@GraphQLEntity()
 export class Email {
   @PrimaryGeneratedColumn()
   public id: number

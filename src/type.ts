@@ -1,15 +1,10 @@
 import * as TypeORM from 'typeorm'
-import {
-  GraphQLString, GraphQLInt, GraphQLOutputType, GraphQLInputType, GraphQLBoolean,
-  GraphQLEnumValueConfig, GraphQLEnumType, GraphQLFloat,
-} from 'graphql'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
-
-import { SchemaInfo } from './schema'
 import { makeFirstLetterUpperCase } from './util'
-import { GraphQLCustomDate } from './scalars'
+import { getDatabaseObjectMetadata } from './decorators'
+import { SchemaBuilder } from './schema-builder'
 
-function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
+function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
   if (
     columnType === String ||
     columnType === 'varchar' ||
@@ -19,7 +14,7 @@ function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
     columnType === 'character' ||
     columnType === 'character varying'
   ) {
-    return GraphQLString
+    return 'String'
   } else if (
     columnType === Number ||
     columnType === 'int' ||
@@ -31,63 +26,63 @@ function _typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
     columnType === 'unsigned big int' ||
     columnType === 'bigint'
   ) {
-    return GraphQLInt
-  } else if (
-    columnType === 'float' ||
-    columnType === 'float4' ||
-    columnType === 'float8'
-  ) {
-    return GraphQLFloat
-  } else if (
-    columnType === Boolean ||
-    columnType === 'bool' ||
-    columnType === 'boolean'
-  ) {
-    return GraphQLBoolean
+    return 'Int'
+  } else if (columnType === 'float' || columnType === 'float4' || columnType === 'float8') {
+    return 'Float'
+  } else if (columnType === Boolean || columnType === 'bool' || columnType === 'boolean') {
+    return 'Boolean'
   } else if (
     columnType === 'timestamp' ||
     columnType === 'date' ||
     columnType === 'datetime' ||
     columnType === 'datetime2'
   ) {
-    return GraphQLCustomDate
+    return 'DateTime'
   }
 }
 
-export function typeORMColumnTypeToGraphQLOutputType(columnType: TypeORM.ColumnType): GraphQLOutputType | undefined {
-  return _typeORMColumnTypeToGraphQLType(columnType)
-}
-
-export function typeORMColumnTypeToGraphQLInputType(columnType: TypeORM.ColumnType): GraphQLInputType | undefined {
-  return _typeORMColumnTypeToGraphQLType(columnType)
-}
-
-export function columnToGraphQLType(
+export const createEntityEnumColumnTypeDefs = (
+  entity: Function,
   column: ColumnMetadata,
-  entity: any,
-  schemaInfo: SchemaInfo,
-): GraphQLOutputType | undefined {
-  if (column.type === 'enum' && column.enum) {
-    const conn = TypeORM.getConnection()
-    const typeormMetadata = conn.getMetadata(entity)
-
-    const values = column.enum.reduce<{[key: string]: GraphQLEnumValueConfig}>((prev, value) => {
-      const stringValue = value.toString()
-      prev[stringValue] = {
-        value,
-      }
-      return prev
-    }, {})
-
-    const name = `${typeormMetadata.name}${makeFirstLetterUpperCase(column.propertyName)}`
-    const enumType = new GraphQLEnumType({
-      name,
-      values,
-    })
-
-    schemaInfo.enumTypes[name] = enumType
-    return enumType
+  schemaBuilder: SchemaBuilder,
+): SchemaBuilder => {
+  if (!column.enum) {
+    throw new Error(`Column passed to ${createEntityEnumColumnTypeDefs} is not an enum`)
   }
 
-  return typeORMColumnTypeToGraphQLOutputType(column.type)
+  const { name: entityName } = getDatabaseObjectMetadata(entity)
+
+  if (schemaBuilder.meta[entityName].entityEnumColumnType[column.propertyName]) {
+    return schemaBuilder
+  }
+
+  const typeName = `${entityName}${makeFirstLetterUpperCase(column.propertyName)}`
+  return {
+    ...schemaBuilder,
+    typeDefs: `${schemaBuilder.typeDefs}
+      enum ${typeName} {
+        ${column.enum.join('\n\t\t')}
+      }
+    `,
+    meta: {
+      ...schemaBuilder.meta,
+      [entityName]: {
+        ...schemaBuilder.meta[entityName],
+        entityEnumColumnType: {
+          ...schemaBuilder.meta[entityName].entityEnumColumnType,
+          [column.propertyName]: typeName,
+        },
+      },
+    },
+  }
+}
+
+export function columnToGraphQLTypeDef(column: ColumnMetadata, entity: Function): string {
+  const typeName = typeORMColumnTypeToGraphQLType(column.type)
+  if (!typeName) {
+    throw new Error(
+      `Couldn't find a matching GraphQL Type to '${column.type}' at ${entity.name} Entity`,
+    )
+  }
+  return typeName
 }

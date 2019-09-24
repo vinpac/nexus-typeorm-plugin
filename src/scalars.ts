@@ -1,26 +1,19 @@
-// https://www.apollographql.com/docs/graphql-tools/scalars/
+import { GraphQLScalarType, Kind } from 'graphql'
 
-import { GraphQLScalarType } from 'graphql'
-import { Kind } from 'graphql/language'
-
-export const GraphQLCustomDate = new GraphQLScalarType({
-  name: 'Date',
-  description: 'Date custom scalar type',
+export const GraphQLID = new GraphQLScalarType({
+  name: 'ID',
+  description: 'Primary key',
   parseValue(value) {
-    return new Date(value)
+    return String(value)
   },
   serialize(value) {
-    if (value instanceof Date) {
-      return value.toISOString()
-    } else if (typeof value === 'number' || typeof value === 'string') {
-      return new Date(value)
-    }
-    return null
+    return value
   },
   parseLiteral(ast) {
-    if (ast.kind === Kind.INT) {
-      return new Date(ast.value)
+    if (ast.kind === Kind.STRING) {
+      return ast.value
     }
+
     return null
   },
 })

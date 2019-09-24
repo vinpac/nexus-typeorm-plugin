@@ -1,0 +1,17 @@
+{
+  "name": "type-graph-orm-basics-example",
+  "scripts": {
+    "dev": "tncc server.ts -r -w -o dist/server.js"
+  },
+  "dependencies": {
+    "apollo-server": "^2.8.1",
+    "dotenv": "^8.0.0",
+    "mysql": "^2.17.1",
+    "type-graph-orm": "^0.1.29",
+    "typeorm": "^0.2.18"
+  },
+  "devDependencies": {
+    "tncc": "^0.2.5",
+    "typescript": "^3.5.3"
+  }
+}

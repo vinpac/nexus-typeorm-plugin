@@ -1,8 +1,8 @@
 {
   "name": "type-graph-orm",
   "version": "0.1.29",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "repository": "github:JeongHoJeong/type-graph-orm",
   "author": "Jeongho Jeong <fiil12@hotmail.com>",
   "license": "MIT",
@@ -12,28 +12,56 @@
     "typeorm"
   ],
   "files": [
-    "lib"
+    "dist"
   ],
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
     "@types/graphql": "^14.2.0",
+    "@types/graphql-iso-date": "^3.3.1",
     "@types/jest": "^24.0.13",
-    "@typescript-eslint/eslint-plugin": "^1.9.0",
-    "@typescript-eslint/parser": "^1.9.0",
+    "@types/pluralize": "^0.0.29",
+    "@typescript-eslint/eslint-plugin": "^2.3.1",
+    "@typescript-eslint/parser": "^2.3.1",
+    "add": "^2.0.6",
     "dotenv": "^8.0.0",
     "eslint": "^5.16.0",
+    "eslint-config-prettier": "^6.3.0",
     "graphql": "^14.3.0",
+    "graphql-tools": "^4.0.5",
     "jest": "^24.8.0",
+    "lint-staged": "^9.3.0",
+    "merge-graphql-schemas": "^1.7.0",
     "mysql": "^2.17.1",
     "pg": "^7.11.0",
+    "prettier": "^1.18.2",
     "ts-jest": "^24.0.2",
     "typeorm": "^0.2.18",
-    "typescript": "^3.4.5"
+    "typescript": "^3.5.3"
   },
   "scripts": {
-    "lint": "eslint src/**/* __tests__/**/*",
-    "test": "TZ=UTC jest --runInBand",
+    "lint": "eslint {src,test}/**/* --no-ignore",
+    "test": "jest --runInBand",
     "build": "tsc",
-    "prepublishOnly": "tsc && rm -rf lib && mv .build/src lib && rm -rf .build"
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "tsc && rm -rf dist && mv .build/src dist && rm -rf .build"
+  },
+  "dependencies": {
+    "dataloader": "^1.4.0",
+    "graphql-iso-date": "^3.6.1",
+    "graphql-tag": "^2.10.1",
+    "pluralize": "^8.0.0",
+    "type-graph-orm": "^0.1.29"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn type-check && lint-staged"
+    }
+  },
+  "lint-staged": {
+    "{src,test}/**/*.{js,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ]
   }
 }

@@ -1,4 +1,5 @@
 .build
 .env
-lib
+dist
 node_modules
+examples/**/yarn.lock

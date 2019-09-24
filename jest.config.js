@@ -1,29 +1,22 @@
 module.exports = {
   roots: [
-    './src',   // https://github.com/facebook/jest/issues/1395#issuecomment-419490847
-    './__tests__',
+    './src', // https://github.com/facebook/jest/issues/1395#issuecomment-419490847
+    './test',
   ],
   transform: {
-    '^.+\\.tsx?$': 'ts-jest'
+    '^.+\\.tsx?$': 'ts-jest',
   },
-  testRegex: '__tests__/(.*/)?test-.*\\.ts$',
-  moduleFileExtensions: [
-    'ts',
-    'tsx',
-    'js',
-    'jsx',
-    'json',
-    'node',
-  ],
+  testMatch: ['<rootDir>/test/**/*.{spec,test}.{js,ts}'],
+  moduleFileExtensions: ['ts', 'js', 'json', 'node'],
   moduleNameMapper: {
     '@/(.*)$': '<rootDir>/src/$1',
-    '__tests__/(.*)$': '<rootDir>/__tests__/$1',
+    'test/(.*)$': '<rootDir>/test/$1',
   },
   testEnvironment: 'node',
-  testPathIgnorePatterns: ['/node_modules/', '/lib/'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   globals: {
     'ts-jest': {
-      tsConfig: './tsconfig.test.json'
-    }
-  }
+      tsConfig: './tsconfig.test.json',
+    },
+  },
 }

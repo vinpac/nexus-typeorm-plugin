@@ -1,11 +1,12 @@
 import { ManyToOne } from 'typeorm'
 
-import * as GraphORM from '@/index'
-
 import { User } from './user'
 import { Post } from './post'
+import { GraphQLEntity } from '@/index'
 
-@GraphORM.DatabaseObjectType()
+@GraphQLEntity({
+  tableName: 'UserLIKESpost',
+})
 export class UserLikesPost {
   @ManyToOne(() => User, { primary: true })
   public user: User
