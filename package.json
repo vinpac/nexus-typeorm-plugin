@@ -1,8 +1,9 @@
 {
   "name": "@typeql/core",
   "description": "Auto generated GraphQL schema from your TypeORM Models with dataloader",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.2",
   "main": "./dist/index.js",
+  "private": false,
   "typings": "./dist/index.d.ts",
   "repository": "github:vinpac/typeql",
   "author": "Vinicius Pacheco <vin175pacheco@gmail.com>",
@@ -47,7 +48,7 @@
     "test": "jest --runInBand",
     "build": "tsc -p tsconfig.build.json",
     "type-check": "tsc --noEmit",
-    "prepublishOnly": "rm -rf dist && tsc"
+    "prepublishOnly": "rm -rf dist && yarn build"
   },
   "dependencies": {
     "dataloader": "^1.4.0",
