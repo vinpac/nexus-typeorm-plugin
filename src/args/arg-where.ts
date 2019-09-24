@@ -141,7 +141,8 @@ export function translateWhereClause(entityName: string, where: any, idx = 0): T
     const columnSelection = `${escape(entityName)}.${escape(fieldName)}`
 
     if (operation === 'contains') {
-      translated.expression += `${columnSelection} LIKE '%:${paramName}%'`
+      translated.params[paramName] = `%${translated.params[paramName]}%`
+      translated.expression += `${columnSelection} LIKE :${paramName}`
       return
     }
 

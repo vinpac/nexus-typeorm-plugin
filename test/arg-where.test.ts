@@ -142,6 +142,58 @@ describe('Where', () => {
     })
   })
 
+  it('handles {fieldName}_contain operation', async () => {
+    const result = await query(
+      `query UsersNameContainsZ {
+        users(first: 10, where: { name_contains: "z" }) {
+          name
+          age
+        }
+      }`,
+    )
+
+    expect(result.errors).toBe(undefined)
+    expect(result.data!.users).toHaveLength(2)
+    expect(result.data).toMatchObject({
+      users: expect.arrayContaining([
+        {
+          name: 'baz',
+          age: 40,
+        },
+        {
+          name: 'quz',
+          age: 50,
+        },
+      ]),
+    })
+  })
+
+  it('handles NOT {fieldName}_contain operation', async () => {
+    const result = await query(
+      `query UsersNameContainsZ {
+        users(first: 10, where: { NOT: { name_contains: "z" }}) {
+          name
+          age
+        }
+      }`,
+    )
+
+    expect(result.errors).toBe(undefined)
+    expect(result.data!.users).toHaveLength(2)
+    expect(result.data).toMatchObject({
+      users: expect.arrayContaining([
+        {
+          name: 'foo',
+          age: 20,
+        },
+        {
+          name: 'bar',
+          age: 30,
+        },
+      ]),
+    })
+  })
+
   it('handles nested where', async () => {
     const result = await query(`
       query {
