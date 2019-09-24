@@ -1,8 +1,8 @@
 import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
-import { query, setupTest, create } from './lib/test-utils'
+import { query, setupTest, create } from './utils'
 import { getConnection } from 'typeorm'
-import { CustomLogger } from '@/custom-logger'
+import { CustomLogger } from '@/queries-counter-logger'
 import { createORMContext } from '@/dataloader/entity-dataloader'
 
 describe('UniqueField', () => {
@@ -62,6 +62,7 @@ describe('UniqueField', () => {
     }`)
 
     const user: User = userResult.data!.user
+    expect(user).toBeTruthy()
     const result = await query(`{
       post(where: { userId: ${user.id} }, orderBy: [createdAt_DESC]) {
         id

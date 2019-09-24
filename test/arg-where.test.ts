@@ -1,6 +1,6 @@
 import { User } from './entities/user'
 import { Post } from './entities/post'
-import { query, setupTest, create } from './lib/test-utils'
+import { query, setupTest, create } from './utils'
 import { translateWhereClause } from '@/args/arg-where'
 
 describe('Where', () => {

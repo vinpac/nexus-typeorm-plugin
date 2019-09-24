@@ -1,6 +1,6 @@
 import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
-import { query, setupTest, create } from './lib/test-utils'
+import { query, setupTest, create } from './utils'
 
 describe('Basic', () => {
   setupTest()

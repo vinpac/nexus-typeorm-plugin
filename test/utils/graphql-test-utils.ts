@@ -1,11 +1,11 @@
 import * as dotenv from 'dotenv'
 import { graphql, GraphQLSchema } from 'graphql'
 import { Connection, createConnection, getConnection } from 'typeorm'
-import { getTestSchema } from 'test/lib/schema'
+import { getTestSchema } from 'test/utils/schema-test-utils'
 import { entities } from 'test/entities'
-import { CustomLogger } from '@/custom-logger'
+import { CustomLogger } from '@/queries-counter-logger'
 
-let conn: Connection | undefined
+let connection: Connection | undefined
 let logger: CustomLogger | undefined
 export let schema: GraphQLSchema | undefined
 
@@ -17,8 +17,8 @@ export function setupTest() {
       logger = new CustomLogger()
     }
 
-    if (!conn) {
-      conn = await createConnection({
+    if (!connection) {
+      connection = await createConnection({
         database: process.env.TEST_DB_NAME,
         entities,
         host: process.env.TEST_DB_HOST,
@@ -39,14 +39,14 @@ export function setupTest() {
   })
 
   beforeEach(async () => {
-    if (conn) {
-      await conn.synchronize(true)
+    if (connection) {
+      await connection.synchronize(true)
     }
   })
 
   afterAll(async () => {
-    if (conn) {
-      await conn.close()
+    if (connection) {
+      await connection.close()
     }
   })
 }
