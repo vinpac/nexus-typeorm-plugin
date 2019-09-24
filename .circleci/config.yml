@@ -42,8 +42,12 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       - run: yarn lint
-      - run: TEST_DB_TYPE=mysql TEST_DB_NAME=circle_test TEST_DB_HOST=127.0.0.1 TEST_DB_PORT=3306 yarn test
-      - run: yarn test
+      - run:
+        name: Run tests with Postgres
+        command: yarn test
+      - run:
+        name: Run tests with Mysql
+        command: TEST_DB_TYPE=mysql TEST_DB_NAME=circle_test TEST_DB_HOST=127.0.0.1 TEST_DB_PORT=3306 yarn test
 
       - persist_to_workspace:
           root: .

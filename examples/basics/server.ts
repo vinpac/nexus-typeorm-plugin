@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 
-import TypeGraphORM, { GraphEntity } from 'type-graph-orm'
+import TypeQL, { GraphEntity } from '@typeql/core'
 import dotenv from 'dotenv'
 import { ApolloServer } from 'apollo-server'
 import { Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, createConnection } from 'typeorm'
@@ -58,7 +58,7 @@ createConnection({
   synchronize: true,
 })
   .then(() => {
-    const schema = TypeGraphORM.buildSchema()
+    const schema = TypeQL.buildSchema()
     const server = new ApolloServer({
       schema,
     })

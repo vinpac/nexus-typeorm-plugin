@@ -108,6 +108,7 @@ export function translateWhereClause(entityName: string, where: any, idx = 0): T
     expression: '',
     params: {},
   }
+
   Object.keys(where).forEach(key => {
     if (key === 'AND' || key === 'OR' || key === 'NOT') {
       const subExpressions: string[] = []
@@ -134,24 +135,25 @@ export function translateWhereClause(entityName: string, where: any, idx = 0): T
     if (translated.expression) {
       translated.expression += ' AND '
     }
+    const columnSelection = `"${entityName}"."${fieldName}"`
 
     if (operation === 'contains') {
-      translated.expression += ` \`${entityName}\`.\`${fieldName}\` LIKE '%:${paramName}%'`
+      translated.expression += `${columnSelection} LIKE '%:${paramName}%'`
       return
     }
 
     const operator = numberOperandOperationToOperator(operation)
     if (operator) {
-      translated.expression += `\`${entityName}\`.\`${fieldName}\` ${operator} :${paramName}`
+      translated.expression += `${columnSelection} ${operator} :${paramName}`
       return
     }
 
     if (operation === 'in') {
-      translated.expression += `\`${entityName}\`.\`${fieldName}\` IN (:...${paramName})`
+      translated.expression += `${columnSelection} IN (:...${paramName})`
       return
     }
 
-    translated.expression += `\`${entityName}\`.\`${fieldName}\` = :${paramName}`
+    translated.expression += `${columnSelection} = :${paramName}`
   })
 
   return translated

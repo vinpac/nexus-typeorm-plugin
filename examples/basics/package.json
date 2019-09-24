@@ -1,5 +1,5 @@
 {
-  "name": "type-graph-orm-basics-example",
+  "name": "typeql-basics-example",
   "scripts": {
     "dev": "tncc server.ts -r -w -o dist/server.js"
   },

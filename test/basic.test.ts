@@ -56,12 +56,6 @@ describe('Basic', () => {
       }
     }`)
 
-    const postCreatedAtString = result.data!.users[0].posts[0].createdAt
-    const postCreatedAt = new Date(postCreatedAtString)
-    const now = new Date()
-
-    expect(Math.abs(now.getTime() - postCreatedAt.getTime())).toBeLessThan(1000)
-
     expect(result.data).toMatchObject({
       users: [
         {

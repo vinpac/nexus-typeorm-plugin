@@ -26,7 +26,7 @@ describe('Where', () => {
         name: 'baz',
       }),
     ).toEqual({
-      expression: `\`User\`.\`age\` = :age1 AND \`User\`.\`name\` = :name2`,
+      expression: `"User"."age" = :age1 AND "User"."name" = :name2`,
       params: { age1: 32, name2: 'baz' },
     })
   })

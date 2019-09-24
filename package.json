@@ -1,15 +1,17 @@
 {
-  "name": "type-graph-orm",
-  "version": "0.1.29",
+  "name": "@typeql/core",
+  "description": "Auto generated GraphQL schema from your TypeORM Models with dataloader",
+  "version": "0.0.1-beta.1",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "repository": "github:JeongHoJeong/type-graph-orm",
-  "author": "Jeongho Jeong <fiil12@hotmail.com>",
+  "typings": "./dist/index.d.ts",
+  "repository": "github:vinpac/typeql",
+  "author": "Vinicius Pacheco <vin175pacheco@gmail.com>",
   "license": "MIT",
   "keywords": [
     "typescript",
     "graphql",
-    "typeorm"
+    "typeorm",
+    "dataloader"
   ],
   "files": [
     "dist"
@@ -41,9 +43,9 @@
   "scripts": {
     "lint": "eslint {src,test}/**/* --no-ignore",
     "test": "jest --runInBand",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "type-check": "tsc --noEmit",
-    "prepublishOnly": "tsc && rm -rf dist && mv .build/src dist && rm -rf .build"
+    "prepublishOnly": "rm -rf dist && tsc"
   },
   "dependencies": {
     "dataloader": "^1.4.0",
