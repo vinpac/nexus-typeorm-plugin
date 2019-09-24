@@ -1,23 +1,7 @@
 import * as TypeORM from 'typeorm'
-import { GraphQLFieldResolver, GraphQLOutputType } from 'graphql'
 import { EntityOptions } from 'typeorm'
 
 export const graphQLEntityMetadata = Symbol('graphQLEntityMetadata')
-
-type FieldQueryBuilder<T, C> = (
-  qb: TypeORM.SelectQueryBuilder<T>,
-  ctx: C,
-  alias: string,
-) => TypeORM.SelectQueryBuilder<T>
-
-export interface TypeGraphORMField<T, C> {
-  propertyKey: string
-  nullable?: boolean
-  resolve?: GraphQLFieldResolver<T, C>
-  type?: GraphQLOutputType | string
-  addSelect?: FieldQueryBuilder<T, C>
-  isList?: boolean
-}
 
 export interface GraphQLEntityMetadata extends Omit<GraphQLEntityOptions, 'name'> {
   name: string
