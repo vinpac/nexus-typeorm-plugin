@@ -4,7 +4,7 @@ import { columnToGraphQLTypeDef, createEntityEnumColumnTypeDefs } from '../type'
 import { getDatabaseObjectMetadata } from '../decorators'
 import { createPaginationField, ArgsPaginationGraphQLResolver } from '../fields/pagination-field'
 import { createRelatedUniqueField } from '../fields/related-unique-field'
-import { ArgWhere } from 'src/args/arg-where'
+import { ArgWhere } from '../args/arg-where'
 
 export const createEntityTypeDefs = (
   entity: Function,

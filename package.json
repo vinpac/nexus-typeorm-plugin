@@ -46,7 +46,7 @@
     "lint": "eslint {src,test}/**/* --no-ignore",
     "test": "jest --runInBand",
     "build": "tsc -p tsconfig.build.json",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit && tsc --noEmit -p tsconfig.build.json",
     "prepublishOnly": "rm -rf dist && yarn build"
   },
   "dependencies": {
