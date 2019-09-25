@@ -21,6 +21,7 @@ interface QueryListDataLoaderRequest<Model> {
   orderBy?: ArgOrder
   first?: number
   last?: number
+  join?: string[]
 }
 
 interface QueryOneDataLoaderRequest<Model> {
@@ -28,6 +29,7 @@ interface QueryOneDataLoaderRequest<Model> {
   type: 'one'
   where?: ArgWhere
   orderBy?: ArgOrder
+  join?: string[]
 }
 
 export type QueryDataLoaderRequest<Model> =
@@ -45,6 +47,7 @@ export function createQueryDataLoader(entitiesDataLoader?: EntityDataLoader<any>
               entity: req.entity,
               where: req.where && translateWhereClause(getEntityName(req.entity), req.where),
               orders: req.orderBy && orderNamesToOrderInfos(req.orderBy),
+              join: req.join,
             })
 
             const node = await queryBuilder.getOne()
@@ -67,6 +70,7 @@ export function createQueryDataLoader(entitiesDataLoader?: EntityDataLoader<any>
             orders: req.orderBy && orderNamesToOrderInfos(req.orderBy),
             first: req.first,
             last: req.last,
+            join: req.join,
           })
 
           return queryBuilder.getMany()
@@ -104,7 +108,7 @@ export const createEntityDataLoader = (): EntityDataLoader<any> => {
 }
 
 export interface ORMResolverContext {
-  orm: ORMContext
+  orm?: ORMContext
 }
 export interface ORMContext {
   entitiesDataLoader: EntityDataLoader<any>

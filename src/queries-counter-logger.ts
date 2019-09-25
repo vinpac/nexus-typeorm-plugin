@@ -30,7 +30,7 @@ interface Log {
   message: any
 }
 
-export interface CustomLoggerState {
+export interface QueriesCounterLoggerState {
   queries: QueryLog[]
   errors: QueryErrorLog[]
   slowQueries: SlowQueryLog[]
@@ -39,8 +39,8 @@ export interface CustomLoggerState {
   logs: Log[]
 }
 
-export class CustomLogger implements Logger {
-  private state: CustomLoggerState = {
+export class QueriesCounterLogger implements Logger {
+  private state: QueriesCounterLoggerState = {
     queries: [],
     errors: [],
     slowQueries: [],

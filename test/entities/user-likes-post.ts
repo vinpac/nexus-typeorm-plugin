@@ -1,4 +1,4 @@
-import { ManyToOne } from 'typeorm'
+import { ManyToOne, PrimaryGeneratedColumn, Unique, Column } from 'typeorm'
 
 import { User } from './user'
 import { Post } from './post'
@@ -7,10 +7,20 @@ import { GraphQLEntity } from 'src/index'
 @GraphQLEntity({
   tableName: 'UserLIKESpost',
 })
+@Unique(['user', 'post'])
 export class UserLikesPost {
-  @ManyToOne(() => User, { primary: true })
+  @PrimaryGeneratedColumn()
+  public id: number
+
+  @ManyToOne(() => User, user => user.posts)
   public user: User
 
-  @ManyToOne(() => Post, { primary: true })
+  @Column()
+  public userId: string
+
+  @ManyToOne(() => Post, post => post.userLikesPosts)
   public post: Post
+
+  @Column()
+  public postId: string
 }

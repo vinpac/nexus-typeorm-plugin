@@ -2,8 +2,9 @@ import { getConnection } from 'typeorm'
 import { SchemaBuilder } from '../schema-builder'
 import { columnToGraphQLTypeDef, createEntityEnumColumnTypeDefs } from '../type'
 import { getDatabaseObjectMetadata } from '../decorators'
-import { createPaginationField } from '../fields/pagination-field'
+import { createPaginationField, ArgsPaginationGraphQLResolver } from '../fields/pagination-field'
 import { createRelatedUniqueField } from '../fields/related-unique-field'
+import { ArgWhere } from 'src/args/arg-where'
 
 export const createEntityTypeDefs = (
   entity: Function,
@@ -53,13 +54,20 @@ export const createEntityTypeDefs = (
         {
           fieldName: relation.propertyName,
           onType: entityName,
-          transformArgs: (source, args) => ({
-            ...args,
-            where: {
-              ...args.where,
-              [inverseForeignKeyName]: source[entityMetadata.primaryColumns[0].propertyName],
-            },
-          }),
+          transformArgs: (source, args) => {
+            return {
+              ...args,
+              where: {
+                ...args.where,
+                [inverseForeignKeyName]: source[entityMetadata.primaryColumns[0].propertyName],
+              } as ArgWhere,
+            }
+          },
+          middleware: (source: any, args: ArgsPaginationGraphQLResolver) => {
+            if (!args.where && source[relation.propertyName]) {
+              return source[relation.propertyName]
+            }
+          },
         },
       )
     } else {

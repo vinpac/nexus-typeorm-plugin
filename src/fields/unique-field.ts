@@ -13,8 +13,9 @@ interface EntityUniqueFieldOptions {
 }
 
 export interface ArgsUniqueGraphQLResolver {
-  where: ArgWhere
-  orderBy: string[]
+  where?: ArgWhere
+  orderBy?: string[]
+  join?: string[]
 }
 
 export type UniqueResolver<TSource, TContext> = GraphQLFieldResolver<
@@ -52,6 +53,7 @@ type ${onType} {
   ${fieldName}(
     where: ${whereInputTypeName}!
     orderBy: [${orderByInputTypeName}!]
+    join: [String!]
   ): ${entityName}
 }\n\n`
   nextSchemaBuilder.resolversMap[onType] = {
@@ -63,6 +65,7 @@ type ${onType} {
           entity,
           where: args.where,
           orderBy: args.orderBy,
+          join: args.join,
         })
       }
 
@@ -70,6 +73,7 @@ type ${onType} {
         entity,
         where: args.where && translateWhereClause(entityName, args.where),
         orders: args.orderBy && orderNamesToOrderInfos(args.orderBy),
+        join: args.join,
       })
 
       return queryBuilder.getOne()

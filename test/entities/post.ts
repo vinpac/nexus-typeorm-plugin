@@ -1,4 +1,11 @@
-import { Column, ManyToOne, PrimaryGeneratedColumn, OneToMany, CreateDateColumn } from 'typeorm'
+import {
+  Column,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  CreateDateColumn,
+  JoinColumn,
+} from 'typeorm'
 
 import { User } from 'test/entities/user'
 import { UserLikesPost } from 'test/entities/user-likes-post'
@@ -34,5 +41,6 @@ export class Post {
   public liked?: string
 
   @OneToMany(() => UserLikesPost, like => like.post)
+  @JoinColumn()
   public userLikesPosts: UserLikesPost[]
 }

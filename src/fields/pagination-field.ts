@@ -8,10 +8,18 @@ import { createQueryBuilder } from '../query-builder'
 import { createOrderByInputTypeDef, orderNamesToOrderInfos } from '../args/arg-order-by'
 import { ORMResolverContext } from '../dataloader/entity-dataloader'
 
-interface EntityPaginationFieldOptions {
+interface EntityPaginationFieldOptions<MiddlewareTSource = any, MiddlewareTContext = any> {
   fieldName?: string
   onType?: string
-  transformArgs?: (source: any, args: any) => any
+  transformArgs?: (
+    source: any,
+    args: ArgsPaginationGraphQLResolver,
+  ) => ArgsPaginationGraphQLResolver
+  middleware?: GraphQLFieldResolver<
+    MiddlewareTSource,
+    MiddlewareTContext,
+    ArgsPaginationGraphQLResolver
+  >
 }
 
 export interface ArgsPaginationGraphQLResolver {
@@ -22,6 +30,7 @@ export interface ArgsPaginationGraphQLResolver {
   after?: string
   before?: string
   orderBy?: string[]
+  join?: string[]
 }
 
 export type PaginationResolver<TSource, TContext> = GraphQLFieldResolver<
@@ -47,12 +56,21 @@ export function createPaginationField<Model extends Function>(
   let nextSchemaBuilder = createWhereInputTypeDef(entity, schemaBuilder)
   nextSchemaBuilder = createOrderByInputTypeDef(entity, nextSchemaBuilder)
 
-  const resolver: PaginationResolver<any, any> = async (
+  const resolver: PaginationResolver<any, ORMResolverContext> = async (
     source: any,
-    args: ArgsPaginationGraphQLResolver,
-    ctx: ORMResolverContext,
+    args,
+    ctx,
+    info,
   ): Promise<Model[] | undefined> => {
-    const { where, orderBy, first, last } = transformArgs ? transformArgs(source, args) : args
+    if (options.middleware) {
+      const middlewareResult = options.middleware(source, args, ctx, info)
+
+      if (typeof middlewareResult !== 'undefined') {
+        return middlewareResult
+      }
+    }
+
+    const { where, orderBy, first, last, join } = transformArgs ? transformArgs(source, args) : args
     if (ctx && ctx.orm) {
       return ctx.orm.queryDataLoader.load({
         type: 'list',
@@ -61,6 +79,7 @@ export function createPaginationField<Model extends Function>(
         orderBy,
         first,
         last,
+        join,
       })
     }
 
@@ -70,9 +89,11 @@ export function createPaginationField<Model extends Function>(
       orders: orderBy && orderNamesToOrderInfos(orderBy),
       first,
       last,
+      join,
     })
 
-    return queryBuilder.getMany()
+    const result = await queryBuilder.getMany()
+    return result
   }
 
   nextSchemaBuilder.typeDefs += `
@@ -85,6 +106,7 @@ type ${onType} {
     skip: Int
     where: ${nextSchemaBuilder.meta[entityName].whereInputTypeName}
     orderBy: [${nextSchemaBuilder.meta[entityName].orderByInputTypeName}!]
+    join: [String!]
   ): [${entityName}!]!
 }\n\n`
 

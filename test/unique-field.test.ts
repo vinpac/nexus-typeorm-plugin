@@ -2,7 +2,7 @@ import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
 import { query, setupTest, create } from './utils'
 import { getConnection } from 'typeorm'
-import { CustomLogger } from 'src/queries-counter-logger'
+import { QueriesCounterLogger } from 'src/queries-counter-logger'
 import { createORMContext } from 'src/dataloader/entity-dataloader'
 
 describe('UniqueField', () => {
@@ -112,7 +112,7 @@ describe('UniqueField', () => {
   })
 
   it('should fetch deep relations', async () => {
-    const logger = getConnection().logger as CustomLogger
+    const logger = getConnection().logger as QueriesCounterLogger
     logger.reset()
     expect(logger.queries).toHaveLength(0)
     const result = await query(`{
@@ -162,7 +162,7 @@ describe('UniqueField', () => {
   })
 
   it('should fetch deep relations without dataloaders', async () => {
-    const logger = getConnection().logger as CustomLogger
+    const logger = getConnection().logger as QueriesCounterLogger
     logger.reset()
     expect(logger.queries).toHaveLength(0)
     const result = await query(
@@ -235,7 +235,7 @@ describe('UniqueField', () => {
   })
 
   it('should fetch deep relations with dataloaders', async () => {
-    const logger = getConnection().logger as CustomLogger
+    const logger = getConnection().logger as QueriesCounterLogger
     logger.reset()
     expect(logger.queries).toHaveLength(0)
     const result = await query(
@@ -312,41 +312,4 @@ describe('UniqueField', () => {
     // 2 Unique fields and 1 Pagination field
     expect(logger.queries).toHaveLength(3)
   })
-
-  // it("should fetch user's posts in one query", async () => {
-  //   const logger = getConnection().logger as CustomLogger
-  //   logger.reset()
-  //   expect(logger.queries).toHaveLength(0)
-  //   const result = await query(`{
-  //     user (where: { name: "Jeong" }, join: ['posts']) {
-  //       id
-  //       name
-  //       age
-  //       posts (first: 2) {
-  //         id
-  //         title
-  //       }
-  //     }
-  //   }`)
-
-  //   expect(result.errors).toEqual(undefined)
-  //   expect(result.data).toMatchObject({
-  //     user: {
-  //       age: 3,
-  //       id: expect.any(Number),
-  //       name: 'Jeong',
-  //       posts: [
-  //         {
-  //           id: expect.any(Number),
-  //           title: 'hello 1',
-  //         },
-  //         {
-  //           id: expect.any(Number),
-  //           title: 'hello 2',
-  //         },
-  //       ],
-  //     },
-  //   })
-  //   expect(logger.queries).toHaveLength(1)
-  // })
 })

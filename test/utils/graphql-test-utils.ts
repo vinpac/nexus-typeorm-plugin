@@ -3,10 +3,10 @@ import { graphql, GraphQLSchema } from 'graphql'
 import { Connection, createConnection, getConnection } from 'typeorm'
 import { getTestSchema } from 'test/utils/schema-test-utils'
 import { entities } from 'test/entities'
-import { CustomLogger } from 'src/queries-counter-logger'
+import { QueriesCounterLogger } from 'src/queries-counter-logger'
 
 let connection: Connection | undefined
-let logger: CustomLogger | undefined
+let logger: QueriesCounterLogger | undefined
 export let schema: GraphQLSchema | undefined
 
 export function setupTest() {
@@ -14,7 +14,7 @@ export function setupTest() {
 
   beforeAll(async () => {
     if (!logger) {
-      logger = new CustomLogger()
+      logger = new QueriesCounterLogger()
     }
 
     if (!connection) {

@@ -34,6 +34,10 @@ export function createRelatedUniqueField<Model extends Function>(
   nextSchemaBuilder.resolversMap[onType] = {
     ...nextSchemaBuilder.resolversMap[onType],
     [fieldName]: async (source: any, _: {}, ctx: ORMResolverContext) => {
+      if (!source[sourceForeignKey]) {
+        return null
+      }
+
       if (ctx && ctx.orm) {
         return ctx.orm.entitiesDataLoader.load({
           entity: relatedEntity,

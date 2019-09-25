@@ -9,11 +9,12 @@ interface FindEntitiesOptions {
   last?: number
   where?: TranslatedWhere
   orders?: OrderInfo[]
+  join?: string[]
 }
 export function createQueryBuilder<Model>(options: FindEntitiesOptions) {
   const { entity } = options
   const connection = getConnection()
-  const { name } = getDatabaseObjectMetadata(options.entity)
+  const { name: entityName } = getDatabaseObjectMetadata(options.entity)
   const queryBuilder = connection.getRepository<Model>(entity).createQueryBuilder()
 
   if (options.first !== undefined) {
@@ -26,6 +27,20 @@ export function createQueryBuilder<Model>(options: FindEntitiesOptions) {
     queryBuilder.where(options.where.expression, options.where.params)
   }
 
+  if (options.join) {
+    options.join.forEach(propertyPath => {
+      const propertyPathPieces = propertyPath.split('.')
+      queryBuilder.leftJoinAndSelect(
+        propertyPathPieces.length > 1
+          ? `${propertyPathPieces.slice(0, propertyPathPieces.length - 1).join('_')}.${
+              propertyPathPieces[propertyPathPieces.length - 1]
+            }`
+          : `${entityName}.${propertyPath}`,
+        propertyPath.replace(/\./g, '_'),
+      )
+    })
+  }
+
   const ordersWithDepth: {
     alias: string
     depth: number
@@ -33,7 +48,7 @@ export function createQueryBuilder<Model>(options: FindEntitiesOptions) {
   }[] =
     (options.orders &&
       options.orders.map(order => ({
-        alias: name,
+        alias: entityName,
         depth: 0,
         order,
       }))) ||
