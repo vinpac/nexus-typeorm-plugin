@@ -25,10 +25,6 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: Authenticate with registry
-          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
-
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
@@ -61,8 +57,9 @@ jobs:
   publish:
     executor: build-test-and-publish
     steps:
-      - attach_workspace:
-          at: ~/repo
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
 
       - run: yarn publish --access public
 
