@@ -56,6 +56,7 @@ jobs:
 
   publish:
     executor: build-test-and-publish
+    working_directory: ~/repo
     steps:
       - attach_workspace:
           at: ~/repo
