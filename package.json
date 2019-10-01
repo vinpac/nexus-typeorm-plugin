@@ -1,7 +1,7 @@
 {
   "name": "@typeql/core",
   "description": "Auto generated GraphQL schema from your TypeORM Models with dataloader",
-  "version": "0.0.1-beta.8",
+  "version": "0.0.1-beta.9",
   "main": "./dist/index.js",
   "private": false,
   "typings": "./dist/index.d.ts",

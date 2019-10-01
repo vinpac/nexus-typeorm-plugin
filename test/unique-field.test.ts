@@ -1,8 +1,6 @@
 import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
-import { query, setupTest, create, resetLogger } from './utils'
-import { getConnection } from 'typeorm'
-import { QueriesCounterLogger } from 'src/queries-counter-logger'
+import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from './utils'
 import { createORMContext } from 'src/dataloader/entity-dataloader'
 
 describe('UniqueField', () => {
@@ -113,8 +111,7 @@ describe('UniqueField', () => {
   })
 
   it('should fetch deep relations', async () => {
-    const logger = getConnection().logger as QueriesCounterLogger
-    expect(logger.queries).toHaveLength(0)
+    expect(getDatabaseQueriesCount()).toBe(0)
     const result = await query(`{
       post (where: { title: "hello 1" }) {
         id
@@ -158,12 +155,11 @@ describe('UniqueField', () => {
         },
       },
     })
-    expect(logger.queries).toHaveLength(5)
+    expect(getDatabaseQueriesCount()).toBe(5)
   })
 
   it('should fetch deep relations without dataloaders', async () => {
-    const logger = getConnection().logger as QueriesCounterLogger
-    expect(logger.queries).toHaveLength(0)
+    expect(getDatabaseQueriesCount()).toBe(0)
     const result = await query(
       `{
       post (where: { title: "hello 1" }) {
@@ -230,12 +226,11 @@ describe('UniqueField', () => {
       },
     })
     // 2 Unique fields and 1 Pagination field
-    expect(logger.queries).toHaveLength(7)
+    expect(getDatabaseQueriesCount()).toBe(7)
   })
 
   it('should fetch deep relations with dataloaders', async () => {
-    const logger = getConnection().logger as QueriesCounterLogger
-    expect(logger.queries).toHaveLength(0)
+    expect(getDatabaseQueriesCount()).toBe(0)
     const result = await query(
       `{
       post (where: { title: "hello 1" }) {
@@ -308,6 +303,6 @@ describe('UniqueField', () => {
       },
     })
     // 2 Unique fields and 1 Pagination field
-    expect(logger.queries).toHaveLength(3)
+    expect(getDatabaseQueriesCount()).toBe(3)
   })
 })

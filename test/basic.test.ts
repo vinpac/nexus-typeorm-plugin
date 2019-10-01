@@ -1,27 +1,30 @@
 import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
-import { query, setupTest, create } from './utils'
-import { getConnection } from 'typeorm'
-import { QueriesCounterLogger } from 'src/queries-counter-logger'
+import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from './utils'
+import { Email } from './entities/email'
+import { UserLikesPost } from './entities/user-likes-post'
 
 describe('Basic', () => {
   setupTest()
-
-  async function setupFixture() {
+  beforeEach(async () => {
     const user = await create<User>(User, {
       age: 3,
       name: 'Jeong',
       type: UserType.NORMAL,
     })
-    await create(Post, {
+    const post = await create(Post, {
       user,
       title: 'hello',
     })
-  }
-
-  beforeEach(async () => {
-    await setupFixture()
-    ;(getConnection().logger as QueriesCounterLogger).reset()
+    await create(UserLikesPost, {
+      user,
+      post,
+    })
+    await create(Email, {
+      user,
+      address: 'john@doe.com.br',
+    })
+    resetLogger()
   })
 
   it('handles basic query', async () => {
@@ -44,6 +47,7 @@ describe('Basic', () => {
         },
       ],
     })
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 
   it('resolves 1:n query', async () => {
@@ -111,6 +115,44 @@ describe('Basic', () => {
         },
       ],
     })
-    expect((getConnection().logger as QueriesCounterLogger).queries).toHaveLength(4)
+    expect(getDatabaseQueriesCount()).toBe(4)
+  })
+
+  it('resolves n:1', async () => {
+    const result = await query(`{
+      user (where: { name: "Jeong" }) {
+        id
+        userLikesPosts {
+          id
+        }
+      }
+    }`)
+
+    expect(result.data).toMatchObject({
+      user: {
+        id: expect.any(Number),
+        userLikesPosts: [
+          {
+            id: expect.any(Number),
+          },
+        ],
+      },
+    })
+    expect(getDatabaseQueriesCount()).toBe(2)
+  })
+
+  it('throws an error if foreign key is not defined in schema', async () => {
+    const result = await query(`{
+      users {
+        id
+        email {
+          address
+        }
+      }
+    }`)
+
+    expect(result.errors![0]).toMatchObject({
+      message: "Foreign key 'emailId' is not defined in User schema",
+    })
   })
 })

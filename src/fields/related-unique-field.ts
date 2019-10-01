@@ -12,11 +12,13 @@ interface RelatedEntityUniqueFieldOptions {
   fieldName?: string
 }
 
-export function createRelatedUniqueField<Model extends Function>(
-  relatedEntity: Model,
+export function createRelatedUniqueField<TModel extends Function, TRelatedModel extends Function>(
+  entity: TModel,
+  relatedEntity: TRelatedModel,
   schemaBuilder: SchemaBuilder,
   options: RelatedEntityUniqueFieldOptions,
 ): SchemaBuilder {
+  const { name: entityName } = getDatabaseObjectMetadata(entity)
   const { name: relatedEntityName } = getDatabaseObjectMetadata(relatedEntity)
   const {
     onType,
@@ -49,9 +51,9 @@ export function createRelatedUniqueField<Model extends Function>(
       }
 
       if (!Object.prototype.hasOwnProperty.call(source, sourceForeignKey)) {
-        if (ctx && !ctx.ignoreErrors) {
+        if (!ctx || !ctx.ignoreErrors) {
           throw new Error(
-            `Foreign key '${sourceForeignKey}' is implict in ${relatedEntityName}. Define it to`,
+            `Foreign key '${sourceForeignKey}' is not defined in ${entityName} schema`,
           )
         }
 

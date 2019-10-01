@@ -97,7 +97,7 @@ export const createEntityTypeDefs = (
 
       const relatedEntity = nextSchemaBuilder.entitiesMap[relation.inverseEntityMetadata.name]
 
-      nextSchemaBuilder = createRelatedUniqueField(relatedEntity, nextSchemaBuilder, {
+      nextSchemaBuilder = createRelatedUniqueField(entity, relatedEntity, nextSchemaBuilder, {
         onType: entityName,
         propertyName: relation.propertyName,
         fieldName: relation.propertyName,

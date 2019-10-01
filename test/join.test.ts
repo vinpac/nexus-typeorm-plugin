@@ -1,8 +1,6 @@
 import { User } from './entities/user'
 import { Post } from './entities/post'
-import { query, setupTest, create } from './utils'
-import { getConnection } from 'typeorm'
-import { QueriesCounterLogger } from 'src/queries-counter-logger'
+import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from './utils'
 import { UserLikesPost } from './entities/user-likes-post'
 
 describe('Where', () => {
@@ -21,7 +19,7 @@ describe('Where', () => {
     await create(UserLikesPost, { user: userBar, post: fooPost1 })
     await create(UserLikesPost, { user: userBaz, post: fooPost2 })
     await create(UserLikesPost, { user: userFoo, post: barPost })
-    ;(getConnection().logger as QueriesCounterLogger).reset()
+    resetLogger()
   }
 
   beforeEach(async () => {
@@ -29,8 +27,7 @@ describe('Where', () => {
   })
 
   it("should fetch user's posts in one query", async () => {
-    const logger = getConnection().logger as QueriesCounterLogger
-    expect(logger.queries).toHaveLength(0)
+    expect(getDatabaseQueriesCount()).toBe(0)
     const result = await query(`{
       user (where: { name: "foo" }, join: ["posts"]) {
         name
@@ -54,11 +51,10 @@ describe('Where', () => {
         ],
       },
     })
-    expect(logger.queries).toHaveLength(1)
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 
   it('handles join on pagination field', async () => {
-    const logger = getConnection().logger as QueriesCounterLogger
     const result = await query(`
       query {
         users(join: ["posts"]) {
@@ -72,7 +68,7 @@ describe('Where', () => {
       }
     `)
 
-    expect(logger.queries).toHaveLength(1)
+    expect(getDatabaseQueriesCount()).toBe(1)
     expect(result.errors).toBe(undefined)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
@@ -115,7 +111,6 @@ describe('Where', () => {
   })
 
   it('handles join on pagination field', async () => {
-    const logger = getConnection().logger as QueriesCounterLogger
     const result = await query(`
       query {
         users(join: ["posts"]) {
@@ -129,7 +124,7 @@ describe('Where', () => {
       }
     `)
 
-    expect(logger.queries).toHaveLength(1)
+    expect(getDatabaseQueriesCount()).toBe(1)
     expect(result.errors).toBe(undefined)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
@@ -172,7 +167,6 @@ describe('Where', () => {
   })
 
   it('handles join on nested pagination field', async () => {
-    const logger = getConnection().logger as QueriesCounterLogger
     const result = await query(`
       query {
         users(join: ["posts", "posts.userLikesPosts", "posts.userLikesPosts.user"]) {
@@ -192,7 +186,7 @@ describe('Where', () => {
     `)
 
     expect(result.errors).toBe(undefined)
-    expect(logger.queries).toHaveLength(1)
+    expect(getDatabaseQueriesCount()).toBe(1)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
