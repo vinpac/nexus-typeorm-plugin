@@ -5,6 +5,7 @@ import { getDatabaseObjectMetadata } from '../decorators'
 import { createPaginationField, ArgsPaginationGraphQLResolver } from '../fields/pagination-field'
 import { createRelatedUniqueField } from '../fields/related-unique-field'
 import { ArgWhere } from '../args/arg-where'
+import { ORMResolverContext } from '../dataloader/entity-dataloader'
 
 export const createEntityTypeDefs = (
   entity: Function,
@@ -63,9 +64,13 @@ export const createEntityTypeDefs = (
               } as ArgWhere,
             }
           },
-          middleware: (source: any, args: ArgsPaginationGraphQLResolver) => {
+          middleware: (
+            source: any,
+            args: ArgsPaginationGraphQLResolver,
+            ctx: ORMResolverContext,
+          ) => {
             if (!args.where && source[relation.propertyName]) {
-              if (args.join) {
+              if (args.join && !(ctx && ctx.ignoreErrors)) {
                 throw new Error(
                   'Join argument is ignored here because a this field was already joined',
                 )

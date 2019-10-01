@@ -17,35 +17,45 @@ export function createRelatedUniqueField<Model extends Function>(
   schemaBuilder: SchemaBuilder,
   options: RelatedEntityUniqueFieldOptions,
 ): SchemaBuilder {
-  const { name: entityName } = getDatabaseObjectMetadata(relatedEntity)
-  const { onType, sourceForeignKey, fieldName = makeFirstLetterLowerCase(entityName) } = options
+  const { name: relatedEntityName } = getDatabaseObjectMetadata(relatedEntity)
+  const {
+    onType,
+    sourceForeignKey,
+    fieldName = makeFirstLetterLowerCase(relatedEntityName),
+  } = options
 
   if (
-    schemaBuilder.meta[entityName].uniqueFieldName[onType] &&
-    schemaBuilder.meta[entityName].uniqueFieldName[onType].includes(fieldName)
+    schemaBuilder.meta[relatedEntityName].uniqueFieldName[onType] &&
+    schemaBuilder.meta[relatedEntityName].uniqueFieldName[onType].includes(fieldName)
   ) {
     return schemaBuilder
   }
   const nextSchemaBuilder = { ...schemaBuilder }
   nextSchemaBuilder.typeDefs += `
     type ${onType} {
-      ${fieldName}: ${entityName}
+      ${fieldName}: ${relatedEntityName}
     }
   `
 
   nextSchemaBuilder.resolversMap[onType] = {
     ...nextSchemaBuilder.resolversMap[onType],
     [fieldName]: async (source: any, args: ArgsUniqueGraphQLResolver, ctx: ORMResolverContext) => {
-      if (!source[sourceForeignKey]) {
-        return null
-      }
-
       if (source[options.propertyName]) {
-        if (args.join) {
+        if (args.join && !(ctx && ctx.ignoreErrors)) {
           throw new Error('Join argument is ignored here because a this field was already joined')
         }
 
         return source[options.propertyName]
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(source, sourceForeignKey)) {
+        if (ctx && !ctx.ignoreErrors) {
+          throw new Error(
+            `Foreign key '${sourceForeignKey}' is implict in ${relatedEntityName}. Define it to`,
+          )
+        }
+
+        return null
       }
 
       if (ctx && ctx.orm) {

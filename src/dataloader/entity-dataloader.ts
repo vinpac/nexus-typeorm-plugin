@@ -109,6 +109,7 @@ export const createEntityDataLoader = (): EntityDataLoader<any> => {
 
 export interface ORMResolverContext {
   orm?: ORMContext
+  ignoreErrors?: boolean
 }
 export interface ORMContext {
   entitiesDataLoader: EntityDataLoader<any>
