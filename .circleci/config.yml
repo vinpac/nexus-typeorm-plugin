@@ -38,13 +38,17 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-
       - run:
           name: Lint
           command: yarn lint
       - run:
+          name: Install JUnit coverage reporter
+          command: yarn add --dev jest-junit
+      - run:
           name: Run tests with Postgres
-          command: yarn test
+          command: yarn test --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT: 'reports/junit/js-test-results.xml'
       - run:
           name: Run tests with Mysql
           command: TEST_DB_TYPE=mysql TEST_DB_NAME=circle_test TEST_DB_HOST=127.0.0.1 TEST_DB_PORT=3306 yarn test
