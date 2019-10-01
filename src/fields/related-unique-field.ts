@@ -3,10 +3,12 @@ import { getDatabaseObjectMetadata } from '../decorators'
 import { makeFirstLetterLowerCase } from '../util'
 import { ORMResolverContext } from '../dataloader/entity-dataloader'
 import { getConnection } from 'typeorm'
+import { ArgsUniqueGraphQLResolver } from './unique-field'
 
 interface RelatedEntityUniqueFieldOptions {
   onType: string
   sourceForeignKey: string
+  propertyName: string
   fieldName?: string
 }
 
@@ -33,9 +35,17 @@ export function createRelatedUniqueField<Model extends Function>(
 
   nextSchemaBuilder.resolversMap[onType] = {
     ...nextSchemaBuilder.resolversMap[onType],
-    [fieldName]: async (source: any, _: {}, ctx: ORMResolverContext) => {
+    [fieldName]: async (source: any, args: ArgsUniqueGraphQLResolver, ctx: ORMResolverContext) => {
       if (!source[sourceForeignKey]) {
         return null
+      }
+
+      if (source[options.propertyName]) {
+        if (args.join) {
+          throw new Error('Join argument is ignored here because a this field was already joined')
+        }
+
+        return source[options.propertyName]
       }
 
       if (ctx && ctx.orm) {

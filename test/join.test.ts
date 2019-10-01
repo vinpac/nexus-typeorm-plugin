@@ -21,6 +21,7 @@ describe('Where', () => {
     await create(UserLikesPost, { user: userBar, post: fooPost1 })
     await create(UserLikesPost, { user: userBaz, post: fooPost2 })
     await create(UserLikesPost, { user: userFoo, post: barPost })
+    ;(getConnection().logger as QueriesCounterLogger).reset()
   }
 
   beforeEach(async () => {
@@ -29,7 +30,6 @@ describe('Where', () => {
 
   it("should fetch user's posts in one query", async () => {
     const logger = getConnection().logger as QueriesCounterLogger
-    logger.reset()
     expect(logger.queries).toHaveLength(0)
     const result = await query(`{
       user (where: { name: "foo" }, join: ["posts"]) {
@@ -59,7 +59,6 @@ describe('Where', () => {
 
   it('handles join on pagination field', async () => {
     const logger = getConnection().logger as QueriesCounterLogger
-    logger.reset()
     const result = await query(`
       query {
         users(join: ["posts"]) {
@@ -73,6 +72,7 @@ describe('Where', () => {
       }
     `)
 
+    expect(logger.queries).toHaveLength(1)
     expect(result.errors).toBe(undefined)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
@@ -116,7 +116,6 @@ describe('Where', () => {
 
   it('handles join on pagination field', async () => {
     const logger = getConnection().logger as QueriesCounterLogger
-    logger.reset()
     const result = await query(`
       query {
         users(join: ["posts"]) {
@@ -130,6 +129,7 @@ describe('Where', () => {
       }
     `)
 
+    expect(logger.queries).toHaveLength(1)
     expect(result.errors).toBe(undefined)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
@@ -173,10 +173,9 @@ describe('Where', () => {
 
   it('handles join on nested pagination field', async () => {
     const logger = getConnection().logger as QueriesCounterLogger
-    logger.reset()
     const result = await query(`
       query {
-        users(join: ["posts", "posts.userLikesPosts"]) {
+        users(join: ["posts", "posts.userLikesPosts", "posts.userLikesPosts.user"]) {
           id
           name
           posts {
@@ -193,6 +192,7 @@ describe('Where', () => {
     `)
 
     expect(result.errors).toBe(undefined)
+    expect(logger.queries).toHaveLength(1)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
@@ -257,5 +257,53 @@ describe('Where', () => {
         },
       ]),
     })
+  })
+
+  it('should throw an error on a ignored join on pagination field', async () => {
+    const result = await query(`
+      query {
+        users(join: ["posts", "posts.userLikesPosts"]) {
+          id
+          name
+          posts (join: ["userLikesPosts"]) {
+            id
+            title
+            userLikesPosts {
+              user {
+                name
+              }
+            }
+          }
+        }
+      }
+    `)
+
+    expect(result.errors![0].message).toBe(
+      'Join argument is ignored here because a this field was already joined',
+    )
+  })
+
+  it('should throw an error on ignored join on unique field', async () => {
+    const result = await query(`
+      query {
+        users(join: ["posts", "posts.userLikesPosts", "posts.userLikesPosts.user"]) {
+          id
+          name
+          posts {
+            id
+            title
+            userLikesPosts (join: ["user"]) {
+              user {
+                name
+              }
+            }
+          }
+        }
+      }
+    `)
+
+    expect(result.errors![0].message).toBe(
+      'Join argument is ignored here because a this field was already joined',
+    )
   })
 })

@@ -65,6 +65,12 @@ export const createEntityTypeDefs = (
           },
           middleware: (source: any, args: ArgsPaginationGraphQLResolver) => {
             if (!args.where && source[relation.propertyName]) {
+              if (args.join) {
+                throw new Error(
+                  'Join argument is ignored here because a this field was already joined',
+                )
+              }
+
               return source[relation.propertyName]
             }
           },
@@ -88,6 +94,7 @@ export const createEntityTypeDefs = (
 
       nextSchemaBuilder = createRelatedUniqueField(relatedEntity, nextSchemaBuilder, {
         onType: entityName,
+        propertyName: relation.propertyName,
         fieldName: relation.propertyName,
         sourceForeignKey: inverseForeignKeyName,
       })

@@ -1,6 +1,6 @@
 import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
-import { query, setupTest, create } from './utils'
+import { query, setupTest, create, resetLogger } from './utils'
 import { getConnection } from 'typeorm'
 import { QueriesCounterLogger } from 'src/queries-counter-logger'
 import { createORMContext } from 'src/dataloader/entity-dataloader'
@@ -31,6 +31,7 @@ describe('UniqueField', () => {
       user: user2,
       title: 'hello 3',
     })
+    resetLogger()
   })
 
   it("should fetch an user with name 'Jeong'", async () => {
@@ -113,7 +114,6 @@ describe('UniqueField', () => {
 
   it('should fetch deep relations', async () => {
     const logger = getConnection().logger as QueriesCounterLogger
-    logger.reset()
     expect(logger.queries).toHaveLength(0)
     const result = await query(`{
       post (where: { title: "hello 1" }) {
@@ -163,7 +163,6 @@ describe('UniqueField', () => {
 
   it('should fetch deep relations without dataloaders', async () => {
     const logger = getConnection().logger as QueriesCounterLogger
-    logger.reset()
     expect(logger.queries).toHaveLength(0)
     const result = await query(
       `{
@@ -236,7 +235,6 @@ describe('UniqueField', () => {
 
   it('should fetch deep relations with dataloaders', async () => {
     const logger = getConnection().logger as QueriesCounterLogger
-    logger.reset()
     expect(logger.queries).toHaveLength(0)
     const result = await query(
       `{

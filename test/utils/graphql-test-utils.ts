@@ -42,6 +42,10 @@ export function setupTest() {
     if (connection) {
       await connection.synchronize(true)
     }
+
+    if (logger) {
+      logger.reset()
+    }
   })
 
   afterAll(async () => {
@@ -49,6 +53,12 @@ export function setupTest() {
       await connection.close()
     }
   })
+}
+
+export function resetLogger() {
+  if (logger) {
+    logger.reset()
+  }
 }
 
 export async function create<T>(entity: { new (): T }, content: Partial<T>): Promise<T> {

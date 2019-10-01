@@ -1,6 +1,8 @@
 import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
 import { query, setupTest, create } from './utils'
+import { getConnection } from 'typeorm'
+import { QueriesCounterLogger } from 'src/queries-counter-logger'
 
 describe('Basic', () => {
   setupTest()
@@ -19,6 +21,7 @@ describe('Basic', () => {
 
   beforeEach(async () => {
     await setupFixture()
+    ;(getConnection().logger as QueriesCounterLogger).reset()
   })
 
   it('handles basic query', async () => {
@@ -108,5 +111,6 @@ describe('Basic', () => {
         },
       ],
     })
+    expect((getConnection().logger as QueriesCounterLogger).queries).toHaveLength(4)
   })
 })
