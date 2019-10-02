@@ -1,30 +1,32 @@
 import { SchemaBuilder, TypeResolversMap } from '../schema-builder'
 import { getDatabaseObjectMetadata } from '../decorators'
-import { makeFirstLetterLowerCase } from '../util'
+import { getEntityPrimaryColumn } from '../util'
 import { ORMResolverContext } from '../dataloader/entity-dataloader'
 import { getConnection } from 'typeorm'
 import { ArgsUniqueGraphQLResolver } from './unique-field'
+import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
+import { ArgWhere } from '../args/arg-where'
 
 interface RelatedEntityUniqueFieldOptions {
-  onType: string
-  sourceForeignKey: string
-  propertyName: string
+  onType?: string
   fieldName?: string
 }
 
-export function createRelatedUniqueField<TModel extends Function, TRelatedModel extends Function>(
-  entity: TModel,
-  relatedEntity: TRelatedModel,
+export function createRelatedUniqueField<Model extends Function>(
+  entity: Model,
+  relation: RelationMetadata,
   schemaBuilder: SchemaBuilder,
-  options: RelatedEntityUniqueFieldOptions,
+  options: RelatedEntityUniqueFieldOptions = {},
 ): SchemaBuilder {
+  const relatedEntity = schemaBuilder.entitiesMap[relation.inverseEntityMetadata.name]
   const { name: entityName } = getDatabaseObjectMetadata(entity)
   const { name: relatedEntityName } = getDatabaseObjectMetadata(relatedEntity)
-  const {
-    onType,
-    sourceForeignKey,
-    fieldName = makeFirstLetterLowerCase(relatedEntityName),
-  } = options
+  const { onType = entityName, fieldName = relation.propertyName } = options
+  const sourceForeignKey = (relation.inverseRelation &&
+  relation.inverseRelation.foreignKeys.length > 0
+    ? relation.inverseRelation.foreignKeys[0]
+    : relation.foreignKeys[0]
+  ).columnNames[0]
 
   if (
     schemaBuilder.meta[relatedEntityName].uniqueFieldName[onType] &&
@@ -39,18 +41,20 @@ export function createRelatedUniqueField<TModel extends Function, TRelatedModel 
     }
   `
 
+  const isRelationOwner = relation.isOneToOneOwner || relation.isManyToOne
+  const entityPrimaryKey = getEntityPrimaryColumn(entity)
   nextSchemaBuilder.resolversMap[onType] = {
     ...nextSchemaBuilder.resolversMap[onType],
     [fieldName]: async (source: any, args: ArgsUniqueGraphQLResolver, ctx: ORMResolverContext) => {
-      if (source[options.propertyName]) {
+      if (source[relation.propertyName]) {
         if (args.join && !(ctx && ctx.ignoreErrors)) {
           throw new Error('Join argument is ignored here because a this field was already joined')
         }
 
-        return source[options.propertyName]
+        return source[relation.propertyName]
       }
 
-      if (!Object.prototype.hasOwnProperty.call(source, sourceForeignKey)) {
+      if (isRelationOwner && !Object.prototype.hasOwnProperty.call(source, sourceForeignKey)) {
         if (!ctx || !ctx.ignoreErrors) {
           throw new Error(
             `Foreign key '${sourceForeignKey}' is not defined in ${entityName} schema`,
@@ -61,10 +65,24 @@ export function createRelatedUniqueField<TModel extends Function, TRelatedModel 
       }
 
       if (ctx && ctx.orm) {
-        return ctx.orm.entitiesDataLoader.load({
-          entity: relatedEntity,
-          value: source[sourceForeignKey],
-        })
+        return isRelationOwner
+          ? ctx.orm.entitiesDataLoader.load({
+              entity: relatedEntity,
+              value: source[sourceForeignKey],
+            })
+          : ctx.orm.queryDataLoader.load({
+              entity,
+              type: 'one',
+              where: {
+                [sourceForeignKey]: source[entityPrimaryKey.propertyName],
+              } as ArgWhere,
+            })
+      }
+
+      if (isRelationOwner) {
+        return getConnection()
+          .getRepository(relatedEntity)
+          .findOne({ [sourceForeignKey]: source[entityPrimaryKey.propertyName] })
       }
 
       return getConnection()

@@ -2,9 +2,9 @@ import { ManyToOne, PrimaryGeneratedColumn, Unique, Column } from 'typeorm'
 
 import { User } from './user'
 import { Post } from './post'
-import { GraphQLEntity } from 'src/index'
+import { TypeQLEntity } from 'src/index'
 
-@GraphQLEntity({
+@TypeQLEntity({
   tableName: 'UserLIKESpost',
 })
 @Unique(['user', 'post'])

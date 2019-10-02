@@ -1,31 +1,31 @@
 import { Logger } from 'typeorm'
 
-interface QueryLog {
+export interface QueryLog {
   query: string
   parameters?: any[]
 }
 
-interface QueryErrorLog {
+export interface QueryErrorLog {
   error: string
   query: string
   parameters?: any[]
 }
 
-interface SlowQueryLog {
+export interface SlowQueryLog {
   time: number
   query: string
   parameters?: any[]
 }
 
-interface SchemaBuildLog {
+export interface SchemaBuildLog {
   message: string
 }
 
-interface MigrationLog {
+export interface MigrationLog {
   message: string
 }
 
-interface Log {
+export interface Log {
   level: 'log' | 'info' | 'warn'
   message: any
 }

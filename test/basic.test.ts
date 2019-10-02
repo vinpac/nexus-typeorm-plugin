@@ -3,6 +3,7 @@ import { User, UserType } from './entities/user'
 import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from './utils'
 import { Email } from './entities/email'
 import { UserLikesPost } from './entities/user-likes-post'
+import { UserProfile } from './entities/user-profile'
 
 describe('Basic', () => {
   setupTest()
@@ -11,6 +12,12 @@ describe('Basic', () => {
       age: 3,
       name: 'Jeong',
       type: UserType.NORMAL,
+    })
+
+    await create<UserProfile>(UserProfile, {
+      user,
+      displayName: 'John doe',
+      slug: 'john-doe',
     })
     const post = await create(Post, {
       user,
@@ -48,6 +55,29 @@ describe('Basic', () => {
       ],
     })
     expect(getDatabaseQueriesCount()).toBe(1)
+  })
+
+  it('resolves 1:1 query', async () => {
+    const result = await query(`{
+      user (where: { name: "Jeong" }) {
+        id
+        profile {
+          displayName
+          slug
+        }
+      }
+    }`)
+
+    expect(result.errors).toEqual(undefined)
+    expect(result.data).toMatchObject({
+      user: {
+        id: expect.any(Number),
+        profile: {
+          displayName: 'John doe',
+          slug: 'john-doe',
+        },
+      },
+    })
   })
 
   it('resolves 1:n query', async () => {

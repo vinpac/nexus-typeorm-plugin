@@ -1,9 +1,9 @@
 import { PrimaryGeneratedColumn, OneToOne, Column } from 'typeorm'
 
 import { User } from 'test/entities/user'
-import { GraphQLEntity } from 'src/index'
+import { TypeQLEntity } from 'src/index'
 
-@GraphQLEntity()
+@TypeQLEntity()
 export class Email {
   @PrimaryGeneratedColumn()
   public id: number

@@ -1,8 +1,8 @@
 import { PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm'
 import { User } from 'test/entities/user'
-import { GraphQLEntity } from 'src/index'
+import { TypeQLEntity } from 'src/index'
 
-@GraphQLEntity()
+@TypeQLEntity()
 export class UserFollows {
   @PrimaryGeneratedColumn()
   public id: number

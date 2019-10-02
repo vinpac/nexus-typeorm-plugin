@@ -1,4 +1,4 @@
-import { getDecoratedEntities, GraphQLEntityMetadata } from './decorators'
+import { getDecoratedEntities, TypeQLEntityMetadata } from './decorators'
 import { GraphQLFieldResolver, GraphQLType } from 'graphql'
 import { mergeTypes } from 'merge-graphql-schemas'
 import { GraphQLID } from './scalars'
@@ -69,7 +69,7 @@ export function createSchemaBuilder(options: BuildSchemaOptions = {}): SchemaBui
       queryFieldsEnabled,
       queryUniqueField,
       typeDefsEnabled,
-    }: GraphQLEntityMetadata = getDatabaseObjectMetadata(entity)
+    }: TypeQLEntityMetadata = getDatabaseObjectMetadata(entity)
 
     if (queryFieldsEnabled === false) {
       return

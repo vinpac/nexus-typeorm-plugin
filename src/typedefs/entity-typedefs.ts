@@ -83,11 +83,6 @@ export const createEntityTypeDefs = (
       )
     } else {
       typeDefs += `\n    ${relation.propertyName}: ${fieldTypeDef}`
-      const inverseForeignKeyName = (relation.inverseRelation &&
-      relation.inverseRelation.foreignKeys.length > 0
-        ? relation.inverseRelation.foreignKeys[0]
-        : relation.foreignKeys[0]
-      ).columnNames[0]
 
       if (!entityMetadata.primaryColumns[0]) {
         // Maybe we should warn instead of throw an Error?
@@ -95,14 +90,7 @@ export const createEntityTypeDefs = (
         throw new Error(`Entity ${entityName} doesn't have a primary key`)
       }
 
-      const relatedEntity = nextSchemaBuilder.entitiesMap[relation.inverseEntityMetadata.name]
-
-      nextSchemaBuilder = createRelatedUniqueField(entity, relatedEntity, nextSchemaBuilder, {
-        onType: entityName,
-        propertyName: relation.propertyName,
-        fieldName: relation.propertyName,
-        sourceForeignKey: inverseForeignKeyName,
-      })
+      nextSchemaBuilder = createRelatedUniqueField(entity, relation, nextSchemaBuilder)
     }
   })
 

@@ -1,18 +1,19 @@
 import { Column, OneToMany, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm'
 
-import { GraphQLEntity } from 'src/index'
+import { TypeQLEntity } from 'src/index'
 
 import { Post } from 'test/entities/post'
 import { UserLikesPost } from 'test/entities/user-likes-post'
 import { Email } from 'test/entities/email'
 import { UserFollows } from 'test/entities/user-follows'
+import { UserProfile } from './user-profile'
 
 export enum UserType {
   ADMIN = 'ADMIN',
   NORMAL = 'NORMAL',
 }
 
-@GraphQLEntity()
+@TypeQLEntity()
 export class User {
   @PrimaryGeneratedColumn()
   public id: number
@@ -38,4 +39,7 @@ export class User {
   @OneToOne(() => Email, email => email.user, { nullable: true })
   @JoinColumn()
   public email?: Email
+
+  @OneToOne(() => UserProfile, profile => profile.user, { nullable: true })
+  public profile?: UserProfile
 }

@@ -1,17 +1,17 @@
 import * as TypeORM from 'typeorm'
 import { EntityOptions } from 'typeorm'
 
-export const graphQLEntityMetadata = Symbol('graphQLEntityMetadata')
+export const typeQLEntityMetadata = Symbol('typeQLEntityMetadata')
 
-export interface GraphQLEntityMetadata extends Omit<GraphQLEntityOptions, 'name'> {
+export interface TypeQLEntityMetadata extends Omit<TypeQLEntityOptions, 'name'> {
   name: string
 }
 
-export function getDatabaseObjectMetadata(target: Function): GraphQLEntityMetadata {
-  return Reflect.getMetadata(graphQLEntityMetadata, target) || { name: target.name }
+export function getDatabaseObjectMetadata(target: Function): TypeQLEntityMetadata {
+  return Reflect.getMetadata(typeQLEntityMetadata, target) || { name: target.name }
 }
 
-export interface GraphQLEntityOptions extends Omit<EntityOptions, 'name'> {
+export interface TypeQLEntityOptions extends Omit<EntityOptions, 'name'> {
   name?: string
   tableName?: string
   typeDefsEnabled?: boolean
@@ -75,16 +75,16 @@ export function getDecoratedEntities(): Function[] {
   return decoratedEntities
 }
 
-export function GraphQLEntity(prevOptions?: GraphQLEntityOptions): ClassDecorator {
+export function TypeQLEntity(prevOptions?: TypeQLEntityOptions): ClassDecorator {
   return (...args: Parameters<ClassDecorator>): void => {
     const [target] = args
     decoratedEntities.push(target)
-    const options: GraphQLEntityMetadata = {
+    const options: TypeQLEntityMetadata = {
       ...prevOptions,
       name: (prevOptions && prevOptions.name) || target.name,
     }
 
-    Reflect.defineMetadata(graphQLEntityMetadata, options, target)
+    Reflect.defineMetadata(typeQLEntityMetadata, options, target)
     TypeORM.Entity(options && options.tableName, options)(target)
   }
 }

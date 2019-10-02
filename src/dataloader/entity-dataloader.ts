@@ -6,7 +6,9 @@ import { createQueryBuilder } from '../query-builder'
 import { getEntityName, getEntityPrimaryColumn } from '../util'
 
 export const generateCacheKeyFromORMDataLoaderRequest = (req: QueryDataLoaderRequest<any>) => {
-  let key = `${JSON.stringify(req.where)};${JSON.stringify(req.orderBy)}`
+  let key = `${JSON.stringify(req.where)}${
+    req.orderBy && req.orderBy.length ? `;${JSON.stringify(req.orderBy)}` : ''
+  }`
   if (req.type === 'list') {
     key += `;${req.first || 0};${req.last || 0}`
   }
