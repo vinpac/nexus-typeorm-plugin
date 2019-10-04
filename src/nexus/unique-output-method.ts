@@ -10,7 +10,7 @@ import { getEntityTypeName } from '../util'
 import { getConnection } from 'typeorm'
 
 declare global {
-  interface NexusGenCustomOutputMethods<TypeName extends string> {
+  export interface NexusGenCustomOutputMethods<TypeName extends string> {
     uniqueField(fieldName: string, config: UniqueOutputMethodConfig): void
   }
 }

@@ -1,3 +1,7 @@
 export * from './decorators'
 export * from './schema-builder'
 export * from './dataloader/entity-dataloader'
+export * from './nexus/pagination-output-method'
+export * from './nexus/unique-output-method'
+export * from './nexus/entity-field-output-method'
+export * from './nexus/nexus-types'

@@ -8,7 +8,7 @@ import { ORMResolverContext } from '../dataloader/entity-dataloader'
 import { ArgWhere } from '../args/arg-where'
 
 declare global {
-  interface NexusGenCustomOutputMethods<TypeName extends string> {
+  export interface NexusGenCustomOutputMethods<TypeName extends string> {
     entityField(fieldName: string, config?: EntityFieldConfig): void
     entityFields(fields: string[] | '*', options?: EntityFieldsOptions): void
   }
@@ -128,7 +128,7 @@ export function createEntityFieldOutputMethod(schemaBuilder: SchemaBuilder) {
                     })
               }
 
-              if (isRelationOwner) {
+              if (!isRelationOwner) {
                 return getConnection()
                   .getRepository(relatedEntity)
                   .findOne({ [sourceForeignKey]: source[entityPrimaryKey.propertyName] })

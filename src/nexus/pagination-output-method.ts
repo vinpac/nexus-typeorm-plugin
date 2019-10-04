@@ -27,7 +27,7 @@ export type PaginationResolver<TSource, TContext> = GraphQLFieldResolver<
 >
 
 declare global {
-  interface NexusGenCustomOutputMethods<TypeName extends string> {
+  export interface NexusGenCustomOutputMethods<TypeName extends string> {
     paginationField(fieldName: string, config: PaginationOutputMethodOptions): void
   }
 }
@@ -81,8 +81,7 @@ export function createPaginationOutputMethod(schemaBuilder: SchemaBuilder) {
           join,
         })
 
-        const result = await queryBuilder.getMany()
-        return result
+        return queryBuilder.getMany()
       }
 
       t.field(fieldName, {

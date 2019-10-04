@@ -1,6 +1,6 @@
 import { getDecoratedEntities } from './decorators'
 import { SchemaBuilder } from './schema-builder'
-import { createUniqueOutputMethod } from './nexus/unique-output-method copy'
+import { createUniqueOutputMethod } from './nexus/unique-output-method'
 import { createPaginationOutputMethod } from './nexus/pagination-output-method'
 import {
   createEntityFieldOutputMethod,

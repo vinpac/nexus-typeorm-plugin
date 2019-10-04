@@ -58,9 +58,8 @@ describe('Basic', () => {
         type
       }
     }`)
-
     expect(result.data).toMatchObject({
-      users: [
+      users: expect.arrayContaining([
         {
           age: 3,
           id: expect.any(String),
@@ -79,7 +78,7 @@ describe('Basic', () => {
           name: 'Janet',
           type: UserType.NORMAL,
         },
-      ],
+      ]),
     })
     expect(getDatabaseQueriesCount()).toBe(1)
   })
@@ -115,14 +114,13 @@ describe('Basic', () => {
           id
           title
           isPublic
-          createdAt
         }
       }
     }`)
 
     expect(result.errors).toBe(undefined)
     expect(result.data).toMatchObject({
-      users: [
+      users: expect.arrayContaining([
         {
           id: expect.any(String),
           posts: [
@@ -141,7 +139,7 @@ describe('Basic', () => {
           id: expect.any(String),
           posts: [],
         },
-      ],
+      ]),
     })
   })
 
@@ -149,10 +147,12 @@ describe('Basic', () => {
     const result = await query(`{
       users {
         id
+        name
         posts {
           id
           user {
             id
+            name
             posts {
               title
             }
@@ -163,14 +163,16 @@ describe('Basic', () => {
 
     expect(result.errors).toBe(undefined)
     expect(result.data).toMatchObject({
-      users: [
+      users: expect.arrayContaining([
         {
-          id: expect.any(String),
+          id: '1',
+          name: 'Jeong',
           posts: [
             {
-              id: expect.any(String),
+              id: '1',
               user: {
-                id: expect.any(String),
+                name: 'Jeong',
+                id: '1',
                 posts: [
                   {
                     title: 'hello',
@@ -182,13 +184,15 @@ describe('Basic', () => {
         },
         {
           id: expect.any(String),
+          name: 'Janet',
           posts: [],
         },
         {
           id: expect.any(String),
+          name: 'John',
           posts: [],
         },
-      ],
+      ]),
     })
     expect(getDatabaseQueriesCount()).toBe(6)
   })
@@ -233,7 +237,7 @@ describe('Basic', () => {
 
   it('should query a custom field', async () => {
     const result = await query(`{
-      user {
+      user (where: { name: "Jeong" }) {
         id
         followers {
           id

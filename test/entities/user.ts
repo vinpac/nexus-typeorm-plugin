@@ -13,7 +13,7 @@ export enum UserType {
   NORMAL = 'NORMAL',
 }
 
-@NexusEntity()
+@NexusEntity({ tableName: 'User' })
 export class User {
   @PrimaryGeneratedColumn()
   public id: number

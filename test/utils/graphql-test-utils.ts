@@ -24,9 +24,11 @@ export function createTestSchemaSingleton() {
 
             return getConnection()
               .getRepository(User)
-              .find({
-                id: follows.map((follow: UserFollows) => follow.followerId),
+              .createQueryBuilder()
+              .where('id IN (:...ids)', {
+                ids: follows.map((follow: UserFollows) => follow.followerId),
               })
+              .getMany()
           },
         })
       },
