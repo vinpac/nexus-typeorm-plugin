@@ -1,7 +1,7 @@
 import { TranslatedWhere } from './args/arg-where'
 import { getConnection } from 'typeorm'
 import { OrderInfo } from './args/arg-order-by'
-import { getDatabaseObjectMetadata } from './decorators'
+import { getEntityTypeName } from './util'
 
 interface FindEntitiesOptions {
   entity: Function
@@ -14,7 +14,7 @@ interface FindEntitiesOptions {
 export function createQueryBuilder<Model>(options: FindEntitiesOptions) {
   const { entity } = options
   const connection = getConnection()
-  const { name: entityName } = getDatabaseObjectMetadata(options.entity)
+  const entityTypeName = getEntityTypeName(entity)
   const queryBuilder = connection.getRepository<Model>(entity).createQueryBuilder()
 
   if (options.first !== undefined) {
@@ -35,7 +35,7 @@ export function createQueryBuilder<Model>(options: FindEntitiesOptions) {
           ? `${propertyPathPieces.slice(0, propertyPathPieces.length - 1).join('_')}.${
               propertyPathPieces[propertyPathPieces.length - 1]
             }`
-          : `${entityName}.${propertyPath}`,
+          : `${entityTypeName}.${propertyPath}`,
         propertyPath.replace(/\./g, '_'),
       )
     })
@@ -48,7 +48,7 @@ export function createQueryBuilder<Model>(options: FindEntitiesOptions) {
   }[] =
     (options.orders &&
       options.orders.map(order => ({
-        alias: entityName,
+        alias: entityTypeName,
         depth: 0,
         order,
       }))) ||

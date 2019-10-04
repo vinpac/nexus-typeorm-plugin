@@ -7,7 +7,7 @@ import { Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, createConnection 
 
 dotenv.config()
 
-@GraphEntity()
+@TypeQLEntity()
 export class User {
   @PrimaryGeneratedColumn()
   public id!: number
@@ -28,7 +28,7 @@ export class User {
   }
 }
 
-@GraphEntity()
+@TypeQLEntity()
 class Post {
   @PrimaryGeneratedColumn()
   public id!: number
@@ -58,10 +58,32 @@ createConnection({
   synchronize: true,
 })
   .then(() => {
-    const schema = TypeQL.buildSchema()
-    const server = new ApolloServer({
-      schema,
-    })
+    const nexus = TypeQL.build()
+
+    nexus
+      .type('Query')
+      .field('posts', {
+        type: 'Post',
+        kind: 'pagination',
+      })
+      .field('users', {
+        type: 'User',
+        kind: 'pagination',
+      })
+      .field('usersConnection', {
+        type: 'User',
+        kind: 'connection',
+      })
+
+    nexus.type('User').field(
+      'friends',
+      paginationField({
+        itemType: 'User',
+        resolve: (source, args, info, next) => {
+          return next(source, { ...args, where: { ...args.where, id: 1 } }, info, next)
+        },
+      }),
+    )
 
     server.listen(3000)
   })

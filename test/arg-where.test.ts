@@ -65,17 +65,17 @@ describe('Where', () => {
       users: expect.arrayContaining([
         {
           age: 20,
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'foo',
         },
         {
           age: 30,
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'bar',
         },
         {
           age: 50,
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'quz',
         },
       ]),
@@ -99,7 +99,7 @@ describe('Where', () => {
       users: [
         {
           age: 40,
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'baz',
         },
       ],
@@ -129,6 +129,7 @@ describe('Where', () => {
       },
     )
 
+    expect(result.errors).toBeUndefined()
     expect(result.data!.users).toHaveLength(2)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
@@ -212,21 +213,22 @@ describe('Where', () => {
       }
     `)
 
+    expect(result.errors).toBeUndefined()
     expect(result.data!.users).toHaveLength(2)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'foo',
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'foo post',
             },
           ],
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'bar',
           posts: [],
         },

@@ -1,8 +1,8 @@
 import { PrimaryGeneratedColumn, Column, Unique, OneToOne, JoinColumn } from 'typeorm'
 import { User } from './user'
-import { TypeQLEntity } from 'src/index'
+import { NexusEntity } from 'src/index'
 
-@TypeQLEntity()
+@NexusEntity()
 @Unique('user', ['userId'])
 export class UserProfile {
   @PrimaryGeneratedColumn('uuid')

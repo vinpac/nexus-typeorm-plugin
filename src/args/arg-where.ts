@@ -1,7 +1,9 @@
-import { SchemaBuilder } from '../schema-builder'
 import { getConnection } from 'typeorm'
-import { columnToGraphQLTypeDef, createEntityEnumColumnTypeDefs } from '../type'
-import { getEntityName } from '../util'
+import { inputObjectType } from 'nexus'
+import { SchemaBuilder as NexusSchemaBuilder } from 'nexus/dist/core'
+import { SchemaBuilder } from '../schema-builder'
+import { columnToGraphQLTypeDef } from '../type'
+import { getEntityTypeName } from '../util'
 
 const singleOperandOperations = ['contains']
 const numberOperandOperations = ['lt', 'lte', 'gt', 'gte']
@@ -10,80 +12,73 @@ const multipleOperandOperations = ['in']
 export type ArgWhere = {
   AND: ArgWhere[]
   OR: ArgWhere[]
-  NOT: ArgWhere
+  NOT: ArgWhere[]
 } & {
   [key: string]: string | Array<string | boolean | number>
 }
 
-export function createWhereInputTypeDef(
-  entity: Function,
+export function createWhereInputObjectType(
+  entity: any,
+  nexusBuilder: NexusSchemaBuilder,
   schemaBuilder: SchemaBuilder,
-): SchemaBuilder {
-  const entityName = getEntityName(entity)
-  const entityMetadata = getConnection().getMetadata(entity)
+) {
+  const { columns: entityColumns } = getConnection().getMetadata(entity)
+  const typeName = `${getEntityTypeName(entity)}WhereInput`
+  nexusBuilder.addType(
+    inputObjectType({
+      name: typeName,
+      definition: t => {
+        t.field('AND', { type: typeName, list: true })
+        t.field('OR', { type: typeName, list: true })
+        t.field('NOT', { type: typeName, list: true })
+        entityColumns.forEach(column => {
+          if (column.relationMetadata && column.isVirtual) {
+            return
+          }
 
-  // If whereInputTypeName is already defined for this Model
-  // we don't need to re-create it
-  if (schemaBuilder.meta[entityName].whereInputTypeName) {
-    return schemaBuilder
-  }
+          let typeName: string | undefined
 
-  let nextSchemaBuilder = { ...schemaBuilder }
-  let whereInputTypeColumnsDef = ''
-  entityMetadata.columns.forEach(column => {
-    if (column.relationMetadata && column.isVirtual) {
-      return
-    }
+          if (column.type === 'enum') {
+            typeName = schemaBuilder.useType(nexusBuilder, {
+              type: 'enum',
+              entity,
+              column,
+            })
+          } else {
+            typeName = columnToGraphQLTypeDef(column, entity)
+          }
 
-    let typeName: string | undefined
+          if (typeName === 'String') {
+            singleOperandOperations.forEach(singleOperandOperation => {
+              t.field(`${column.propertyName}_${singleOperandOperation}`, {
+                type: typeName!,
+              })
+            })
+          } else if (typeName === 'Int' || typeName === 'Float') {
+            numberOperandOperations.forEach(numberOperandOperation => {
+              t.field(`${column.propertyName}_${numberOperandOperation}`, {
+                type: typeName!,
+              })
+            })
+          }
 
-    if (column.type === 'enum') {
-      nextSchemaBuilder = createEntityEnumColumnTypeDefs(entity, column, nextSchemaBuilder)
-      typeName = nextSchemaBuilder.meta[entityName].entityEnumColumnType[column.propertyName]
-    } else {
-      typeName = columnToGraphQLTypeDef(column, entity)
-    }
+          // Define ${arg}_${operand}: Value[]
+          multipleOperandOperations.forEach(multipleOperandOperation => {
+            t.field(`${column.propertyName}_${multipleOperandOperation}`, {
+              type: typeName!,
+              list: true,
+            })
+          })
 
-    whereInputTypeColumnsDef += `${column.propertyName}: ${typeName}\n`
-
-    if (typeName === 'String') {
-      singleOperandOperations.forEach(singleOperandOperation => {
-        whereInputTypeColumnsDef += `${column.propertyName}_${singleOperandOperation}: ${typeName}\n`
-      })
-    } else if (typeName === 'Int' || typeName === 'Float') {
-      numberOperandOperations.forEach(numberOperandOperation => {
-        whereInputTypeColumnsDef += `${column.propertyName}_${numberOperandOperation}: ${typeName}\n`
-      })
-    }
-
-    // Define ${arg}_${operand}: Value[]
-    multipleOperandOperations.forEach(multipleOperandOperation => {
-      whereInputTypeColumnsDef += `${column.propertyName}_${multipleOperandOperation}: [${typeName}!]\n`
-    })
-
-    whereInputTypeColumnsDef += '\n'
-  })
-
-  const whereInputTypeName = `${entityName}WhereInput`
-
-  return {
-    ...schemaBuilder,
-    typeDefs: `${schemaBuilder.typeDefs}
-input ${whereInputTypeName} {
-  AND: [${whereInputTypeName}!]
-  OR: [${whereInputTypeName}!]
-  NOT: [${whereInputTypeName}!]
-  ${whereInputTypeColumnsDef}
-}
-    `,
-    meta: {
-      ...schemaBuilder.meta,
-      [entityName]: {
-        ...schemaBuilder.meta[entityName],
-        whereInputTypeName,
+          t.field(column.propertyName, {
+            type: typeName,
+          })
+        })
       },
-    },
-  }
+    }),
+  )
+
+  return typeName
 }
 
 function numberOperandOperationToOperator(operation: string): string | undefined {
@@ -103,7 +98,11 @@ export interface TranslatedWhere {
   params: { [paramName: string]: any }
 }
 
-export function translateWhereClause(entityName: string, where: any, idx = 0): TranslatedWhere {
+export function translateWhereClause(
+  entityTableName: string,
+  where: any,
+  idx = 0,
+): TranslatedWhere {
   const {
     driver: { escape },
   } = getConnection()
@@ -116,7 +115,7 @@ export function translateWhereClause(entityName: string, where: any, idx = 0): T
     if (key === 'AND' || key === 'OR' || key === 'NOT') {
       const subExpressions: string[] = []
       where[key].forEach((subWhere: any) => {
-        const subTranslatedWhere = translateWhereClause(entityName, subWhere, idx + 1)
+        const subTranslatedWhere = translateWhereClause(entityTableName, subWhere, idx + 1)
         subExpressions.push(`(${subTranslatedWhere.expression})`)
         idx += Object.keys(subTranslatedWhere.params).length
         Object.assign(translated.params, subTranslatedWhere.params)
@@ -138,7 +137,7 @@ export function translateWhereClause(entityName: string, where: any, idx = 0): T
     if (translated.expression) {
       translated.expression += ' AND '
     }
-    const columnSelection = `${escape(entityName)}.${escape(fieldName)}`
+    const columnSelection = `${escape(entityTableName)}.${escape(fieldName)}`
 
     if (operation === 'contains') {
       translated.params[paramName] = `%${translated.params[paramName]}%`

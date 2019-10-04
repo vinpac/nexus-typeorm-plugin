@@ -1,9 +1,9 @@
 import { PrimaryGeneratedColumn, OneToOne, Column } from 'typeorm'
 
 import { User } from 'test/entities/user'
-import { TypeQLEntity } from 'src/index'
+import { NexusEntity } from 'src/index'
 
-@TypeQLEntity()
+@NexusEntity()
 export class Email {
   @PrimaryGeneratedColumn()
   public id: number

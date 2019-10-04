@@ -1,64 +1,13 @@
-import { GraphQLResolveInfo, NameNode, SelectionNode, FieldNode, ValueNode } from 'graphql'
+import { FieldNode, ValueNode } from 'graphql'
 import { getConnection } from 'typeorm'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 import { getDatabaseObjectMetadata } from './decorators'
+import { EntitiesMap } from './schema-builder'
 
 export interface Relation {
   relationPath: string
   fieldNode: FieldNode
   type: string | Function
-}
-
-function _getRelationsForFieldNode<T>(rootType: new () => T, fieldNode: FieldNode): Relation[] {
-  const { selectionSet } = fieldNode
-  const results: Relation[] = []
-
-  if (selectionSet) {
-    const conn = getConnection()
-    const meta = conn.getMetadata(rootType)
-
-    const { relations } = meta
-
-    selectionSet.selections.forEach((selection: SelectionNode) => {
-      if ('name' in selection) {
-        const name: NameNode = selection.name
-        const targetRelation = relations.find(relation => relation.propertyPath === name.value)
-
-        if (targetRelation) {
-          if (selection.kind === 'Field') {
-            results.push({
-              relationPath: targetRelation.propertyPath,
-              fieldNode: selection,
-              type: targetRelation.type,
-            })
-
-            if ('selectionSet' in selection && selection.selectionSet) {
-              const subselections = _getRelationsForFieldNode(targetRelation.type as any, selection)
-
-              subselections.forEach(subselection =>
-                results.push({
-                  relationPath: `${targetRelation.propertyPath}.${subselection.relationPath}`,
-                  fieldNode: subselection.fieldNode,
-                  type: subselection.type,
-                }),
-              )
-            }
-          }
-        }
-      }
-    })
-  }
-
-  return results
-}
-
-export function getRelationsForQuery<T>(
-  rootType: new () => T,
-  info: GraphQLResolveInfo,
-): Relation[] {
-  return info.fieldNodes.reduce<Relation[]>((relations, fieldNode) => {
-    return relations.concat(_getRelationsForFieldNode(rootType, fieldNode))
-  }, [])
 }
 
 export function graphQLObjectValueToObject(value: ValueNode) {
@@ -128,7 +77,7 @@ export const gql = (templateStringArray: TemplateStringsArray) => {
   return templateStringArray[0]
 }
 
-export const getEntityName = (entity: Function) => getDatabaseObjectMetadata(entity).name
+export const getEntityTypeName = (entity: Function) => getDatabaseObjectMetadata(entity).typeName
 
 export const getEntityPrimaryColumn = (entity: Function) => {
   const primaryColumn = getConnection().getMetadata(entity).primaryColumns[0]
@@ -138,4 +87,15 @@ export const getEntityPrimaryColumn = (entity: Function) => {
   }
 
   return primaryColumn
+}
+
+export const findEntityByTypeName = (
+  typeName: string,
+  entitiesMap: EntitiesMap,
+): Function | null => {
+  const matchedEntityName = Object.keys(entitiesMap).find(
+    entityName => getDatabaseObjectMetadata(entitiesMap[entityName]).typeName === typeName,
+  )
+
+  return matchedEntityName ? entitiesMap[matchedEntityName] : null
 }

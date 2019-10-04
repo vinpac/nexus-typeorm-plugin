@@ -1,6 +1,6 @@
 import { Column, OneToMany, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm'
 
-import { TypeQLEntity } from 'src/index'
+import { NexusEntity } from 'src/index'
 
 import { Post } from 'test/entities/post'
 import { UserLikesPost } from 'test/entities/user-likes-post'
@@ -13,7 +13,7 @@ export enum UserType {
   NORMAL = 'NORMAL',
 }
 
-@TypeQLEntity()
+@NexusEntity()
 export class User {
   @PrimaryGeneratedColumn()
   public id: number
@@ -30,7 +30,7 @@ export class User {
   @OneToMany(() => Post, post => post.user)
   public posts: Post[]
 
-  @OneToMany(() => UserFollows, follow => follow.user)
+  @OneToMany(() => UserFollows, follow => follow.followee)
   public followees: UserFollows[]
 
   @OneToMany(() => UserLikesPost, like => like.user)

@@ -4,31 +4,46 @@ import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from '
 import { Email } from './entities/email'
 import { UserLikesPost } from './entities/user-likes-post'
 import { UserProfile } from './entities/user-profile'
+import { UserFollows } from './entities/user-follows'
 
 describe('Basic', () => {
   setupTest()
   beforeEach(async () => {
-    const user = await create<User>(User, {
+    const jeong = await create<User>(User, {
       age: 3,
       name: 'Jeong',
       type: UserType.NORMAL,
     })
+    await create<User>(User, {
+      age: 4,
+      name: 'John',
+      type: UserType.NORMAL,
+    })
+    const janet = await create<User>(User, {
+      age: 5,
+      name: 'Janet',
+      type: UserType.NORMAL,
+    })
+    await create(UserFollows, {
+      follower: janet,
+      followee: jeong,
+    })
 
     await create<UserProfile>(UserProfile, {
-      user,
+      user: jeong,
       displayName: 'John doe',
       slug: 'john-doe',
     })
     const post = await create(Post, {
-      user,
+      user: jeong,
       title: 'hello',
     })
     await create(UserLikesPost, {
-      user,
+      user: jeong,
       post,
     })
     await create(Email, {
-      user,
+      user: jeong,
       address: 'john@doe.com.br',
     })
     resetLogger()
@@ -48,8 +63,20 @@ describe('Basic', () => {
       users: [
         {
           age: 3,
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'Jeong',
+          type: UserType.NORMAL,
+        },
+        {
+          age: 4,
+          id: expect.any(String),
+          name: 'John',
+          type: UserType.NORMAL,
+        },
+        {
+          age: 5,
+          id: expect.any(String),
+          name: 'Janet',
           type: UserType.NORMAL,
         },
       ],
@@ -71,7 +98,7 @@ describe('Basic', () => {
     expect(result.errors).toEqual(undefined)
     expect(result.data).toMatchObject({
       user: {
-        id: expect.any(Number),
+        id: expect.any(String),
         profile: {
           displayName: 'John doe',
           slug: 'john-doe',
@@ -93,17 +120,26 @@ describe('Basic', () => {
       }
     }`)
 
+    expect(result.errors).toBe(undefined)
     expect(result.data).toMatchObject({
       users: [
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'hello',
               isPublic: false,
             },
           ],
+        },
+        {
+          id: expect.any(String),
+          posts: [],
+        },
+        {
+          id: expect.any(String),
+          posts: [],
         },
       ],
     })
@@ -125,15 +161,16 @@ describe('Basic', () => {
       }
     }`)
 
+    expect(result.errors).toBe(undefined)
     expect(result.data).toMatchObject({
       users: [
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               user: {
-                id: expect.any(Number),
+                id: expect.any(String),
                 posts: [
                   {
                     title: 'hello',
@@ -143,9 +180,17 @@ describe('Basic', () => {
             },
           ],
         },
+        {
+          id: expect.any(String),
+          posts: [],
+        },
+        {
+          id: expect.any(String),
+          posts: [],
+        },
       ],
     })
-    expect(getDatabaseQueriesCount()).toBe(4)
+    expect(getDatabaseQueriesCount()).toBe(6)
   })
 
   it('resolves n:1', async () => {
@@ -160,10 +205,10 @@ describe('Basic', () => {
 
     expect(result.data).toMatchObject({
       user: {
-        id: expect.any(Number),
+        id: expect.any(String),
         userLikesPosts: [
           {
-            id: expect.any(Number),
+            id: expect.any(String),
           },
         ],
       },
@@ -183,6 +228,26 @@ describe('Basic', () => {
 
     expect(result.errors![0]).toMatchObject({
       message: "Foreign key 'emailId' is not defined in User schema",
+    })
+  })
+
+  it('should query a custom field', async () => {
+    const result = await query(`{
+      user {
+        id
+        followers {
+          id
+          name
+        }
+      }
+    }`)
+
+    expect(result.errors).toBeUndefined()
+    expect(result.data).toEqual({
+      user: {
+        id: '1',
+        followers: [{ id: '3', name: 'Janet' }],
+      },
     })
   })
 })

@@ -2,9 +2,9 @@ import { ManyToOne, PrimaryGeneratedColumn, Unique, Column } from 'typeorm'
 
 import { User } from './user'
 import { Post } from './post'
-import { TypeQLEntity } from 'src/index'
+import { NexusEntity } from 'src/index'
 
-@TypeQLEntity({
+@NexusEntity({
   tableName: 'UserLIKESpost',
 })
 @Unique(['user', 'post'])

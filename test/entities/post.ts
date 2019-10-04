@@ -9,9 +9,9 @@ import {
 
 import { User } from 'test/entities/user'
 import { UserLikesPost } from 'test/entities/user-likes-post'
-import { TypeQLEntity } from 'src/index'
+import { NexusEntity } from 'src/index'
 
-@TypeQLEntity()
+@NexusEntity()
 export class Post {
   @PrimaryGeneratedColumn()
   public id: number

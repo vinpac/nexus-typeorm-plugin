@@ -1,8 +1,7 @@
 import * as TypeORM from 'typeorm'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 import { makeFirstLetterUpperCase } from './util'
-import { getDatabaseObjectMetadata } from './decorators'
-import { SchemaBuilder } from './schema-builder'
+import { enumType } from 'nexus'
 
 function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
   if (columnType === 'uuid') {
@@ -43,42 +42,6 @@ function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
   }
 }
 
-export const createEntityEnumColumnTypeDefs = (
-  entity: Function,
-  column: ColumnMetadata,
-  schemaBuilder: SchemaBuilder,
-): SchemaBuilder => {
-  if (!column.enum) {
-    throw new Error(`Column passed to ${createEntityEnumColumnTypeDefs} is not an enum`)
-  }
-
-  const { name: entityName } = getDatabaseObjectMetadata(entity)
-
-  if (schemaBuilder.meta[entityName].entityEnumColumnType[column.propertyName]) {
-    return schemaBuilder
-  }
-
-  const typeName = `${entityName}${makeFirstLetterUpperCase(column.propertyName)}`
-  return {
-    ...schemaBuilder,
-    typeDefs: `${schemaBuilder.typeDefs}
-      enum ${typeName} {
-        ${column.enum.join('\n\t\t')}
-      }
-    `,
-    meta: {
-      ...schemaBuilder.meta,
-      [entityName]: {
-        ...schemaBuilder.meta[entityName],
-        entityEnumColumnType: {
-          ...schemaBuilder.meta[entityName].entityEnumColumnType,
-          [column.propertyName]: typeName,
-        },
-      },
-    },
-  }
-}
-
 export function columnToGraphQLTypeDef(column: ColumnMetadata, entity: Function): string {
   if (column.isPrimary) {
     return 'ID'
@@ -91,4 +54,14 @@ export function columnToGraphQLTypeDef(column: ColumnMetadata, entity: Function)
     )
   }
   return typeName
+}
+
+export function enumColumnToGraphQLObject(entity: any, column: ColumnMetadata) {
+  const { name: entityName } = TypeORM.getConnection().getMetadata(entity)
+  const typeName = `${entityName}${makeFirstLetterUpperCase(column.propertyName)}Enum`
+
+  return enumType({
+    name: typeName,
+    members: column.enum!.map(String)!,
+  })
 }
