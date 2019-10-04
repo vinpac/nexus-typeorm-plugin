@@ -6,7 +6,7 @@ import { ORMResolverContext } from '../dataloader/entity-dataloader'
 import { translateWhereClause, ArgWhere } from '../args/arg-where'
 import { orderNamesToOrderInfos } from '../args/arg-order-by'
 import { createQueryBuilder } from '../query-builder'
-import { getEntityTypeName } from '../util'
+import { getEntityTypeName, findEntityByTypeName } from '../util'
 import { getConnection } from 'typeorm'
 
 declare global {
@@ -46,7 +46,7 @@ export function createUniqueOutputMethod(schemaBuilder: SchemaBuilder) {
     name: 'uniqueField',
     factory({ typeDef: t, args, builder }) {
       const [fieldName, options] = args as [string, UniqueOutputMethodConfig]
-      const entity = schemaBuilder.entities[options.entity]
+      const entity = findEntityByTypeName(options.entity, schemaBuilder.entities)
 
       if (!entity) {
         throw new Error(`Unable to find entity '${options.entity}'`)

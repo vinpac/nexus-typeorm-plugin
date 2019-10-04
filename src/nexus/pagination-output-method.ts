@@ -6,7 +6,7 @@ import { ORMResolverContext } from '../dataloader/entity-dataloader'
 import { translateWhereClause, ArgWhere } from '../args/arg-where'
 import { orderNamesToOrderInfos } from '../args/arg-order-by'
 import { createQueryBuilder } from '../query-builder'
-import { getEntityTypeName } from '../util'
+import { getEntityTypeName, findEntityByTypeName } from '../util'
 import { getConnection } from 'typeorm'
 
 export interface ArgsPaginationGraphQLResolver {
@@ -51,7 +51,12 @@ export function createPaginationOutputMethod(schemaBuilder: SchemaBuilder) {
     name: 'paginationField',
     factory({ typeDef: t, args, builder }) {
       const [fieldName, options] = args as [string, PaginationOutputMethodOptions]
-      const entity = schemaBuilder.entities[options.entity]
+      const entity = findEntityByTypeName(options.entity, schemaBuilder.entities)
+
+      if (!entity) {
+        throw new Error(`Unable to find entity '${options.entity}'`)
+      }
+
       const { name: entityTableName } = getConnection().getMetadata(entity)
       const type = options.type || getEntityTypeName(entity)
 

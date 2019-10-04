@@ -50,9 +50,13 @@ export function createEntityFieldOutputMethod(schemaBuilder: SchemaBuilder) {
         }
 
         if (relation.isOneToMany || relation.isManyToMany) {
-          if (!relation.inverseRelation) {
+          if (!relation.inverseRelation || !relation.inverseRelation.foreignKeys[0]) {
             throw new Error(
-              `Unable to access inverseRelation on '${entityMetadata.name}.${relation.propertyName}'`,
+              `Unable to access inverseRelation on '${entityMetadata.name}.${
+                relation.propertyName
+              }'. It's probably missing the inverse side function on @${
+                relation.isOneToMany ? 'OneToMany' : 'ManyToMany'
+              }()`,
             )
           }
 
