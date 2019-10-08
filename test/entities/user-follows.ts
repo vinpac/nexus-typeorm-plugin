@@ -1,17 +1,23 @@
-import { PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm'
+import { PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column } from 'typeorm'
 import { User } from 'test/entities/user'
-import { GraphQLEntity } from 'src/index'
+import { NexusEntity } from 'src/index'
 
-@GraphQLEntity()
+@NexusEntity()
 export class UserFollows {
   @PrimaryGeneratedColumn()
   public id: number
 
   @ManyToOne(() => User, user => user.followees, { nullable: false })
   @JoinColumn()
-  public user: User
+  public follower: User
+
+  @Column()
+  public followerId: number
 
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn()
-  public peer: User
+  public followee: User
+
+  @Column()
+  public followeeId: number
 }

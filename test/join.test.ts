@@ -73,36 +73,36 @@ describe('Where', () => {
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'foo',
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'foo post',
             },
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'foo post 2',
             },
           ],
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'bar',
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'bar post',
             },
           ],
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'baz',
           posts: [],
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'quz',
           posts: [],
         },
@@ -129,36 +129,36 @@ describe('Where', () => {
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'foo',
           posts: expect.arrayContaining([
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'foo post',
             },
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'foo post 2',
             },
           ]),
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'bar',
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'bar post',
             },
           ],
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'baz',
           posts: [],
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'quz',
           posts: [],
         },
@@ -190,11 +190,11 @@ describe('Where', () => {
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'foo',
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'foo post',
               userLikesPosts: expect.arrayContaining([
                 {
@@ -210,7 +210,7 @@ describe('Where', () => {
               ]),
             },
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'foo post 2',
               userLikesPosts: expect.arrayContaining([
                 {
@@ -223,11 +223,11 @@ describe('Where', () => {
           ],
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'bar',
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'bar post',
               userLikesPosts: expect.arrayContaining([
                 {
@@ -240,12 +240,12 @@ describe('Where', () => {
           ],
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'baz',
           posts: [],
         },
         {
-          id: expect.any(Number),
+          id: expect.any(String),
           name: 'quz',
           posts: [],
         },

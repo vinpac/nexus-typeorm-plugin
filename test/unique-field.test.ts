@@ -6,8 +6,9 @@ import { createORMContext } from 'src/dataloader/entity-dataloader'
 describe('UniqueField', () => {
   setupTest()
 
+  let user: User | undefined
   beforeEach(async () => {
-    const user = await create<User>(User, {
+    user = await create<User>(User, {
       age: 3,
       name: 'Jeong',
       type: UserType.NORMAL,
@@ -45,7 +46,7 @@ describe('UniqueField', () => {
     expect(result.data).toMatchObject({
       user: {
         age: 3,
-        id: expect.any(Number),
+        id: expect.any(String),
         name: 'Jeong',
       },
     })
@@ -94,15 +95,15 @@ describe('UniqueField', () => {
     expect(result.data).toMatchObject({
       user: {
         age: 3,
-        id: expect.any(Number),
+        id: String(user!.id),
         name: 'Jeong',
         posts: [
           {
-            id: expect.any(Number),
+            id: String(user!.id),
             title: 'hello 1',
           },
           {
-            id: expect.any(Number),
+            id: expect.any(String),
             title: 'hello 2',
           },
         ],
@@ -132,23 +133,23 @@ describe('UniqueField', () => {
     expect(result.errors).toEqual(undefined)
     expect(result.data).toMatchObject({
       post: {
-        id: expect.any(Number),
+        id: expect.any(String),
         title: 'hello 1',
         user: {
-          id: expect.any(Number),
+          id: expect.any(String),
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'hello 1',
               user: {
-                id: expect.any(Number),
+                id: expect.any(String),
               },
             },
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'hello 2',
               user: {
-                id: expect.any(Number),
+                id: expect.any(String),
               },
             },
           ],
@@ -186,37 +187,37 @@ describe('UniqueField', () => {
     expect(result.errors).toEqual(undefined)
     expect(result.data).toMatchObject({
       post: {
-        id: expect.any(Number),
+        id: expect.any(String),
         title: 'hello 1',
         user: {
-          id: expect.any(Number),
+          id: expect.any(String),
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'hello 1',
               user: {
-                id: expect.any(Number),
+                id: expect.any(String),
                 posts: [
                   {
-                    id: expect.any(Number),
+                    id: expect.any(String),
                   },
                   {
-                    id: expect.any(Number),
+                    id: expect.any(String),
                   },
                 ],
               },
             },
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'hello 2',
               user: {
-                id: expect.any(Number),
+                id: expect.any(String),
                 posts: [
                   {
-                    id: expect.any(Number),
+                    id: expect.any(String),
                   },
                   {
-                    id: expect.any(Number),
+                    id: expect.any(String),
                   },
                 ],
               },
@@ -263,37 +264,37 @@ describe('UniqueField', () => {
     expect(result.errors).toEqual(undefined)
     expect(result.data).toMatchObject({
       post: {
-        id: expect.any(Number),
+        id: expect.any(String),
         title: 'hello 1',
         user: {
-          id: expect.any(Number),
+          id: expect.any(String),
           posts: [
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'hello 1',
               user: {
-                id: expect.any(Number),
+                id: expect.any(String),
                 posts: [
                   {
-                    id: expect.any(Number),
+                    id: expect.any(String),
                   },
                   {
-                    id: expect.any(Number),
+                    id: expect.any(String),
                   },
                 ],
               },
             },
             {
-              id: expect.any(Number),
+              id: expect.any(String),
               title: 'hello 2',
               user: {
-                id: expect.any(Number),
+                id: String(user!.id),
                 posts: [
                   {
-                    id: expect.any(Number),
+                    id: expect.any(String),
                   },
                   {
-                    id: expect.any(Number),
+                    id: expect.any(String),
                   },
                 ],
               },

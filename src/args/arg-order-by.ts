@@ -1,6 +1,6 @@
-import * as TypeORM from 'typeorm'
-import { SchemaBuilder } from '../schema-builder'
-import { getEntityName } from '../util'
+import { SchemaBuilder as NexusSchemaBuilder, enumType } from 'nexus/dist/core'
+import { getConnection } from 'typeorm'
+import { getEntityTypeName } from '../util'
 
 const orderTypes = ['ASC', 'DESC']
 
@@ -29,36 +29,24 @@ export function orderNamesToOrderInfos(orderNames: ArgOrder): OrderInfo[] {
   }, [])
 }
 
-export const createOrderByInputTypeDef = (
+export const createOrderByInputObjectType = (
   entity: any,
-  schemaBuilder: SchemaBuilder,
-): SchemaBuilder => {
-  const connection = TypeORM.getConnection()
-  const entityName = getEntityName(entity)
-  const entityMetadata = connection.getMetadata(entity)
-
-  if (schemaBuilder.meta[entityName].orderByInputTypeName) {
-    return schemaBuilder
-  }
-
-  const typeName = `${entityName}OrderByInput`
-  let typeDefs = `enum ${typeName} {`
-  entityMetadata.columns.forEach(column => {
+  nexusBuilder: NexusSchemaBuilder,
+): string => {
+  const { columns: entityColumns } = getConnection().getMetadata(entity)
+  const typeName = `${getEntityTypeName(entity)}OrderByInput`
+  const members: string[] = []
+  entityColumns.forEach(column => {
     orderTypes.forEach(orderType => {
-      typeDefs += `\n    ${column.propertyName}_${orderType}`
+      members.push(`${column.propertyName}_${orderType}`)
     })
   })
-  typeDefs += '\n}'
+  nexusBuilder.addType(
+    enumType({
+      name: typeName,
+      members,
+    }),
+  )
 
-  return {
-    ...schemaBuilder,
-    typeDefs: `${schemaBuilder.typeDefs}${typeDefs}`,
-    meta: {
-      ...schemaBuilder.meta,
-      [entityName]: {
-        ...schemaBuilder.meta[entityName],
-        orderByInputTypeName: typeName,
-      },
-    },
-  }
+  return typeName
 }

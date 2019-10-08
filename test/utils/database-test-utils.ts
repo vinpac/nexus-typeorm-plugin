@@ -10,6 +10,10 @@ export function resetLogger() {
   }
 }
 
+export function getDatabaseQueries() {
+  return logger ? logger.queries : []
+}
+
 export function getDatabaseQueriesCount() {
   if (logger) {
     return logger.queries.length

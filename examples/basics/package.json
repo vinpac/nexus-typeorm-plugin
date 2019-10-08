@@ -1,5 +1,5 @@
 {
-  "name": "typeql-basics-example",
+  "name": "nexus-typeorm-plugin-basics-example",
   "scripts": {
     "dev": "tncc server.ts -r -w -o dist/server.js"
   },

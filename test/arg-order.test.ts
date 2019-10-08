@@ -31,6 +31,7 @@ describe('Order', () => {
         }
       }`)
 
+    expect(result.errors).toBeUndefined()
     expect(result.data!.posts).toHaveLength(4)
     expect(result.data!.posts).toMatchObject([
       {

@@ -3,10 +3,12 @@ import { getConnection } from 'typeorm'
 import { ArgWhere, translateWhereClause } from '../args/arg-where'
 import { ArgOrder, orderNamesToOrderInfos } from '../args/arg-order-by'
 import { createQueryBuilder } from '../query-builder'
-import { getEntityName, getEntityPrimaryColumn } from '../util'
+import { getEntityTypeName, getEntityPrimaryColumn } from '../util'
 
 export const generateCacheKeyFromORMDataLoaderRequest = (req: QueryDataLoaderRequest<any>) => {
-  let key = `${JSON.stringify(req.where)};${JSON.stringify(req.orderBy)}`
+  let key = `${JSON.stringify(req.where)}${
+    req.orderBy && req.orderBy.length ? `;${JSON.stringify(req.orderBy)}` : ''
+  }`
   if (req.type === 'list') {
     key += `;${req.first || 0};${req.last || 0}`
   }
@@ -45,7 +47,7 @@ export function createQueryDataLoader(entitiesDataLoader?: EntityDataLoader<any>
           if (req.type === 'one') {
             const queryBuilder = createQueryBuilder<any>({
               entity: req.entity,
-              where: req.where && translateWhereClause(getEntityName(req.entity), req.where),
+              where: req.where && translateWhereClause(getEntityTypeName(req.entity), req.where),
               orders: req.orderBy && orderNamesToOrderInfos(req.orderBy),
               join: req.join,
             })
@@ -66,7 +68,7 @@ export function createQueryDataLoader(entitiesDataLoader?: EntityDataLoader<any>
 
           const queryBuilder = createQueryBuilder<any>({
             entity: req.entity,
-            where: req.where && translateWhereClause(getEntityName(req.entity), req.where),
+            where: req.where && translateWhereClause(getEntityTypeName(req.entity), req.where),
             orders: req.orderBy && orderNamesToOrderInfos(req.orderBy),
             first: req.first,
             last: req.last,
@@ -88,7 +90,7 @@ interface EntityDataLoaderRequest<Model> {
 }
 
 export const generateEntityDataLoaderCacheKey = (req: EntityDataLoaderRequest<any>) =>
-  `primaryKey:${getEntityName(req.entity)}:${req.value}`
+  `primaryKey:${getEntityTypeName(req.entity)}:${req.value}`
 
 export type EntityDataLoader<Model> = DataLoader<EntityDataLoaderRequest<Model>, Model>
 export const createEntityDataLoader = (): EntityDataLoader<any> => {
