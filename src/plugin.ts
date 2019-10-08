@@ -10,7 +10,7 @@ import { GraphQLDateTime } from 'graphql-iso-date'
 import { DynamicOutputMethodDef } from 'nexus/dist/core'
 import { GraphQLScalarType } from 'graphql'
 
-export function nexusTypeQLPlugin(): Array<DynamicOutputMethodDef<any> | GraphQLScalarType> {
+export function nexusTypeORMPlugin(): Array<DynamicOutputMethodDef<any> | GraphQLScalarType> {
   const schemaBuilder = SchemaBuilder.fromEntitiesList(getDecoratedEntities())
 
   return [

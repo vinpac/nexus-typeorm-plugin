@@ -8,7 +8,7 @@ import { UserLikesPost } from 'test/entities/user-likes-post'
 import { UserFollows } from 'test/entities/user-follows'
 import { Email } from 'test/entities/email'
 import { getConnection } from 'typeorm'
-import { nexusTypeQLPlugin } from 'src/plugin'
+import { nexusTypeORMPlugin } from 'src/plugin'
 
 export let schema: GraphQLSchema | undefined
 export function createTestSchemaSingleton() {
@@ -44,7 +44,7 @@ export function createTestSchemaSingleton() {
 
     schema = makeSchema({
       types: [
-        nexusTypeQLPlugin(),
+        nexusTypeORMPlugin(),
         query,
         user,
         entityType(UserProfile),

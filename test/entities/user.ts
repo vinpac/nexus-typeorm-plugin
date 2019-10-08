@@ -21,7 +21,7 @@ export class User {
   @Column()
   public name: string
 
-  @Column()
+  @Column({ nullable: true })
   public age: number
 
   @Column({ enum: UserType, type: 'enum', default: UserType.NORMAL })

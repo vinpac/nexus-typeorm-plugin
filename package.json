@@ -1,11 +1,11 @@
 {
   "name": "nexus-typeorm-plugin",
   "description": "Create schemas from TypeORM models easily with this nexus plugin. Comes with dataloader!",
-  "version": "0.0.1-beta.3",
+  "version": "0.0.1-beta.4",
   "main": "./dist/index.js",
   "private": false,
   "typings": "./dist/index.d.ts",
-  "repository": "github:vinpac/typeql",
+  "repository": "github:vinpac/nexus-typeorm-plugin",
   "author": "Vinicius Pacheco <vin175pacheco@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -53,11 +53,7 @@
   "dependencies": {
     "dataloader": "^1.4.0",
     "graphql-iso-date": "^3.6.1",
-    "graphql-tag": "^2.10.1",
-    "merge-graphql-schemas": "^1.7.0",
-    "nexus": "^0.12.0-beta.9",
-    "pluralize": "^8.0.0",
-    "type-graph-orm": "^0.1.29"
+    "nexus": "^0.12.0-beta.9"
   },
   "husky": {
     "hooks": {

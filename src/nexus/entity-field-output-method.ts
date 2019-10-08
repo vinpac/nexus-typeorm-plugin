@@ -6,6 +6,7 @@ import { getConnection } from 'typeorm'
 import { columnToGraphQLTypeDef } from '../type'
 import { ORMResolverContext } from '../dataloader/entity-dataloader'
 import { ArgWhere } from '../args/arg-where'
+import { PaginationFieldResolveFn } from './pagination-output-method'
 
 declare global {
   export interface NexusGenCustomOutputMethods<TypeName extends string> {
@@ -21,7 +22,7 @@ export interface EntityFieldConfig {
     args: any,
     ctx: any,
     info: any,
-    next: GraphQLFieldResolver<any, any>,
+    next?: GraphQLFieldResolver<any, any, any>,
   ) => any
 }
 
@@ -61,25 +62,33 @@ export function createEntityFieldOutputMethod(schemaBuilder: SchemaBuilder) {
           }
 
           const inverseForeignKeyName = relation.inverseRelation.foreignKeys[0].columnNames[0]
+          const resolve: PaginationFieldResolveFn = (source, args, ctx, info, next) => {
+            if (!args.where && source[relation.propertyName]) {
+              if (args.join && !(ctx && ctx.ignoreErrors)) {
+                throw new Error(
+                  'Join argument is ignored here because a this field was already joined',
+                )
+              }
+
+              return source[relation.propertyName]
+            }
+
+            args.where = {
+              ...args.where,
+              [inverseForeignKeyName]: source[entityMetadata.primaryColumns[0].propertyName],
+            }
+
+            return next(source, args, ctx, info)
+          }
+
           t.paginationField(options.alias || relation.propertyName, {
             entity: relatedEntityTypeName,
-            resolve: (source, args, ctx, info, next) => {
-              if (!args.where && source[relation.propertyName]) {
-                if (args.join && !(ctx && ctx.ignoreErrors)) {
-                  throw new Error(
-                    'Join argument is ignored here because a this field was already joined',
+            resolve: options.resolve
+              ? (source, args, ctx, info, next) =>
+                  options.resolve!(source, args, ctx, info, () =>
+                    resolve(source, args, ctx, info, next),
                   )
-                }
-
-                return source[relation.propertyName]
-              }
-
-              args.where = {
-                ...args.where,
-                [inverseForeignKeyName]: source[entityMetadata.primaryColumns[0].propertyName],
-              }
-              return next(source, args, ctx, info)
-            },
+              : resolve,
           })
         } else {
           const sourceForeignKey = (relation.inverseRelation &&
@@ -90,58 +99,66 @@ export function createEntityFieldOutputMethod(schemaBuilder: SchemaBuilder) {
 
           const entityPrimaryKey = getEntityPrimaryColumn(entity)
           const isRelationOwner = relation.isOneToOneOwner || relation.isManyToOne
+          const resolve: GraphQLFieldResolver<any, any, { join: string[] }> = (
+            source: any,
+            args: { join: string[] },
+            ctx: ORMResolverContext,
+          ) => {
+            if (source[relation.propertyName]) {
+              if (args.join && !(ctx && ctx.ignoreErrors)) {
+                throw new Error(
+                  'Join argument is ignored here because a this field was already joined',
+                )
+              }
+
+              return source[relation.propertyName]
+            }
+
+            if (
+              isRelationOwner &&
+              !Object.prototype.hasOwnProperty.call(source, sourceForeignKey)
+            ) {
+              if (!ctx || !ctx.ignoreErrors) {
+                throw new Error(
+                  `Foreign key '${sourceForeignKey}' is not defined in ${entityMetadata.name} schema`,
+                )
+              }
+
+              return null
+            }
+
+            if (ctx && ctx.orm) {
+              return isRelationOwner
+                ? ctx.orm.entitiesDataLoader.load({
+                    entity: relatedEntity,
+                    value: source[sourceForeignKey],
+                  })
+                : ctx.orm.queryDataLoader.load({
+                    entity,
+                    type: 'one',
+                    where: {
+                      [sourceForeignKey]: source[entityPrimaryKey.propertyName],
+                    } as ArgWhere,
+                  })
+            }
+
+            if (!isRelationOwner) {
+              return getConnection()
+                .getRepository(relatedEntity)
+                .findOne({ [sourceForeignKey]: source[entityPrimaryKey.propertyName] })
+            }
+
+            return getConnection()
+              .getRepository(relatedEntity)
+              .findOne(source[sourceForeignKey])
+          }
 
           t.field(relation.propertyName, {
             type: relatedEntityTypeName,
-            resolve: (source: any, args: { join: string[] }, ctx: ORMResolverContext) => {
-              if (source[relation.propertyName]) {
-                if (args.join && !(ctx && ctx.ignoreErrors)) {
-                  throw new Error(
-                    'Join argument is ignored here because a this field was already joined',
-                  )
-                }
-
-                return source[relation.propertyName]
-              }
-
-              if (
-                isRelationOwner &&
-                !Object.prototype.hasOwnProperty.call(source, sourceForeignKey)
-              ) {
-                if (!ctx || !ctx.ignoreErrors) {
-                  throw new Error(
-                    `Foreign key '${sourceForeignKey}' is not defined in ${entityMetadata.name} schema`,
-                  )
-                }
-
-                return null
-              }
-
-              if (ctx && ctx.orm) {
-                return isRelationOwner
-                  ? ctx.orm.entitiesDataLoader.load({
-                      entity: relatedEntity,
-                      value: source[sourceForeignKey],
-                    })
-                  : ctx.orm.queryDataLoader.load({
-                      entity,
-                      type: 'one',
-                      where: {
-                        [sourceForeignKey]: source[entityPrimaryKey.propertyName],
-                      } as ArgWhere,
-                    })
-              }
-
-              if (!isRelationOwner) {
-                return getConnection()
-                  .getRepository(relatedEntity)
-                  .findOne({ [sourceForeignKey]: source[entityPrimaryKey.propertyName] })
-              }
-
-              return getConnection()
-                .getRepository(relatedEntity)
-                .findOne(source[sourceForeignKey])
-            },
+            nullable: relation.isNullable,
+            resolve: options.resolve
+              ? (source, args, ctx, info) => options.resolve!(source, args, ctx, info, resolve)
+              : resolve,
           })
         }
         return
@@ -163,6 +180,8 @@ export function createEntityFieldOutputMethod(schemaBuilder: SchemaBuilder) {
 
         t.field(options.alias || fieldName, {
           type,
+          nullable: column.isNullable,
+          resolve: options.resolve,
         })
         return
       }

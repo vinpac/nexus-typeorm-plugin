@@ -20,7 +20,6 @@ describe('Basic', () => {
       type: UserType.NORMAL,
     })
     const janet = await create<User>(User, {
-      age: 5,
       name: 'Janet',
       type: UserType.NORMAL,
     })
@@ -49,7 +48,7 @@ describe('Basic', () => {
     resetLogger()
   })
 
-  it('handles basic query', async () => {
+  it('shoud query an entity with nullable fields', async () => {
     const result = await query(`{
       users {
         id
@@ -58,6 +57,7 @@ describe('Basic', () => {
         type
       }
     }`)
+
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
@@ -73,7 +73,7 @@ describe('Basic', () => {
           type: UserType.NORMAL,
         },
         {
-          age: 5,
+          age: null,
           id: expect.any(String),
           name: 'Janet',
           type: UserType.NORMAL,
@@ -83,7 +83,7 @@ describe('Basic', () => {
     expect(getDatabaseQueriesCount()).toBe(1)
   })
 
-  it('resolves 1:1 query', async () => {
+  it('resolves one to one query', async () => {
     const result = await query(`{
       user (where: { name: "Jeong" }) {
         id
@@ -106,7 +106,7 @@ describe('Basic', () => {
     })
   })
 
-  it('resolves 1:n query', async () => {
+  it('resolves one to many query', async () => {
     const result = await query(`{
       users {
         id
@@ -143,7 +143,7 @@ describe('Basic', () => {
     })
   })
 
-  it('resolves recursive query', async () => {
+  it('resolves deep relations query', async () => {
     const result = await query(`{
       users {
         id
@@ -197,7 +197,7 @@ describe('Basic', () => {
     expect(getDatabaseQueriesCount()).toBe(6)
   })
 
-  it('resolves n:1', async () => {
+  it('resolves many to one', async () => {
     const result = await query(`{
       user (where: { name: "Jeong" }) {
         id

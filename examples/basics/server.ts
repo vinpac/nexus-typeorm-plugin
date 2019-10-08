@@ -1,13 +1,15 @@
 import 'reflect-metadata'
 
-import TypeQL, { GraphEntity } from '@typeql/core'
+import * as path from 'path'
 import dotenv from 'dotenv'
 import { ApolloServer } from 'apollo-server'
 import { Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, createConnection } from 'typeorm'
+import { NexusEntity, nexusTypeORMPlugin, entityType } from 'nexus-typeorm-plugin'
+import { queryType, makeSchema } from 'nexus'
 
 dotenv.config()
 
-@TypeQLEntity()
+@NexusEntity()
 export class User {
   @PrimaryGeneratedColumn()
   public id!: number
@@ -28,7 +30,7 @@ export class User {
   }
 }
 
-@TypeQLEntity()
+@NexusEntity()
 class Post {
   @PrimaryGeneratedColumn()
   public id!: number
@@ -47,48 +49,40 @@ class Post {
 
 const { DB_HOST, DB_TYPE, DB_NAME, DB_USERNAME, DB_PASSWORD, DB_PORT } = process.env
 
-createConnection({
-  entities: [User, Post],
-  host: DB_HOST,
-  type: DB_TYPE as 'mysql',
-  database: DB_NAME,
-  username: DB_USERNAME,
-  password: DB_PASSWORD,
-  port: DB_PORT ? parseInt(DB_PORT as any, 10) : undefined,
-  synchronize: true,
+async function main() {
+  await createConnection({
+    entities: [User, Post],
+    host: DB_HOST,
+    type: DB_TYPE as 'mysql',
+    database: DB_NAME,
+    username: DB_USERNAME,
+    password: DB_PASSWORD,
+    port: DB_PORT ? parseInt(DB_PORT as any, 10) : undefined,
+    synchronize: true,
+  })
+
+  const query = queryType({
+    definition: t => {
+      t.paginationField('posts', {
+        entity: 'Post',
+      })
+    },
+  })
+
+  const schema = makeSchema({
+    types: [nexusTypeORMPlugin(), query, entityType(User), entityType(Post)],
+    outputs: {
+      schema: path.resolve('schema.graphql'),
+      typegen: path.resolve('generated', 'nexus-typegen.ts'),
+    },
+  })
+  const server = new ApolloServer({ schema })
+
+  server.listen(3000)
+}
+
+main().catch(error => {
+  // eslint-disable-next-line no-console
+  console.error(error)
+  process.exit(1)
 })
-  .then(() => {
-    const nexus = TypeQL.build()
-
-    nexus
-      .type('Query')
-      .field('posts', {
-        type: 'Post',
-        kind: 'pagination',
-      })
-      .field('users', {
-        type: 'User',
-        kind: 'pagination',
-      })
-      .field('usersConnection', {
-        type: 'User',
-        kind: 'connection',
-      })
-
-    nexus.type('User').field(
-      'friends',
-      paginationField({
-        itemType: 'User',
-        resolve: (source, args, info, next) => {
-          return next(source, { ...args, where: { ...args.where, id: 1 } }, info, next)
-        },
-      }),
-    )
-
-    server.listen(3000)
-  })
-  .catch(error => {
-    // eslint-disable-next-line no-console
-    console.error(error)
-    process.exit(1)
-  })

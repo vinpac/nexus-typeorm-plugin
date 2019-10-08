@@ -27,18 +27,21 @@ export type UniqueResolver<TSource, TContext> = GraphQLFieldResolver<
   ArgsUniqueGraphQLResolver
 >
 
+type UniqueFieldResolverFn = (
+  source: any,
+  args: any,
+  ctx: any,
+  info: any,
+  next: GraphQLFieldResolver<any, any>,
+) => any
+
 interface UniqueOutputMethodConfig {
   type?: string
   entity: string
+  nullable?: boolean
   args?: ArgsRecord
   sourceRelationPropertyName?: string
-  resolve?: (
-    source: any,
-    args: any,
-    ctx: any,
-    info: any,
-    next: GraphQLFieldResolver<any, any>,
-  ) => any
+  resolve?: UniqueFieldResolverFn
 }
 
 export function createUniqueOutputMethod(schemaBuilder: SchemaBuilder) {
@@ -82,7 +85,7 @@ export function createUniqueOutputMethod(schemaBuilder: SchemaBuilder) {
 
       t.field(fieldName, {
         type: options.type || entityTypeName,
-        nullable: false,
+        nullable: options.nullable,
         args: {
           where: arg({
             type: schemaBuilder.useType(builder, { type: 'whereInput', entity }),

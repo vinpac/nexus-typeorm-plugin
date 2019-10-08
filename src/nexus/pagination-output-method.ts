@@ -32,18 +32,20 @@ declare global {
   }
 }
 
+export type PaginationFieldResolveFn = (
+  source: any,
+  args: any,
+  ctx: any,
+  info: any,
+  next: GraphQLFieldResolver<any, any>,
+) => any
+
 interface PaginationOutputMethodOptions {
   type?: string
   entity: string
   args?: ArgsRecord
   sourceRelationPropertyName?: string
-  resolve?: (
-    source: any,
-    args: any,
-    ctx: any,
-    info: any,
-    next: GraphQLFieldResolver<any, any>,
-  ) => any
+  resolve?: PaginationFieldResolveFn
 }
 
 export function createPaginationOutputMethod(schemaBuilder: SchemaBuilder) {
