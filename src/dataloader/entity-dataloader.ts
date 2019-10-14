@@ -41,8 +41,8 @@ export type QueryDataLoaderRequest<Model> =
 export type QueryDataLoader = DataLoader<QueryDataLoaderRequest<any>, any>
 export function createQueryDataLoader(entitiesDataLoader?: EntityDataLoader<any>): QueryDataLoader {
   return new DataLoader<QueryDataLoaderRequest<any>, any>(
-    requests =>
-      Promise.all(
+    requests => {
+      return Promise.all(
         requests.map(async req => {
           if (req.type === 'one') {
             const queryBuilder = createQueryBuilder<any>({
@@ -77,7 +77,8 @@ export function createQueryDataLoader(entitiesDataLoader?: EntityDataLoader<any>
 
           return queryBuilder.getMany()
         }),
-      ),
+      )
+    },
     {
       cacheKeyFn: generateCacheKeyFromORMDataLoaderRequest,
     },
@@ -95,14 +96,35 @@ export const generateEntityDataLoaderCacheKey = (req: EntityDataLoaderRequest<an
 export type EntityDataLoader<Model> = DataLoader<EntityDataLoaderRequest<Model>, Model>
 export const createEntityDataLoader = (): EntityDataLoader<any> => {
   return new DataLoader(
-    (requests: EntityDataLoaderRequest<any>[]) =>
-      Promise.all(
-        requests.map(req =>
-          getConnection()
-            .getRepository(req.entity)
-            .findOne(req.value),
-        ),
-      ),
+    async (requests: EntityDataLoaderRequest<any>[]) => {
+      const entityMap: { [entityName: string]: any } = {}
+      const pksByEntityName: { [entityName: string]: string[] } = {}
+      requests.forEach(req => {
+        entityMap[req.entity.name] = req.entity
+
+        if (!pksByEntityName[req.entity.name]) {
+          pksByEntityName[req.entity.name] = []
+        }
+
+        pksByEntityName[req.entity.name].push(req.value)
+      })
+
+      const resultMap: { [key: string]: any } = {}
+      await Promise.all(
+        Object.keys(pksByEntityName).map(async entityName => {
+          const entity = entityMap[entityName]
+          const primaryColumn = getEntityPrimaryColumn(entity)
+          const nodes = await getConnection()
+            .getRepository<any>(entity)
+            .findByIds(pksByEntityName[entityName])
+          nodes.forEach(node => {
+            resultMap[`${entityName}:${node[primaryColumn.propertyName]}`] = node
+          })
+        }),
+      )
+
+      return requests.map(req => resultMap[`${req.entity.name}:${req.value}`])
+    },
     {
       cacheKeyFn: generateEntityDataLoaderCacheKey,
     },

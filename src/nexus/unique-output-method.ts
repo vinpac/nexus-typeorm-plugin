@@ -40,7 +40,6 @@ interface UniqueOutputMethodConfig {
   entity: string
   nullable?: boolean
   args?: ArgsRecord
-  sourceRelationPropertyName?: string
   resolve?: UniqueFieldResolverFn
 }
 
