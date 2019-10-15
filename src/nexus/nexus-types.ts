@@ -14,13 +14,13 @@ interface EntityObjectDefinitionBlock<TEntity, TTypeName extends string>
 }
 
 interface EntityObjectTypeConfig<TEntity, TTypeName extends string>
-  extends Omit<NexusObjectTypeConfig<TTypeName>, 'definition'> {
+  extends Omit<NexusObjectTypeConfig<TTypeName>, 'definition' | 'name'> {
   definition(t: EntityObjectDefinitionBlock<TEntity, TTypeName>): void
 }
 
 export function entityType<TEntity>(
   entity: new (...args: any[]) => TEntity,
-  config?: Omit<EntityObjectTypeConfig<TEntity, any>, 'name'>,
+  config?: EntityObjectTypeConfig<TEntity, any>,
 ) {
   const metadata = getDatabaseObjectMetadata(entity)
   return objectType<any>(

@@ -3,7 +3,7 @@ version: 2.1
 executors:
   build-test-and-publish:
     docker:
-      - image: circleci/node:10.14.1
+      - image: circleci/node:10.16.3
         environment:
           TEST_DB_HOST: localhost
           TEST_DB_TYPE: postgres

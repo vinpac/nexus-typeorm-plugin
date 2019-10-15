@@ -1,9 +1,10 @@
 import * as DataLoader from 'dataloader'
 import { getConnection } from 'typeorm'
-import { ArgWhere, translateWhereClause } from '../args/arg-where'
+import { ArgWhereType, translateWhereClause } from '../args/arg-where'
 import { ArgOrder, orderNamesToOrderInfos } from '../args/arg-order-by'
-import { createQueryBuilder } from '../query-builder'
+import { createQueryBuilder, EntityJoin } from '../query-builder'
 import { getEntityTypeName, getEntityPrimaryColumn } from '../util'
+import { SchemaBuilder } from '../schema-builder'
 
 export const generateCacheKeyFromORMDataLoaderRequest = (req: QueryDataLoaderRequest<any>) => {
   let key = `${JSON.stringify(req.where)}${
@@ -19,19 +20,21 @@ export const generateCacheKeyFromORMDataLoaderRequest = (req: QueryDataLoaderReq
 interface QueryListDataLoaderRequest<Model> {
   entity: Model
   type: 'list'
-  where?: ArgWhere
+  where?: ArgWhereType
   orderBy?: ArgOrder
   first?: number
   last?: number
-  join?: string[]
+  schemaBuilder: SchemaBuilder
+  join?: EntityJoin[]
 }
 
 interface QueryOneDataLoaderRequest<Model> {
   entity: Model
   type: 'one'
-  where?: ArgWhere
+  where?: ArgWhereType
   orderBy?: ArgOrder
-  join?: string[]
+  schemaBuilder: SchemaBuilder
+  join?: EntityJoin[]
 }
 
 export type QueryDataLoaderRequest<Model> =
@@ -41,11 +44,11 @@ export type QueryDataLoaderRequest<Model> =
 export type QueryDataLoader = DataLoader<QueryDataLoaderRequest<any>, any>
 export function createQueryDataLoader(entitiesDataLoader?: EntityDataLoader<any>): QueryDataLoader {
   return new DataLoader<QueryDataLoaderRequest<any>, any>(
-    requests =>
-      Promise.all(
+    requests => {
+      return Promise.all(
         requests.map(async req => {
           if (req.type === 'one') {
-            const queryBuilder = createQueryBuilder<any>({
+            const queryBuilder = createQueryBuilder<any>(req.schemaBuilder, {
               entity: req.entity,
               where: req.where && translateWhereClause(getEntityTypeName(req.entity), req.where),
               orders: req.orderBy && orderNamesToOrderInfos(req.orderBy),
@@ -66,7 +69,7 @@ export function createQueryDataLoader(entitiesDataLoader?: EntityDataLoader<any>
             return node
           }
 
-          const queryBuilder = createQueryBuilder<any>({
+          const queryBuilder = createQueryBuilder<any>(req.schemaBuilder, {
             entity: req.entity,
             where: req.where && translateWhereClause(getEntityTypeName(req.entity), req.where),
             orders: req.orderBy && orderNamesToOrderInfos(req.orderBy),
@@ -77,7 +80,8 @@ export function createQueryDataLoader(entitiesDataLoader?: EntityDataLoader<any>
 
           return queryBuilder.getMany()
         }),
-      ),
+      )
+    },
     {
       cacheKeyFn: generateCacheKeyFromORMDataLoaderRequest,
     },
@@ -95,14 +99,35 @@ export const generateEntityDataLoaderCacheKey = (req: EntityDataLoaderRequest<an
 export type EntityDataLoader<Model> = DataLoader<EntityDataLoaderRequest<Model>, Model>
 export const createEntityDataLoader = (): EntityDataLoader<any> => {
   return new DataLoader(
-    (requests: EntityDataLoaderRequest<any>[]) =>
-      Promise.all(
-        requests.map(req =>
-          getConnection()
-            .getRepository(req.entity)
-            .findOne(req.value),
-        ),
-      ),
+    async (requests: EntityDataLoaderRequest<any>[]) => {
+      const entityMap: { [entityName: string]: any } = {}
+      const pksByEntityName: { [entityName: string]: string[] } = {}
+      requests.forEach(req => {
+        entityMap[req.entity.name] = req.entity
+
+        if (!pksByEntityName[req.entity.name]) {
+          pksByEntityName[req.entity.name] = []
+        }
+
+        pksByEntityName[req.entity.name].push(req.value)
+      })
+
+      const resultMap: { [key: string]: any } = {}
+      await Promise.all(
+        Object.keys(pksByEntityName).map(async entityName => {
+          const entity = entityMap[entityName]
+          const primaryColumn = getEntityPrimaryColumn(entity)
+          const nodes = await getConnection()
+            .getRepository<any>(entity)
+            .findByIds(pksByEntityName[entityName])
+          nodes.forEach(node => {
+            resultMap[`${entityName}:${node[primaryColumn.propertyName]}`] = node
+          })
+        }),
+      )
+
+      return requests.map(req => resultMap[`${req.entity.name}:${req.value}`])
+    },
     {
       cacheKeyFn: generateEntityDataLoaderCacheKey,
     },

@@ -26,12 +26,15 @@ describe('Where', () => {
     await setupFixture()
   })
 
-  it("should fetch user's posts in one query", async () => {
+  it("should auto join user's posts, fetching in one query", async () => {
     expect(getDatabaseQueriesCount()).toBe(0)
     const result = await query(`{
-      user (where: { name: "foo" }, join: ["posts"]) {
+      post {
+        title
+      }
+      user (where: { name: "foo" }) {
         name
-        posts (first: 10) {
+        posts {
           title
         }
       }
@@ -51,13 +54,56 @@ describe('Where', () => {
         ],
       },
     })
-    expect(getDatabaseQueriesCount()).toBe(1)
+    expect(getDatabaseQueriesCount()).toBe(2)
+  })
+
+  it('should auto join on not joined relation', async () => {
+    expect(getDatabaseQueriesCount()).toBe(0)
+    const result = await query(`{
+      user (where: { name: "foo" }) {
+        name
+        posts (first: 1) {
+          title
+          user {
+            name
+            posts {
+              title
+            }
+          }
+        }
+      }
+    }`)
+    expect(result.errors).toEqual(undefined)
+    expect(result.data).toMatchObject({
+      user: {
+        name: 'foo',
+        posts: [
+          {
+            title: 'foo post',
+            user: {
+              name: 'foo',
+              posts: expect.arrayContaining([
+                {
+                  title: 'foo post',
+                },
+                {
+                  title: 'foo post 2',
+                },
+              ]),
+            },
+          },
+        ],
+      },
+    })
+
+    // 1 query + 2 queries for JOIN on posts.user and posts.user.posts
+    expect(getDatabaseQueriesCount()).toBe(3)
   })
 
   it('handles join on pagination field', async () => {
     const result = await query(`
       query {
-        users(join: ["posts"]) {
+        users {
           id
           name
           posts {
@@ -113,7 +159,7 @@ describe('Where', () => {
   it('handles join on pagination field', async () => {
     const result = await query(`
       query {
-        users(join: ["posts"]) {
+        users {
           id
           name
           posts {
@@ -169,7 +215,7 @@ describe('Where', () => {
   it('handles join on nested pagination field', async () => {
     const result = await query(`
       query {
-        users(join: ["posts", "posts.userLikesPosts", "posts.userLikesPosts.user"]) {
+        users {
           id
           name
           posts {
@@ -253,51 +299,93 @@ describe('Where', () => {
     })
   })
 
-  it('should throw an error on a ignored join on pagination field', async () => {
-    const result = await query(`
-      query {
-        users(join: ["posts", "posts.userLikesPosts"]) {
-          id
-          name
-          posts (join: ["userLikesPosts"]) {
-            id
-            title
-            userLikesPosts {
+  it('should fetch pagination field deep relations', async () => {
+    expect(getDatabaseQueriesCount()).toBe(0)
+    const result = await query(
+      `{
+        posts {
+          title
+          user {
+            name
+            posts {
+              title
               user {
                 name
+                posts {
+                  title
+                }
               }
             }
           }
         }
-      }
-    `)
-
-    expect(result.errors![0].message).toBe(
-      'Join argument is ignored here because a this field was already joined',
+     }`,
     )
-  })
 
-  it('should throw an error on ignored join on unique field', async () => {
-    const result = await query(`
-      query {
-        users(join: ["posts", "posts.userLikesPosts", "posts.userLikesPosts.user"]) {
-          id
-          name
-          posts {
-            id
-            title
-            userLikesPosts (join: ["user"]) {
-              user {
-                name
-              }
-            }
-          }
-        }
-      }
-    `)
-
-    expect(result.errors![0].message).toBe(
-      'Join argument is ignored here because a this field was already joined',
-    )
+    const expectedFoo = {
+      name: 'foo',
+      posts: expect.arrayContaining([
+        {
+          title: 'foo post',
+          user: {
+            name: 'foo',
+            posts: expect.arrayContaining([
+              {
+                title: 'foo post',
+              },
+              {
+                title: 'foo post 2',
+              },
+            ]),
+          },
+        },
+        {
+          title: 'foo post 2',
+          user: {
+            name: 'foo',
+            posts: expect.arrayContaining([
+              {
+                title: 'foo post',
+              },
+              {
+                title: 'foo post 2',
+              },
+            ]),
+          },
+        },
+      ]),
+    }
+    expect(result.errors).toEqual(undefined)
+    expect(result.data).toMatchObject({
+      posts: expect.arrayContaining([
+        {
+          title: 'foo post',
+          user: expectedFoo,
+        },
+        {
+          title: 'foo post 2',
+          user: expectedFoo,
+        },
+        {
+          title: 'bar post',
+          user: {
+            name: 'bar',
+            posts: [
+              {
+                title: 'bar post',
+                user: {
+                  name: 'bar',
+                  posts: [
+                    {
+                      title: 'bar post',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      ]),
+    })
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 })

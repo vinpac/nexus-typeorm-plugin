@@ -5,7 +5,7 @@ import { findEntityByTypeName, getEntityPrimaryColumn, getEntityTypeName } from 
 import { getConnection } from 'typeorm'
 import { columnToGraphQLTypeDef } from '../type'
 import { ORMResolverContext } from '../dataloader/entity-dataloader'
-import { ArgWhere } from '../args/arg-where'
+import { ArgWhereType } from '../args/arg-where'
 import { PaginationFieldResolveFn } from './pagination-output-method'
 
 declare global {
@@ -64,12 +64,6 @@ export function createEntityFieldOutputMethod(schemaBuilder: SchemaBuilder) {
           const inverseForeignKeyName = relation.inverseRelation.foreignKeys[0].columnNames[0]
           const resolve: PaginationFieldResolveFn = (source, args, ctx, info, next) => {
             if (!args.where && source[relation.propertyName]) {
-              if (args.join && !(ctx && ctx.ignoreErrors)) {
-                throw new Error(
-                  'Join argument is ignored here because a this field was already joined',
-                )
-              }
-
               return source[relation.propertyName]
             }
 
@@ -99,18 +93,12 @@ export function createEntityFieldOutputMethod(schemaBuilder: SchemaBuilder) {
 
           const entityPrimaryKey = getEntityPrimaryColumn(entity)
           const isRelationOwner = relation.isOneToOneOwner || relation.isManyToOne
-          const resolve: GraphQLFieldResolver<any, any, { join: string[] }> = (
+          const resolve: GraphQLFieldResolver<any, any, {}> = (
             source: any,
-            args: { join: string[] },
+            _,
             ctx: ORMResolverContext,
           ) => {
             if (source[relation.propertyName]) {
-              if (args.join && !(ctx && ctx.ignoreErrors)) {
-                throw new Error(
-                  'Join argument is ignored here because a this field was already joined',
-                )
-              }
-
               return source[relation.propertyName]
             }
 
@@ -136,9 +124,10 @@ export function createEntityFieldOutputMethod(schemaBuilder: SchemaBuilder) {
                 : ctx.orm.queryDataLoader.load({
                     entity,
                     type: 'one',
+                    schemaBuilder,
                     where: {
                       [sourceForeignKey]: source[entityPrimaryKey.propertyName],
-                    } as ArgWhere,
+                    } as ArgWhereType,
                   })
             }
 

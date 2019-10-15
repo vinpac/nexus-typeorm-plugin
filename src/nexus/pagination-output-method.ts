@@ -1,23 +1,20 @@
 import { dynamicOutputMethod } from 'nexus'
-import { ArgsRecord, intArg, stringArg, arg } from 'nexus/dist/core'
+import { ArgsRecord, intArg, arg } from 'nexus/dist/core'
 import { GraphQLFieldResolver } from 'graphql'
 import { SchemaBuilder } from '../schema-builder'
 import { ORMResolverContext } from '../dataloader/entity-dataloader'
-import { translateWhereClause, ArgWhere } from '../args/arg-where'
+import { translateWhereClause, ArgWhereType } from '../args/arg-where'
 import { orderNamesToOrderInfos } from '../args/arg-order-by'
 import { createQueryBuilder } from '../query-builder'
-import { getEntityTypeName, findEntityByTypeName } from '../util'
+import { getEntityTypeName, findEntityByTypeName, grapQLInfoToEntityJoins } from '../util'
 import { getConnection } from 'typeorm'
 
 export interface ArgsPaginationGraphQLResolver {
-  where?: ArgWhere
+  where?: ArgWhereType
   first?: number
   last?: number
   skip?: number
-  after?: string
-  before?: string
   orderBy?: string[]
-  join?: string[]
 }
 
 export type PaginationResolver<TSource, TContext> = GraphQLFieldResolver<
@@ -28,7 +25,7 @@ export type PaginationResolver<TSource, TContext> = GraphQLFieldResolver<
 
 declare global {
   export interface NexusGenCustomOutputMethods<TypeName extends string> {
-    paginationField(fieldName: string, config: PaginationOutputMethodOptions): void
+    paginationField(fieldName: string, config: PaginationOutputMethodConfig): void
   }
 }
 
@@ -40,7 +37,7 @@ export type PaginationFieldResolveFn = (
   next: GraphQLFieldResolver<any, any>,
 ) => any
 
-interface PaginationOutputMethodOptions {
+interface PaginationOutputMethodConfig {
   type?: string
   entity: string
   args?: ArgsRecord
@@ -52,7 +49,7 @@ export function createPaginationOutputMethod(schemaBuilder: SchemaBuilder) {
   return dynamicOutputMethod({
     name: 'paginationField',
     factory({ typeDef: t, args, builder }) {
-      const [fieldName, options] = args as [string, PaginationOutputMethodOptions]
+      const [fieldName, options] = args as [string, PaginationOutputMethodConfig]
       const entity = findEntityByTypeName(options.entity, schemaBuilder.entities)
 
       if (!entity) {
@@ -64,27 +61,31 @@ export function createPaginationOutputMethod(schemaBuilder: SchemaBuilder) {
 
       const resolver: PaginationResolver<any, ORMResolverContext> = async (
         _: any,
-        { where, orderBy, first, last, join },
+        args,
         ctx: ORMResolverContext,
+        info,
       ): Promise<any[] | undefined> => {
+        const join = grapQLInfoToEntityJoins(info, entity, schemaBuilder)
+
         if (ctx && ctx.orm) {
           return ctx.orm.queryDataLoader.load({
             type: 'list',
             entity,
-            where,
-            orderBy,
-            first,
-            last,
+            schemaBuilder,
+            where: args.where,
+            orderBy: args.orderBy,
+            first: args.first,
+            last: args.last,
             join,
           })
         }
 
-        const queryBuilder = createQueryBuilder<any>({
+        const queryBuilder = createQueryBuilder<any>(schemaBuilder, {
           entity,
-          where: where && translateWhereClause(entityTableName, where),
-          orders: orderBy && orderNamesToOrderInfos(orderBy),
-          first,
-          last,
+          where: args.where && translateWhereClause(entityTableName, args.where),
+          orders: args.orderBy && orderNamesToOrderInfos(args.orderBy),
+          first: args.first,
+          last: args.last,
           join,
         })
 
@@ -98,15 +99,12 @@ export function createPaginationOutputMethod(schemaBuilder: SchemaBuilder) {
         args: {
           first: intArg(),
           last: intArg(),
-          after: stringArg(),
-          before: stringArg(),
           skip: intArg(),
           where: arg({ type: schemaBuilder.useType(builder, { type: 'whereInput', entity }) }),
           orderBy: arg({
             type: schemaBuilder.useType(builder, { type: 'orderByInput', entity }),
             list: true,
           }),
-          join: stringArg({ list: true }),
           ...options.args,
         },
         resolve: options.resolve

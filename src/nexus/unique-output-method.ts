@@ -1,12 +1,12 @@
 import { dynamicOutputMethod } from 'nexus'
-import { ArgsRecord, stringArg, arg } from 'nexus/dist/core'
+import { ArgsRecord, arg } from 'nexus/dist/core'
 import { GraphQLFieldResolver } from 'graphql'
 import { SchemaBuilder } from '../schema-builder'
 import { ORMResolverContext } from '../dataloader/entity-dataloader'
-import { translateWhereClause, ArgWhere } from '../args/arg-where'
+import { translateWhereClause, ArgWhereType } from '../args/arg-where'
 import { orderNamesToOrderInfos } from '../args/arg-order-by'
-import { createQueryBuilder } from '../query-builder'
-import { getEntityTypeName, findEntityByTypeName } from '../util'
+import { createQueryBuilder, EntityJoin } from '../query-builder'
+import { getEntityTypeName, findEntityByTypeName, grapQLInfoToEntityJoins } from '../util'
 import { getConnection } from 'typeorm'
 
 declare global {
@@ -16,9 +16,8 @@ declare global {
 }
 
 export interface ArgsUniqueGraphQLResolver {
-  where?: ArgWhere
+  where?: ArgWhereType
   orderBy?: string[]
-  join?: string[]
 }
 
 export type UniqueResolver<TSource, TContext> = GraphQLFieldResolver<
@@ -40,7 +39,6 @@ interface UniqueOutputMethodConfig {
   entity: string
   nullable?: boolean
   args?: ArgsRecord
-  sourceRelationPropertyName?: string
   resolve?: UniqueFieldResolverFn
 }
 
@@ -62,22 +60,26 @@ export function createUniqueOutputMethod(schemaBuilder: SchemaBuilder) {
         _: any,
         args: ArgsUniqueGraphQLResolver,
         ctx: ORMResolverContext,
+        info,
       ) => {
+        const join: EntityJoin[] = grapQLInfoToEntityJoins(info, entity, schemaBuilder)
+
         if (ctx && ctx.orm) {
           return ctx.orm.queryDataLoader.load({
             type: 'one',
             entity,
+            schemaBuilder,
             where: args.where,
             orderBy: args.orderBy,
-            join: args.join,
+            join,
           })
         }
 
-        const queryBuilder = createQueryBuilder<any>({
+        const queryBuilder = createQueryBuilder<any>(schemaBuilder, {
           entity,
           where: args.where && translateWhereClause(entityTableName, args.where),
           orders: args.orderBy && orderNamesToOrderInfos(args.orderBy),
-          join: args.join,
+          join,
         })
 
         return queryBuilder.getOne()
@@ -94,7 +96,6 @@ export function createUniqueOutputMethod(schemaBuilder: SchemaBuilder) {
             type: schemaBuilder.useType(builder, { type: 'orderByInput', entity }),
             list: true,
           }),
-          join: stringArg({ list: true }),
           ...options.args,
         },
         resolve: options.resolve

@@ -2,18 +2,20 @@
 
 Create a [GraphQL.js](https://github.com/graphql/graphql-js) schema from your [TypeORM](https://github.com/typeorm/typeorm) Entities with integrated [dataloader](https://github.com/graphql/dataloader) support.
 
+## Usage
+
+Here's example [Apollo Server](https://github.com/apollographql/apollo-server) with a `posts` resolver to paginate over the `Post` entity.
+
 ```typescript
 import 'reflect-metadata'
 
 import * as path from 'path'
-import dotenv from 'dotenv'
 import { ApolloServer } from 'apollo-server'
 import { Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, createConnection } from 'typeorm'
 import { NexusEntity, nexusTypeORMPlugin, entityType } from 'nexus-typeorm-plugin'
 import { queryType, makeSchema } from 'nexus'
 
-dotenv.config()
-
+// First we define our entities
 @NexusEntity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -52,20 +54,19 @@ class Post {
   }
 }
 
-const { DB_HOST, DB_TYPE, DB_NAME, DB_USERNAME, DB_PASSWORD, DB_PORT } = process.env
-
 async function main() {
   await createConnection({
     entities: [User, Post],
-    host: DB_HOST,
-    type: DB_TYPE as 'mysql',
-    database: DB_NAME,
-    username: DB_USERNAME,
-    password: DB_PASSWORD,
-    port: DB_PORT ? parseInt(DB_PORT as any, 10) : undefined,
+    host: 'localhost',
+    type: 'mysql',
+    database: 'nexus-typeorm',
+    username: 'root',
+    password: '',
+    port: 3306,
     synchronize: true,
   })
 
+  // Define the Query type for our schema
   const query = queryType({
     definition: t => {
       t.paginationField('posts', {
@@ -75,6 +76,7 @@ async function main() {
   })
 
   const schema = makeSchema({
+    // It's important to notice that even though we didn't create an resolver for User in Query. We have to define it in our schema since it's related to Post entity
     types: [nexusTypeORMPlugin(), query, entityType(User), entityType(Post)],
     outputs: {
       schema: path.resolve('schema.graphql'),
@@ -87,15 +89,93 @@ async function main() {
 }
 
 main().catch(error => {
-  // eslint-disable-next-line no-console
   console.error(error)
   process.exit(1)
 })
 ```
 
-## To run tests
+## Features
 
-Create `.env` file at the project root and fill it with database information.
+### entityType
+
+Helps you create an `objectType` for an entity faster and simpler.
+
+```typescript
+export const User = entityType<User>(User, {
+  definition: t => {
+    t.entityField('id')
+    t.entityField('name')
+    t.paginationField('followers', {
+      type: 'User',
+      entity: 'UserFollows',
+      resolve: async (source: User, args, ctx, info, next) => {
+        const follows = await next(source, args, ctx, info)
+
+        return getConnection()
+          .getRepository(User)
+          .createQueryBuilder()
+          .where('id IN (:...ids)', {
+            ids: follows.map((follow: UserFollows) => follow.followerId),
+          })
+          .getMany()
+      },
+    })
+  },
+})
+```
+
+### paginationField
+
+Creates a field that resolves into a list of instances of the choosen entity. It includes the `first`, `last`, `after`, `before`, `skip`, `where`, and the `orderBy` arguments.
+
+```typescript
+export const Query = queryType({
+  definition(t) {
+    t.paginationField('posts', {
+      entity: 'Post',
+    })
+  },
+})
+```
+
+### uniqueField
+
+Creates a field that resolves into one entity instance. It includes the `where` and the `orderBy` arguments.
+
+```typescript
+export const Query = queryType({
+  definition(t) {
+    t.uniqueField('user', {
+      entity: 'User',
+    })
+  },
+})
+```
+
+### Auto join
+
+In order to speed up requests and decrease the number of queries made to the database, this plugin analyzes each graphql query and makes the necessary joins automatically.
+
+```gql
+{
+  user {
+    id
+    posts {
+      id
+    }
+  }
+}
+```
+
+Generates a SQL query that left joins Post.
+
+```SQL
+SELECT * from User ... LEFT JOIN POST
+```
+
+## Contributing
+
+To run tests create `.env` file at the project root and fill it with database information.
 
 ```bash
 TEST_DB_HOST=localhost
@@ -117,7 +197,3 @@ Now you can run tests.
 ```bash
 yarn test
 ```
-
-## Notes
-
-Implementation is now at experimental stage. It's currently tested on the simplest cases.

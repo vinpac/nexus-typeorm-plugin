@@ -97,7 +97,7 @@ describe('UniqueField', () => {
         age: 3,
         id: String(user!.id),
         name: 'Jeong',
-        posts: [
+        posts: expect.arrayContaining([
           {
             id: String(user!.id),
             title: 'hello 1',
@@ -106,7 +106,7 @@ describe('UniqueField', () => {
             id: expect.any(String),
             title: 'hello 2',
           },
-        ],
+        ]),
       },
     })
   })
@@ -137,7 +137,7 @@ describe('UniqueField', () => {
         title: 'hello 1',
         user: {
           id: expect.any(String),
-          posts: [
+          posts: expect.arrayContaining([
             {
               id: expect.any(String),
               title: 'hello 1',
@@ -152,11 +152,11 @@ describe('UniqueField', () => {
                 id: expect.any(String),
               },
             },
-          ],
+          ]),
         },
       },
     })
-    expect(getDatabaseQueriesCount()).toBe(5)
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 
   it('should fetch deep relations without dataloaders', async () => {
@@ -191,7 +191,7 @@ describe('UniqueField', () => {
         title: 'hello 1',
         user: {
           id: expect.any(String),
-          posts: [
+          posts: expect.arrayContaining([
             {
               id: expect.any(String),
               title: 'hello 1',
@@ -222,12 +222,11 @@ describe('UniqueField', () => {
                 ],
               },
             },
-          ],
+          ]),
         },
       },
     })
-    // 2 Unique fields and 1 Pagination field
-    expect(getDatabaseQueriesCount()).toBe(7)
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 
   it('should fetch deep relations with dataloaders', async () => {
@@ -268,7 +267,7 @@ describe('UniqueField', () => {
         title: 'hello 1',
         user: {
           id: expect.any(String),
-          posts: [
+          posts: expect.arrayContaining([
             {
               id: expect.any(String),
               title: 'hello 1',
@@ -299,11 +298,10 @@ describe('UniqueField', () => {
                 ],
               },
             },
-          ],
+          ]),
         },
       },
     })
-    // 2 Unique fields and 1 Pagination field
-    expect(getDatabaseQueriesCount()).toBe(3)
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 })

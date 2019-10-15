@@ -48,7 +48,9 @@ export function createTestSchemaSingleton() {
         query,
         user,
         entityType(UserProfile),
-        entityType(Post),
+        entityType(Post, {
+          definition: t => t.entityFields('*'),
+        }),
         entityType(UserFollows),
         entityType(UserLikesPost),
         entityType(Email),

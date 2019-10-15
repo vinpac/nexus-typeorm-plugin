@@ -1,34 +1,71 @@
 import { TranslatedWhere } from './args/arg-where'
-import { getConnection } from 'typeorm'
+import { getConnection, SelectQueryBuilder } from 'typeorm'
 import { OrderInfo } from './args/arg-order-by'
 import { getEntityTypeName } from './util'
+import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
+import { SchemaBuilder } from './schema-builder'
 
-interface FindEntitiesOptions {
+export interface EntityJoin {
+  propertyPath: string
+  first?: number
+  last?: number
+  where?: TranslatedWhere
+  orders?: OrderInfo[]
+  relation: RelationMetadata
+}
+
+interface QueryBuilderConfig {
   entity: Function
   first?: number
   last?: number
   where?: TranslatedWhere
   orders?: OrderInfo[]
-  join?: string[]
+  join?: EntityJoin[]
 }
-export function createQueryBuilder<Model>(options: FindEntitiesOptions) {
-  const { entity } = options
-  const connection = getConnection()
-  const entityTypeName = getEntityTypeName(entity)
-  const queryBuilder = connection.getRepository<Model>(entity).createQueryBuilder()
 
-  if (options.first !== undefined) {
-    queryBuilder.take(options.first)
-  } else if (options.last !== undefined) {
-    queryBuilder.take(options.last)
+function populateQueryBuilder<Model>(
+  queryBuilder: SelectQueryBuilder<Model>,
+  // Schema Builder will be used in a next version to allow
+  // deep auto joins
+  _: SchemaBuilder,
+  config: QueryBuilderConfig,
+) {
+  const entityTypeName = getEntityTypeName(config.entity)
+
+  if (config.first !== undefined) {
+    queryBuilder.take(config.first)
+  } else if (config.last !== undefined) {
+    queryBuilder.take(config.last)
   }
 
-  if (options.where) {
-    queryBuilder.where(options.where.expression, options.where.params)
+  if (config.where) {
+    queryBuilder.where(config.where.expression, config.where.params)
   }
 
-  if (options.join) {
-    options.join.forEach(propertyPath => {
+  const ordersWithDepth: {
+    alias: string
+    depth: number
+    order: OrderInfo
+  }[] =
+    (config.orders &&
+      config.orders.map(order => ({
+        alias: entityTypeName,
+        depth: 0,
+        order,
+      }))) ||
+    []
+
+  if (ordersWithDepth.length) {
+    const sortedOrdersWithDepth = ordersWithDepth.sort((a, b) => a.depth - b.depth)
+
+    sortedOrdersWithDepth.forEach(order =>
+      queryBuilder.addOrderBy(`${order.alias}.${order.order.propertyName}`, order.order.type),
+    )
+  }
+
+  queryBuilder
+  if (config.join) {
+    config.join.forEach(({ propertyPath }) => {
       const propertyPathPieces = propertyPath.split('.')
       queryBuilder.leftJoinAndSelect(
         propertyPathPieces.length > 1
@@ -41,31 +78,15 @@ export function createQueryBuilder<Model>(options: FindEntitiesOptions) {
     })
   }
 
-  const ordersWithDepth: {
-    alias: string
-    depth: number
-    order: OrderInfo
-  }[] =
-    (options.orders &&
-      options.orders.map(order => ({
-        alias: entityTypeName,
-        depth: 0,
-        order,
-      }))) ||
-    []
-
-  if (ordersWithDepth.length) {
-    const sortedOrdersWithDepth = ordersWithDepth.sort((a, b) => a.depth - b.depth)
-
-    sortedOrdersWithDepth.forEach(order => {
-      const {
-        alias,
-        order: { propertyName, type },
-      } = order
-
-      queryBuilder.addOrderBy(`${alias}.${propertyName}`, type)
-    })
-  }
-
   return queryBuilder
+}
+
+export function createQueryBuilder<Model>(
+  schemaBuilder: SchemaBuilder,
+  config: QueryBuilderConfig,
+): SelectQueryBuilder<Model> {
+  const conn = getConnection()
+  const queryBuilder = conn.getRepository<Model>(config.entity).createQueryBuilder()
+
+  return populateQueryBuilder(queryBuilder, schemaBuilder, config)
 }

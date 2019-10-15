@@ -194,7 +194,7 @@ describe('Basic', () => {
         },
       ]),
     })
-    expect(getDatabaseQueriesCount()).toBe(6)
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 
   it('resolves many to one', async () => {
@@ -217,7 +217,7 @@ describe('Basic', () => {
         ],
       },
     })
-    expect(getDatabaseQueriesCount()).toBe(2)
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 
   it('throws an error if foreign key is not defined in schema', async () => {
