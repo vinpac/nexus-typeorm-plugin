@@ -156,7 +156,7 @@ describe('UniqueField', () => {
         },
       },
     })
-    expect(getDatabaseQueriesCount()).toBe(5)
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 
   it('should fetch deep relations without dataloaders', async () => {
@@ -226,8 +226,7 @@ describe('UniqueField', () => {
         },
       },
     })
-    // 2 Unique fields and 1 Pagination field
-    expect(getDatabaseQueriesCount()).toBe(7)
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 
   it('should fetch deep relations with dataloaders', async () => {
@@ -303,7 +302,6 @@ describe('UniqueField', () => {
         },
       },
     })
-    // 2 Unique fields and 1 Pagination field
-    expect(getDatabaseQueriesCount()).toBe(3)
+    expect(getDatabaseQueriesCount()).toBe(1)
   })
 })

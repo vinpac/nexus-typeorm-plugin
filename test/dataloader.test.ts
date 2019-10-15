@@ -37,60 +37,6 @@ describe('UniqueField', () => {
     resetLogger()
   })
 
-  it('should fetch unique field deep relations with dataloaders', async () => {
-    expect(getDatabaseQueriesCount()).toBe(0)
-    const result = await query(
-      `{
-        post (where: { title: "hello 1" }) {
-          title
-          user {
-            name
-            posts {
-              title
-              user {
-                name
-                posts {
-                  title
-                }
-              }
-            }
-          }
-        }
-     }`,
-      {},
-      {
-        // Using getDecoratedEntities() only for testing
-        // In production you this wouldn't work if you set a diferent value for `entities` option
-        // at `createSchemaShape`
-        orm: createORMContext(),
-      },
-    )
-
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
-      post: {
-        title: 'hello 1',
-        user: {
-          name: 'Jeong',
-          posts: [
-            {
-              title: 'hello 1',
-              user: {
-                name: 'Jeong',
-                posts: [
-                  {
-                    title: 'hello 1',
-                  },
-                ],
-              },
-            },
-          ],
-        },
-      },
-    })
-    expect(getDatabaseQueriesCount()).toBe(3)
-  })
-
   it('should fetch pagination field deep relations with dataloaders', async () => {
     expect(getDatabaseQueriesCount()).toBe(0)
     const result = await query(
@@ -113,9 +59,6 @@ describe('UniqueField', () => {
      }`,
       {},
       {
-        // Using getDecoratedEntities() only for testing
-        // In production you this wouldn't work if you set a diferent value for `entities` option
-        // at `createSchemaShape`
         orm: createORMContext(),
       },
     )
@@ -181,6 +124,5 @@ describe('UniqueField', () => {
         },
       ],
     })
-    expect(getDatabaseQueriesCount()).toBe(5)
   })
 })

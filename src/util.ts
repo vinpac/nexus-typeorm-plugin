@@ -1,69 +1,9 @@
-import { FieldNode, ValueNode } from 'graphql'
 import { getConnection } from 'typeorm'
-import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 import { getDatabaseObjectMetadata } from './decorators'
-import { EntitiesMap } from './schema-builder'
-
-export interface Relation {
-  relationPath: string
-  fieldNode: FieldNode
-  type: string | Function
-}
-
-export function graphQLObjectValueToObject(value: ValueNode) {
-  if (
-    value.kind === 'StringValue' ||
-    value.kind === 'IntValue' ||
-    value.kind === 'BooleanValue' ||
-    value.kind === 'FloatValue' ||
-    value.kind === 'EnumValue'
-  ) {
-    return value.value
-  } else if (value.kind === 'NullValue') {
-    return null
-  } else if (value.kind === 'ObjectValue') {
-    return value.fields.reduce<{ [key: string]: any }>((values, field) => {
-      values[field.name.value] = graphQLObjectValueToObject(field.value)
-      return values
-    }, {})
-  } else if (value.kind === 'ListValue') {
-    return value.values.reduce<any[]>((values, field) => {
-      values.push(graphQLObjectValueToObject(field))
-      return values
-    }, [])
-  }
-}
-
-export function orderItemsByPrimaryColumns<T>(
-  primaryColumns: ColumnMetadata[],
-  items: T[],
-  ids: any[],
-): T[] {
-  const [primaryColumn] = primaryColumns
-
-  if (primaryColumn) {
-    const { propertyName } = primaryColumn
-
-    const idToItemMap = items.reduce<any>((map, item) => {
-      if (propertyName in item) {
-        const id = (item as any)[propertyName]
-        map[id] = item
-      }
-      return map
-    }, {})
-
-    const ordered = ids.reduce<T[]>((array, id) => {
-      if (id in idToItemMap) {
-        array.push(idToItemMap[id])
-      }
-      return array
-    }, [])
-
-    return ordered
-  }
-
-  return items
-}
+import { EntitiesMap, SchemaBuilder } from './schema-builder'
+import { GraphQLResolveInfo, SelectionSetNode, ArgumentNode, ValueNode } from 'graphql'
+import { EntityJoin } from './query-builder'
+import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
 
 export function makeFirstLetterUpperCase(s: string): string {
   return typeof s === 'string' && s.length ? s[0].toUpperCase() + s.substr(1) : s
@@ -98,4 +38,113 @@ export const findEntityByTypeName = (
   )
 
   return matchedEntityName ? entitiesMap[matchedEntityName] : null
+}
+
+const parseGraphQLValue = (value: ValueNode, variableValues: any): any => {
+  if (value.kind === 'ObjectValue') {
+    const obj: any = {}
+    value.fields.forEach(field => {
+      obj[field.name.value] = parseGraphQLValue(field.value, variableValues)
+    })
+    return obj
+  }
+
+  if (value.kind === 'Variable') {
+    return variableValues[value.name.value]
+  }
+
+  if (value.kind === 'ListValue') {
+    return value.values.map(itemvalue => parseGraphQLValue(itemvalue, variableValues))
+  }
+
+  if (value.kind === 'NullValue') {
+    return null
+  }
+
+  if (value.kind === 'IntValue') {
+    return parseInt(value.value, 10)
+  }
+
+  if (value.kind === 'FloatValue') {
+    return parseFloat(value.value)
+  }
+
+  return value.value
+}
+
+export const graphQLArgumentsToObject = (
+  args: readonly ArgumentNode[],
+  variableValues: any,
+): { [argName: string]: any } => {
+  const obj: any = {}
+  args.forEach(arg => {
+    obj[arg.name.value] = parseGraphQLValue(arg.value, variableValues)
+  })
+  return obj
+}
+
+export const grapQLInfoToEntityJoins = (
+  info: GraphQLResolveInfo,
+  entity: any,
+  schemaBuilder: SchemaBuilder,
+): EntityJoin[] => {
+  const joins: EntityJoin[] = []
+  const iterate = ({ selectionSet }: { selectionSet?: SelectionSetNode }, prefix = '') => {
+    if (selectionSet) {
+      selectionSet.selections.forEach(selection => {
+        if (selection.kind === 'Field') {
+          const propertyPath = `${prefix}${selection.name.value}`
+
+          const relation = getDeepEntityRelation(entity, propertyPath, schemaBuilder)
+          if (relation) {
+            if (selection.arguments && selection.arguments.length) {
+              return
+            }
+
+            joins.push({ propertyPath, relation })
+
+            // const args = selection.arguments
+            //   ? graphQLArgumentsToObject(selection.arguments, info.variableValues)
+            //   : {}
+            // joins.push({
+            //   ...args,
+            //   relation,
+            //   where:
+            //     args.where &&
+            //     args.where &&
+            //     translateWhereClause(relation.entityMetadata.tableName, args.where),
+            //   propertyPath,
+            // })
+          }
+
+          iterate(selection, `${propertyPath}.`)
+        }
+      })
+    }
+  }
+  iterate(info.fieldNodes[0])
+
+  return joins
+}
+
+export const getDeepEntityRelation = (
+  entity: any,
+  relationPath: string,
+  schemaBuilder: SchemaBuilder,
+) => {
+  let parentEntity = entity
+  let relation: RelationMetadata | undefined
+  relationPath.split('.').some(propertyName => {
+    const metadata = schemaBuilder.entitiesMetadata[parentEntity.name]
+
+    relation = metadata.findRelationWithPropertyPath(propertyName)
+    if (!relation) {
+      return true
+    }
+
+    parentEntity = schemaBuilder.entitiesMetadata[relation.inverseEntityMetadata.name]
+    return false
+  })
+
+  return relation
 }

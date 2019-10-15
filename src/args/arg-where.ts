@@ -9,10 +9,10 @@ const singleOperandOperations = ['contains']
 const numberOperandOperations = ['lt', 'lte', 'gt', 'gte']
 const multipleOperandOperations = ['in']
 
-export type ArgWhere = {
-  AND: ArgWhere[]
-  OR: ArgWhere[]
-  NOT: ArgWhere[]
+export type ArgWhereType = {
+  AND: ArgWhereType[]
+  OR: ArgWhereType[]
+  NOT: ArgWhereType[]
 } & {
   [key: string]: string | Array<string | boolean | number>
 }
