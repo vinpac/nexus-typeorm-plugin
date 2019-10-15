@@ -97,7 +97,7 @@ describe('UniqueField', () => {
         age: 3,
         id: String(user!.id),
         name: 'Jeong',
-        posts: [
+        posts: expect.arrayContaining([
           {
             id: String(user!.id),
             title: 'hello 1',
@@ -106,7 +106,7 @@ describe('UniqueField', () => {
             id: expect.any(String),
             title: 'hello 2',
           },
-        ],
+        ]),
       },
     })
   })
@@ -137,7 +137,7 @@ describe('UniqueField', () => {
         title: 'hello 1',
         user: {
           id: expect.any(String),
-          posts: [
+          posts: expect.arrayContaining([
             {
               id: expect.any(String),
               title: 'hello 1',
@@ -152,7 +152,7 @@ describe('UniqueField', () => {
                 id: expect.any(String),
               },
             },
-          ],
+          ]),
         },
       },
     })
@@ -191,7 +191,7 @@ describe('UniqueField', () => {
         title: 'hello 1',
         user: {
           id: expect.any(String),
-          posts: [
+          posts: expect.arrayContaining([
             {
               id: expect.any(String),
               title: 'hello 1',
@@ -222,7 +222,7 @@ describe('UniqueField', () => {
                 ],
               },
             },
-          ],
+          ]),
         },
       },
     })
@@ -267,7 +267,7 @@ describe('UniqueField', () => {
         title: 'hello 1',
         user: {
           id: expect.any(String),
-          posts: [
+          posts: expect.arrayContaining([
             {
               id: expect.any(String),
               title: 'hello 1',
@@ -298,7 +298,7 @@ describe('UniqueField', () => {
                 ],
               },
             },
-          ],
+          ]),
         },
       },
     })
