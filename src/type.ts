@@ -9,6 +9,11 @@ function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
   } else if (
     columnType === String ||
     columnType === 'varchar' ||
+    columnType === 'text' ||
+    columnType === 'tinytext' ||
+    columnType === 'json' ||
+    columnType === 'simple-json' ||
+    columnType === 'xml' ||
     columnType === 'varchar2' ||
     columnType === 'varying character' ||
     columnType === 'char' ||
