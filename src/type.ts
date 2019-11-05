@@ -18,6 +18,9 @@ function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
     columnType === 'varying character' ||
     columnType === 'char' ||
     columnType === 'character' ||
+    columnType === 'longtext' ||
+    columnType === 'longblob' ||
+    columnType === 'time' ||
     columnType === 'character varying'
   ) {
     return 'String'
@@ -30,10 +33,15 @@ function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
     columnType === 'int64' ||
     columnType === 'integer' ||
     columnType === 'unsigned big int' ||
+    columnType === 'double' ||
     columnType === 'bigint'
   ) {
     return 'Int'
-  } else if (columnType === 'float' || columnType === 'float4' || columnType === 'float8') {
+  else if (columnType === 'float' ||
+    columnType === 'bestelbon' ||
+    columnType === 'float4' ||
+    columnType === 'float8' ||
+    columnType === 'decimal') {
     return 'Float'
   } else if (columnType === Boolean || columnType === 'bool' || columnType === 'boolean') {
     return 'Boolean'
