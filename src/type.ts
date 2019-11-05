@@ -38,7 +38,6 @@ function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
   ) {
     return 'Int'
   else if (columnType === 'float' ||
-    columnType === 'bestelbon' ||
     columnType === 'float4' ||
     columnType === 'float8' ||
     columnType === 'decimal') {
