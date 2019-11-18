@@ -1,18 +1,21 @@
 {
   "name": "nexus-typeorm-plugin-basics-example",
   "scripts": {
-    "dev": "tncc server.ts -r -w -o dist/server.js"
+    "dev": "tncc server.ts -w --run -o dist/index.js"
   },
   "dependencies": {
     "apollo-server": "^2.8.1",
     "dotenv": "^8.0.0",
-    "mysql": "^2.17.1",
-    "type-graph-orm": "^0.1.29",
-    "typeorm": "^0.2.18"
+    "graphql": "^14.5.8",
+    "nexus": "^0.12.0-rc.4",
+    "nexus-typeorm-plugin": "^0.0.1-alpha.0",
+    "pg": "^7.12.1",
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.2.20"
   },
   "devDependencies": {
     "prettier": "^1.18.2",
-    "tncc": "^0.2.5",
+    "tncc": "^0.3.0-beta.5",
     "typescript": "^3.5.3"
   }
 }

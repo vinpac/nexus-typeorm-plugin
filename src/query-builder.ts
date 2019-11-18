@@ -2,32 +2,29 @@ import { TranslatedWhere } from './args/arg-where'
 import { getConnection, SelectQueryBuilder } from 'typeorm'
 import { OrderInfo } from './args/arg-order-by'
 import { getEntityTypeName } from './util'
-import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
-import { SchemaBuilder } from './schema-builder'
 
 export interface EntityJoin {
+  type: 'inner' | 'left'
   propertyPath: string
-  first?: number
-  last?: number
   where?: TranslatedWhere
-  orders?: OrderInfo[]
-  relation: RelationMetadata
+  select?: boolean
 }
 
-interface QueryBuilderConfig {
+export interface QueryBuilderConfig {
   entity: Function
   first?: number
   last?: number
   where?: TranslatedWhere
   orders?: OrderInfo[]
-  join?: EntityJoin[]
+  joins?: EntityJoin[]
+}
+
+export function propertyPathToAlias(propertyPath: string) {
+  return propertyPath.replace(/\./g, '_')
 }
 
 function populateQueryBuilder<Model>(
   queryBuilder: SelectQueryBuilder<Model>,
-  // Schema Builder will be used in a next version to allow
-  // deep auto joins
-  _: SchemaBuilder,
   config: QueryBuilderConfig,
 ) {
   const entityTypeName = getEntityTypeName(config.entity)
@@ -62,18 +59,24 @@ function populateQueryBuilder<Model>(
       queryBuilder.addOrderBy(`${order.alias}.${order.order.propertyName}`, order.order.type),
     )
   }
+  if (config.joins) {
+    config.joins.forEach(join => {
+      const propertyPathPieces = join.propertyPath.split('.')
+      const method = `${join.type}Join${join.select !== false ? 'AndSelect' : ''}` as
+        | 'innerJoin'
+        | 'leftJoin'
+        | 'leftJoinAndSelect'
+        | 'innerJoinAndSelect'
 
-  queryBuilder
-  if (config.join) {
-    config.join.forEach(({ propertyPath }) => {
-      const propertyPathPieces = propertyPath.split('.')
-      queryBuilder.leftJoinAndSelect(
+      queryBuilder[method](
         propertyPathPieces.length > 1
           ? `${propertyPathPieces.slice(0, propertyPathPieces.length - 1).join('_')}.${
               propertyPathPieces[propertyPathPieces.length - 1]
             }`
-          : `${entityTypeName}.${propertyPath}`,
-        propertyPath.replace(/\./g, '_'),
+          : `${entityTypeName}.${join.propertyPath}`,
+        propertyPathToAlias(join.propertyPath),
+        join.where && join.where.expression,
+        join.where && join.where.params,
       )
     })
   }
@@ -81,12 +84,9 @@ function populateQueryBuilder<Model>(
   return queryBuilder
 }
 
-export function createQueryBuilder<Model>(
-  schemaBuilder: SchemaBuilder,
-  config: QueryBuilderConfig,
-): SelectQueryBuilder<Model> {
+export function createQueryBuilder<Model>(config: QueryBuilderConfig): SelectQueryBuilder<Model> {
   const conn = getConnection()
   const queryBuilder = conn.getRepository<Model>(config.entity).createQueryBuilder()
 
-  return populateQueryBuilder(queryBuilder, schemaBuilder, config)
+  return populateQueryBuilder(queryBuilder, config)
 }

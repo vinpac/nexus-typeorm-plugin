@@ -96,18 +96,19 @@ main().catch(error => {
 
 ## Features
 
-### entityType
+### Entity field definition
 
 Helps you create an `objectType` for an entity faster and simpler.
 
 ```typescript
 export const User = entityType<User>(User, {
   definition: t => {
-    t.entityField('id')
-    t.entityField('name')
-    t.paginationField('followers', {
+    t.entity.id()
+    t.entity.name()
+    // equals to t.entityField('name')
+    t.crud.userFollows('followers', {
+      // equals to t.crudField('followers', { entity: 'UserFollow', ...
       type: 'User',
-      entity: 'UserFollows',
       resolve: async (source: User, args, ctx, info, next) => {
         const follows = await next(source, args, ctx, info)
 
@@ -124,15 +125,50 @@ export const User = entityType<User>(User, {
 })
 ```
 
-### paginationField
+# CRUD
+
+## Find Many
 
 Creates a field that resolves into a list of instances of the choosen entity. It includes the `first`, `last`, `after`, `before`, `skip`, `where`, and the `orderBy` arguments.
 
 ```typescript
 export const Query = queryType({
   definition(t) {
-    t.paginationField('posts', {
+    t.crud.posts()
+    t.crud.users('listUsers')
+    t.crud.users('listUsersWithNameJohn', {
+      resolve: ctx => {
+        ctx.args.where = {
+          ...ctx.args.where,
+          name: 'John',
+        }
+
+        return ctx.next(ctx)
+      },
+    })
+    t.crudField('listPostsWithCategoryFoo', {
       entity: 'Post',
+      method: 'findMany',
+      resolve: ctx => {
+        return ctx.next({
+          ...ctx,
+          queryBuilderConfig: config => ({
+            ...config,
+            joins: [
+              ...config.joins,
+              {
+                type: 'inner',
+                select: false,
+                propertyPath: 'categories',
+                where: {
+                  expression: `${Alias('categories')}.id = :id`,
+                  params: { id: 1 },
+                },
+              },
+            ],
+          }),
+        })
+      },
     })
   },
 })

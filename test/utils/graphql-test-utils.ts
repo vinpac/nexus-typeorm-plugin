@@ -1,5 +1,5 @@
 import { GraphQLSchema, graphql } from 'graphql'
-import { makeSchema, queryType } from 'nexus'
+import { makeSchema, queryType, stringArg } from 'nexus'
 import { User } from 'test/entities/user'
 import { entityType } from '../../src/nexus/nexus-types'
 import { UserProfile } from 'test/entities/user-profile'
@@ -9,51 +9,90 @@ import { UserFollows } from 'test/entities/user-follows'
 import { Email } from 'test/entities/email'
 import { getConnection } from 'typeorm'
 import { nexusTypeORMPlugin } from 'src/plugin'
+import { Category } from 'test/entities/category'
+import { FindManyResolveFnContext } from 'src'
+import { propertyPathToAlias } from 'src/query-builder'
 
 export let schema: GraphQLSchema | undefined
 export function createTestSchemaSingleton() {
   if (!schema) {
-    const user = entityType<User>(User, {
-      definition: t => {
-        t.entityFields('*')
-        t.paginationField('followers', {
-          type: 'User',
-          entity: 'UserFollows',
-          resolve: async (source: User, args, ctx, info, next) => {
-            const follows = await next(source, args, ctx, info)
-
-            return getConnection()
-              .getRepository(User)
-              .createQueryBuilder()
-              .where('id IN (:...ids)', {
-                ids: follows.map((follow: UserFollows) => follow.followerId),
-              })
-              .getMany()
-          },
-        })
-      },
-    })
-    const query = queryType({
-      definition: t => {
-        t.paginationField('users', { entity: 'User' })
-        t.paginationField('posts', { entity: 'Post' })
-        t.uniqueField('user', { entity: 'User' })
-        t.uniqueField('post', { entity: 'Post' })
-      },
-    })
-
     schema = makeSchema({
       types: [
         nexusTypeORMPlugin(),
-        query,
-        user,
-        entityType(UserProfile),
-        entityType(Post, {
-          definition: t => t.entityFields('*'),
+        queryType({
+          definition: t => {
+            t.crud.user()
+            t.crud.users()
+            t.crud.post()
+            t.crud.category()
+            t.crud.posts()
+            t.crud.users('usersByName', {
+              args: args => ({ ...args, name: stringArg({ nullable: false }) }),
+              resolve: (ctx: FindManyResolveFnContext<User, User, any, any>) => {
+                ctx.args.where = {
+                  ...ctx.args.where,
+                  name: ctx.args.name,
+                }
+
+                return ctx.next(ctx)
+              },
+            })
+            t.crudField('postsByCategoryId', {
+              entity: 'Post',
+              type: 'Post',
+              method: 'findMany',
+              args: args => ({
+                ...args,
+                categoryId: stringArg({ nullable: false }),
+              }),
+              resolve: ctx => {
+                return ctx.next({
+                  ...ctx,
+                  queryBuilderConfig: config => ({
+                    ...config,
+                    joins: [
+                      ...(config.joins || []),
+                      {
+                        type: 'inner',
+                        select: false,
+                        propertyPath: 'categories',
+                        where: {
+                          expression: `${propertyPathToAlias('categories')}.id = :id`,
+                          params: { id: ctx.args.categoryId },
+                        },
+                      },
+                    ],
+                  }),
+                })
+              },
+            })
+          },
         }),
+        entityType<User>(User, {
+          definition: t => {
+            t.entityFields()
+            t.crud.userFollows('followers', {
+              type: 'User',
+              resolve: async ctx => {
+                const follows = await ctx.next(ctx)
+
+                return getConnection()
+                  .getRepository(User)
+                  .createQueryBuilder()
+                  .where('id IN (:...ids)', {
+                    ids: follows.map((follow: UserFollows) => follow.followerId),
+                  })
+                  .getMany()
+              },
+            })
+          },
+        }),
+        entityType(UserProfile),
+        entityType(Post),
         entityType(UserFollows),
         entityType(UserLikesPost),
         entityType(Email),
+        entityType(Category),
       ],
       outputs: false,
     })

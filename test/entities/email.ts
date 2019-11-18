@@ -1,5 +1,4 @@
 import { PrimaryGeneratedColumn, OneToOne, Column } from 'typeorm'
-
 import { User } from 'test/entities/user'
 import { NexusEntity } from 'src/index'
 

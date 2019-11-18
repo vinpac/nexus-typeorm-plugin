@@ -1,7 +1,6 @@
 import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
 import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from './utils'
-import { createORMContext } from 'src/dataloader/entity-dataloader'
 
 describe('UniqueField', () => {
   setupTest()
@@ -212,82 +211,6 @@ describe('UniqueField', () => {
               title: 'hello 2',
               user: {
                 id: expect.any(String),
-                posts: [
-                  {
-                    id: expect.any(String),
-                  },
-                  {
-                    id: expect.any(String),
-                  },
-                ],
-              },
-            },
-          ]),
-        },
-      },
-    })
-    expect(getDatabaseQueriesCount()).toBe(1)
-  })
-
-  it('should fetch deep relations with dataloaders', async () => {
-    expect(getDatabaseQueriesCount()).toBe(0)
-    const result = await query(
-      `{
-      post (where: { title: "hello 1" }) {
-        id
-        title
-        user {
-          id
-          posts {
-            id
-            title
-            user {
-              id
-              posts {
-                id
-              }
-            }
-          }
-        }
-      }
-    }`,
-      {},
-      {
-        // Using getDecoratedEntities() only for testing
-        // In production you this wouldn't work if you set a diferent value for `entities` option
-        // at `createSchemaShape`
-        orm: createORMContext(),
-      },
-    )
-
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
-      post: {
-        id: expect.any(String),
-        title: 'hello 1',
-        user: {
-          id: expect.any(String),
-          posts: expect.arrayContaining([
-            {
-              id: expect.any(String),
-              title: 'hello 1',
-              user: {
-                id: expect.any(String),
-                posts: [
-                  {
-                    id: expect.any(String),
-                  },
-                  {
-                    id: expect.any(String),
-                  },
-                ],
-              },
-            },
-            {
-              id: expect.any(String),
-              title: 'hello 2',
-              user: {
-                id: String(user!.id),
                 posts: [
                   {
                     id: expect.any(String),

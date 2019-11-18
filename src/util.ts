@@ -1,20 +1,12 @@
 import { getConnection } from 'typeorm'
 import { getDatabaseObjectMetadata } from './decorators'
-import { EntitiesMap, SchemaBuilder } from './schema-builder'
-import { GraphQLResolveInfo, SelectionSetNode, ArgumentNode, ValueNode } from 'graphql'
+import { SchemaBuilder } from './schema-builder'
+import { GraphQLResolveInfo, SelectionSetNode } from 'graphql'
 import { EntityJoin } from './query-builder'
 import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
 
 export function makeFirstLetterUpperCase(s: string): string {
   return typeof s === 'string' && s.length ? s[0].toUpperCase() + s.substr(1) : s
-}
-
-export function makeFirstLetterLowerCase(s: string): string {
-  return typeof s === 'string' && s.length ? s[0].toLowerCase() + s.substr(1) : s
-}
-
-export const gql = (templateStringArray: TemplateStringsArray) => {
-  return templateStringArray[0]
 }
 
 export const getEntityTypeName = (entity: Function) => getDatabaseObjectMetadata(entity).typeName
@@ -27,60 +19,6 @@ export const getEntityPrimaryColumn = (entity: Function) => {
   }
 
   return primaryColumn
-}
-
-export const findEntityByTypeName = (
-  typeName: string,
-  entitiesMap: EntitiesMap,
-): Function | null => {
-  const matchedEntityName = Object.keys(entitiesMap).find(
-    entityName => getDatabaseObjectMetadata(entitiesMap[entityName]).typeName === typeName,
-  )
-
-  return matchedEntityName ? entitiesMap[matchedEntityName] : null
-}
-
-const parseGraphQLValue = (value: ValueNode, variableValues: any): any => {
-  if (value.kind === 'ObjectValue') {
-    const obj: any = {}
-    value.fields.forEach(field => {
-      obj[field.name.value] = parseGraphQLValue(field.value, variableValues)
-    })
-    return obj
-  }
-
-  if (value.kind === 'Variable') {
-    return variableValues[value.name.value]
-  }
-
-  if (value.kind === 'ListValue') {
-    return value.values.map(itemvalue => parseGraphQLValue(itemvalue, variableValues))
-  }
-
-  if (value.kind === 'NullValue') {
-    return null
-  }
-
-  if (value.kind === 'IntValue') {
-    return parseInt(value.value, 10)
-  }
-
-  if (value.kind === 'FloatValue') {
-    return parseFloat(value.value)
-  }
-
-  return value.value
-}
-
-export const graphQLArgumentsToObject = (
-  args: readonly ArgumentNode[],
-  variableValues: any,
-): { [argName: string]: any } => {
-  const obj: any = {}
-  args.forEach(arg => {
-    obj[arg.name.value] = parseGraphQLValue(arg.value, variableValues)
-  })
-  return obj
 }
 
 export const grapQLInfoToEntityJoins = (
@@ -98,23 +36,18 @@ export const grapQLInfoToEntityJoins = (
           const relation = getDeepEntityRelation(entity, propertyPath, schemaBuilder)
           if (relation) {
             if (selection.arguments && selection.arguments.length) {
+              // If the selection has arguments we can't join anymore
+              // Example.: {
+              //   user {
+              //     posts (first: 10) {
+              //      ...
+              //     }
+              //   }
+              // }
               return
             }
 
-            joins.push({ propertyPath, relation })
-
-            // const args = selection.arguments
-            //   ? graphQLArgumentsToObject(selection.arguments, info.variableValues)
-            //   : {}
-            // joins.push({
-            //   ...args,
-            //   relation,
-            //   where:
-            //     args.where &&
-            //     args.where &&
-            //     translateWhereClause(relation.entityMetadata.tableName, args.where),
-            //   propertyPath,
-            // })
+            joins.push({ type: 'left', propertyPath })
           }
 
           iterate(selection, `${propertyPath}.`)

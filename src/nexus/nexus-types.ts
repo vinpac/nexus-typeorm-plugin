@@ -1,16 +1,14 @@
 import { objectType } from 'nexus'
 import { NexusObjectTypeConfig } from 'nexus/dist/core'
 import { ObjectDefinitionBlock } from 'nexus/dist/definitions/objectType'
-import { EntityFieldConfig, EntityFieldsOptions } from './entity-field-output-method'
 import { getDatabaseObjectMetadata } from '../decorators'
+import { EntityOutputProperty } from './entity-output-property'
+import { EntityFieldsOutputMethod } from './entity-fields-output-method'
 
 interface EntityObjectDefinitionBlock<TEntity, TTypeName extends string>
-  extends Omit<ObjectDefinitionBlock<TTypeName>, 'entityField' | 'entityFields'> {
-  entityField(fieldName: Extract<keyof TEntity, string>, config?: EntityFieldConfig): void
-  entityFields(
-    fields: Extract<keyof TEntity, string>[] | '*',
-    options?: Omit<EntityFieldsOptions, 'ignore'> & { ignore?: Extract<keyof TEntity, string>[] },
-  ): void
+  extends Omit<ObjectDefinitionBlock<TTypeName>, 'entity' | 'entityFields'> {
+  entity: EntityOutputProperty<Extract<keyof TEntity, string>>
+  entityFields: EntityFieldsOutputMethod<Extract<keyof TEntity, string>[]>
 }
 
 interface EntityObjectTypeConfig<TEntity, TTypeName extends string>
@@ -28,7 +26,7 @@ export function entityType<TEntity>(
       ? { ...config, name: metadata.typeName }
       : {
           name: metadata.typeName,
-          definition: t => t.entityFields('*'),
+          definition: t => t.entityFields(),
         },
   )
 }

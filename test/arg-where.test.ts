@@ -1,23 +1,17 @@
 import { User } from './entities/user'
 import { Post } from './entities/post'
-import { query, setupTest, create } from './utils'
+import { query, setupTest, create, getDatabaseQueriesCount } from './utils'
 import { translateWhereClause } from 'src/args/arg-where'
 import { getConnection } from 'typeorm'
 
 describe('Where', () => {
-  setupTest()
-
-  async function setupFixture() {
+  setupTest(async () => {
     const userFoo = await create(User, { age: 20, name: 'foo' })
     const userBar = await create(User, { age: 30, name: 'bar' })
     await create(User, { age: 40, name: 'baz' })
     await create(User, { age: 50, name: 'quz' })
     await create(Post, { user: userFoo, title: 'foo post' })
     await create(Post, { user: userBar, title: 'bar post' })
-  }
-
-  beforeEach(async () => {
-    await setupFixture()
   })
 
   it('handles AND clause', async () => {
@@ -214,7 +208,6 @@ describe('Where', () => {
     `)
 
     expect(result.errors).toBeUndefined()
-    expect(result.data!.users).toHaveLength(2)
     expect(result.data).toMatchObject({
       users: expect.arrayContaining([
         {
@@ -234,5 +227,7 @@ describe('Where', () => {
         },
       ]),
     })
+    expect(result.data!.users).toHaveLength(2)
+    expect(getDatabaseQueriesCount()).toBe(3)
   })
 })

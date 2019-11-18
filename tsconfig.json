@@ -14,7 +14,8 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "lib": ["es2015"],
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "suppressImplicitAnyIndexErrors": true
   },
   "exclude": ["examples", "dist"]
 }

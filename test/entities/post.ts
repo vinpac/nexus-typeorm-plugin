@@ -5,11 +5,14 @@ import {
   OneToMany,
   CreateDateColumn,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm'
 
 import { User } from 'test/entities/user'
 import { UserLikesPost } from 'test/entities/user-likes-post'
 import { NexusEntity } from 'src/index'
+import { Category } from './category'
 
 @NexusEntity()
 export class Post {
@@ -43,4 +46,8 @@ export class Post {
   @OneToMany(() => UserLikesPost, like => like.post)
   @JoinColumn()
   public userLikesPosts: UserLikesPost[]
+
+  @ManyToMany(() => Category, category => category.posts)
+  @JoinTable()
+  categories: Category[]
 }

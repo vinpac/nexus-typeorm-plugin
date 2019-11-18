@@ -3,7 +3,7 @@ import { Post } from './entities/post'
 import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from './utils'
 import { UserLikesPost } from './entities/user-likes-post'
 
-describe('Where', () => {
+describe('Auto Join', () => {
   setupTest()
 
   async function setupFixture() {

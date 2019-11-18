@@ -5,7 +5,7 @@ import { getConnection } from 'typeorm'
 
 dotenv.config()
 
-export function setupTest() {
+export function setupTest(beforeEachFn?: () => any) {
   beforeAll(async () => {
     await createTestConnectionSingleton()
     await createTestSchemaSingleton()
@@ -13,6 +13,9 @@ export function setupTest() {
 
   beforeEach(async () => {
     await getConnection().synchronize(true)
+    if (beforeEachFn) {
+      await beforeEachFn()
+    }
 
     // Reset logger counter
     resetLogger()

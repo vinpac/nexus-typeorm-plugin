@@ -5,6 +5,7 @@ import { SchemaBuilder as NexusSchemaBuilder } from 'nexus/dist/core'
 import { enumColumnToGraphQLObject } from './type'
 import { createWhereInputObjectType } from './args/arg-where'
 import { createOrderByInputObjectType } from './args/arg-order-by'
+import { getDatabaseObjectMetadata } from './decorators'
 
 export interface EntitiesMap {
   [entityName: string]: Function
@@ -120,5 +121,19 @@ export class SchemaBuilder {
     }
 
     throw new Error('Invalid request to useType')
+  }
+
+  getEntityDataTupleByTypeName(typeName: string): [Function, EntityMetadata] {
+    const matchedEntityName = Object.keys(this.entities).find(
+      entityName => getDatabaseObjectMetadata(this.entities[entityName]).typeName === typeName,
+    )
+
+    const entity = matchedEntityName && this.entities[matchedEntityName]
+
+    if (!entity) {
+      throw new Error(`Unable to find entity by type name '${typeName}'`)
+    }
+
+    return [entity, this.entitiesMetadata[entity.name]]
   }
 }
