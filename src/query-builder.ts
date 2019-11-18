@@ -1,7 +1,6 @@
-import { TranslatedWhere } from './args/arg-where'
+import { TranslatedWhere, ArgWhereType, translateWhereClause } from './args/arg-where'
 import { getConnection, SelectQueryBuilder } from 'typeorm'
-import { OrderInfo } from './args/arg-order-by'
-import { getEntityTypeName } from './util'
+import { OrderInfo, ArgOrder, orderNamesToOrderInfos } from './args/arg-order-by'
 
 export interface EntityJoin {
   type: 'inner' | 'left'
@@ -12,6 +11,7 @@ export interface EntityJoin {
 
 export interface QueryBuilderConfig {
   entity: Function
+  alias: string
   first?: number
   last?: number
   where?: TranslatedWhere
@@ -27,8 +27,6 @@ function populateQueryBuilder<Model>(
   queryBuilder: SelectQueryBuilder<Model>,
   config: QueryBuilderConfig,
 ) {
-  const entityTypeName = getEntityTypeName(config.entity)
-
   if (config.first !== undefined) {
     queryBuilder.take(config.first)
   } else if (config.last !== undefined) {
@@ -40,13 +38,11 @@ function populateQueryBuilder<Model>(
   }
 
   const ordersWithDepth: {
-    alias: string
     depth: number
     order: OrderInfo
   }[] =
     (config.orders &&
       config.orders.map(order => ({
-        alias: entityTypeName,
         depth: 0,
         order,
       }))) ||
@@ -56,7 +52,7 @@ function populateQueryBuilder<Model>(
     const sortedOrdersWithDepth = ordersWithDepth.sort((a, b) => a.depth - b.depth)
 
     sortedOrdersWithDepth.forEach(order =>
-      queryBuilder.addOrderBy(`${order.alias}.${order.order.propertyName}`, order.order.type),
+      queryBuilder.addOrderBy(`${config.alias}.${order.order.propertyName}`, order.order.type),
     )
   }
   if (config.joins) {
@@ -73,7 +69,7 @@ function populateQueryBuilder<Model>(
           ? `${propertyPathPieces.slice(0, propertyPathPieces.length - 1).join('_')}.${
               propertyPathPieces[propertyPathPieces.length - 1]
             }`
-          : `${entityTypeName}.${join.propertyPath}`,
+          : `${config.alias}.${join.propertyPath}`,
         propertyPathToAlias(join.propertyPath),
         join.where && join.where.expression,
         join.where && join.where.params,
@@ -84,9 +80,33 @@ function populateQueryBuilder<Model>(
   return queryBuilder
 }
 
+interface CreateQueryBuilderConfigOptions {
+  alias?: string
+  where?: ArgWhereType
+  orderBy?: ArgOrder
+  joins?: EntityJoin[]
+  first?: number
+  last?: number
+}
+
+export function createQueryBuilderConfig(
+  entity: Function,
+  options: CreateQueryBuilderConfigOptions,
+): QueryBuilderConfig {
+  const alias = options.alias || getConnection().getMetadata(entity).tableName
+  return {
+    entity,
+    alias,
+    where: options.where ? translateWhereClause(alias, options.where) : undefined,
+    orders: options.orderBy ? orderNamesToOrderInfos(options.orderBy) : undefined,
+    joins: options.joins || [],
+    first: options.first,
+    last: options.last,
+  }
+}
 export function createQueryBuilder<Model>(config: QueryBuilderConfig): SelectQueryBuilder<Model> {
   const conn = getConnection()
-  const queryBuilder = conn.getRepository<Model>(config.entity).createQueryBuilder()
+  const queryBuilder = conn.getRepository<Model>(config.entity).createQueryBuilder(config.alias)
 
   return populateQueryBuilder(queryBuilder, config)
 }

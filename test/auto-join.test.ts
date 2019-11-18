@@ -1,12 +1,10 @@
 import { User } from './entities/user'
 import { Post } from './entities/post'
-import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from './utils'
+import { query, setupTest, create, getDatabaseQueriesCount } from './utils'
 import { UserLikesPost } from './entities/user-likes-post'
 
 describe('Auto Join', () => {
-  setupTest()
-
-  async function setupFixture() {
+  setupTest(async () => {
     const userFoo = await create(User, { age: 20, name: 'foo' })
     const userBar = await create(User, { age: 30, name: 'bar' })
     const userBaz = await create(User, { age: 40, name: 'baz' })
@@ -19,11 +17,6 @@ describe('Auto Join', () => {
     await create(UserLikesPost, { user: userBar, post: fooPost1 })
     await create(UserLikesPost, { user: userBaz, post: fooPost2 })
     await create(UserLikesPost, { user: userFoo, post: barPost })
-    resetLogger()
-  }
-
-  beforeEach(async () => {
-    await setupFixture()
   })
 
   it("should auto join user's posts, fetching in one query", async () => {
@@ -98,62 +91,6 @@ describe('Auto Join', () => {
 
     // 1 query + 2 queries for JOIN on posts.user and posts.user.posts
     expect(getDatabaseQueriesCount()).toBe(3)
-  })
-
-  it('handles join on pagination field', async () => {
-    const result = await query(`
-      query {
-        users {
-          id
-          name
-          posts {
-            id
-            title
-          }
-        }
-      }
-    `)
-
-    expect(getDatabaseQueriesCount()).toBe(1)
-    expect(result.errors).toBe(undefined)
-    expect(result.data).toMatchObject({
-      users: expect.arrayContaining([
-        {
-          id: expect.any(String),
-          name: 'foo',
-          posts: [
-            {
-              id: expect.any(String),
-              title: 'foo post',
-            },
-            {
-              id: expect.any(String),
-              title: 'foo post 2',
-            },
-          ],
-        },
-        {
-          id: expect.any(String),
-          name: 'bar',
-          posts: [
-            {
-              id: expect.any(String),
-              title: 'bar post',
-            },
-          ],
-        },
-        {
-          id: expect.any(String),
-          name: 'baz',
-          posts: [],
-        },
-        {
-          id: expect.any(String),
-          name: 'quz',
-          posts: [],
-        },
-      ]),
-    })
   })
 
   it('handles join on pagination field', async () => {

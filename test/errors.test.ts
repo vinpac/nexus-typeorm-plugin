@@ -1,14 +1,13 @@
 import { Post } from './entities/post'
 import { User, UserType } from './entities/user'
-import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from './utils'
+import { query, setupTest, create, getDatabaseQueriesCount } from './utils'
 import { Email } from './entities/email'
 import { UserLikesPost } from './entities/user-likes-post'
 import { UserProfile } from './entities/user-profile'
 import { UserFollows } from './entities/user-follows'
 
 describe('Basic', () => {
-  setupTest()
-  beforeEach(async () => {
+  setupTest(async () => {
     const jeong = await create<User>(User, {
       age: 3,
       name: 'Jeong',
@@ -45,7 +44,6 @@ describe('Basic', () => {
       user: jeong,
       address: 'john@doe.com.br',
     })
-    resetLogger()
   })
 
   test('shoud query an entity with nullable fields', async () => {

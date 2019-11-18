@@ -9,10 +9,18 @@ export function setupTest(beforeEachFn?: () => any) {
   beforeAll(async () => {
     await createTestConnectionSingleton()
     await createTestSchemaSingleton()
+    // Reset logger counter
+    resetLogger()
   })
 
   beforeEach(async () => {
-    await getConnection().synchronize(true)
+    try {
+      await getConnection().synchronize(true)
+    } catch (error) {
+      error.name = `SynchronizeErrorAtSetupTest(${error.name})`
+      throw error
+    }
+
     if (beforeEachFn) {
       await beforeEachFn()
     }

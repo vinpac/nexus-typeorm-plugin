@@ -3,11 +3,8 @@ import { User, UserType } from './entities/user'
 import { query, setupTest, create, resetLogger, getDatabaseQueriesCount } from './utils'
 
 describe('UniqueField', () => {
-  setupTest()
-
-  let user: User | undefined
-  beforeEach(async () => {
-    user = await create<User>(User, {
+  setupTest(async () => {
+    const user = await create<User>(User, {
       age: 3,
       name: 'Jeong',
       type: UserType.NORMAL,
@@ -60,6 +57,7 @@ describe('UniqueField', () => {
       }
     }`)
 
+    expect(userResult.errors).toBe(undefined)
     const user: User = userResult.data!.user
     expect(user).toBeTruthy()
     const result = await query(`{
@@ -80,7 +78,6 @@ describe('UniqueField', () => {
   it("should fetch user's posts", async () => {
     const result = await query(`{
       user (where: { name: "Jeong" }) {
-        id
         name
         age
         posts (first: 2) {
@@ -94,11 +91,10 @@ describe('UniqueField', () => {
     expect(result.data).toMatchObject({
       user: {
         age: 3,
-        id: String(user!.id),
         name: 'Jeong',
         posts: expect.arrayContaining([
           {
-            id: String(user!.id),
+            id: expect.any(String),
             title: 'hello 1',
           },
           {

@@ -98,11 +98,7 @@ export interface TranslatedWhere {
   params: { [paramName: string]: any }
 }
 
-export function translateWhereClause(
-  entityTableName: string,
-  where: any,
-  idx = 0,
-): TranslatedWhere {
+export function translateWhereClause(alias: string, where: any, idx = 0): TranslatedWhere {
   const {
     driver: { escape },
   } = getConnection()
@@ -115,7 +111,7 @@ export function translateWhereClause(
     if (key === 'AND' || key === 'OR' || key === 'NOT') {
       const subExpressions: string[] = []
       where[key].forEach((subWhere: any) => {
-        const subTranslatedWhere = translateWhereClause(entityTableName, subWhere, idx + 1)
+        const subTranslatedWhere = translateWhereClause(alias, subWhere, idx + 1)
         subExpressions.push(`(${subTranslatedWhere.expression})`)
         idx += Object.keys(subTranslatedWhere.params).length
         Object.assign(translated.params, subTranslatedWhere.params)
@@ -137,7 +133,7 @@ export function translateWhereClause(
     if (translated.expression) {
       translated.expression += ' AND '
     }
-    const columnSelection = `${escape(entityTableName)}.${escape(fieldName)}`
+    const columnSelection = `${escape(alias)}.${escape(fieldName)}`
 
     if (operation === 'contains') {
       translated.params[paramName] = `%${translated.params[paramName]}%`

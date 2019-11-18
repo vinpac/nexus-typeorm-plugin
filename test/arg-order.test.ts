@@ -2,10 +2,8 @@ import { User } from './entities/user'
 import { Post } from './entities/post'
 import { query, setupTest, create } from './utils'
 
-describe('Order', () => {
-  setupTest()
-
-  async function setupFixture() {
+describe('Order By', () => {
+  setupTest(async () => {
     const userA = await create(User, { name: 'A', age: 30 })
     await create(User, { name: 'B', age: 20 })
     await create(User, { name: 'C', age: 30 })
@@ -16,10 +14,6 @@ describe('Order', () => {
     await create(Post, { user: userA, viewCount: 30, title: 'bar' })
     await create(Post, { user: userA, viewCount: 50, title: 'baz' })
     await create(Post, { user: userA, viewCount: 40, title: 'qux' })
-  }
-
-  beforeEach(async () => {
-    await setupFixture()
   })
 
   it('handles orderBy', async () => {
@@ -64,6 +58,7 @@ describe('Order', () => {
         }
       }`)
 
+    expect(result.errors).toEqual(undefined)
     expect(result.data).toMatchObject({
       users: [
         {
@@ -106,6 +101,7 @@ describe('Order', () => {
       }
     `)
 
+    expect(result.errors).toBe(undefined)
     expect(result.data).toMatchObject({
       users: [
         {
