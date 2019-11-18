@@ -21,7 +21,15 @@ function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
     columnType === 'longtext' ||
     columnType === 'longblob' ||
     columnType === 'time' ||
-    columnType === 'character varying'
+    columnType === 'character varying' ||
+    columnType == 'mediumtext' ||
+    columnType == 'tinyblob' ||
+    columnType == 'mediumblob' ||
+    columnType == 'blob' ||
+    columnType == 'nchar' ||
+    columnType == 'national char' ||
+    columnType == 'nvarchar' ||
+    columnType == 'national varchar'
   ) {
     return 'String'
   } else if (
