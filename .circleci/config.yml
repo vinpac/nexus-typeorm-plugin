@@ -15,7 +15,7 @@ executors:
           POSTGRES_USER: root
           POSTGRES_DB: circle-test
 
-      - image: circleci/mysql:latest
+      - image: circleci/mysql:5.7.26
 
     working_directory: ~/repo
 
