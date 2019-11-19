@@ -45,10 +45,12 @@ export function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
     columnType === 'bigint'
   ) {
     return 'Int'
-  else if (columnType === 'float' ||
+  } else if (
+    columnType === 'float' ||
     columnType === 'float4' ||
     columnType === 'float8' ||
-    columnType === 'decimal') {
+    columnType === 'decimal'
+  ) {
     return 'Float'
   } else if (columnType === Boolean || columnType === 'bool' || columnType === 'boolean') {
     return 'Boolean'

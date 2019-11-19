@@ -1,2 +1,4 @@
 dist
 node_modules
+examples/**/generated
+examples/**/dist

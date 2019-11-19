@@ -149,6 +149,7 @@ async function main() {
     },
   })
   new ApolloServer({ schema }).listen(3000)
+  // eslint-disable-next-line no-console
   console.log('Server running at http://localhost:3000')
 }
 
