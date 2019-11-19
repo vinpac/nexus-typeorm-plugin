@@ -1,6 +1,6 @@
 # nexus-typeorm-plugin
 
-Create a [GraphQL.js](https://github.com/graphql/graphql-js) schema from your [TypeORM](https://github.com/typeorm/typeorm) Entities with integrated [dataloader](https://github.com/graphql/dataloader) support.
+Create a [GraphQL.js](https://github.com/graphql/graphql-js) schema from your [TypeORM](https://github.com/typeorm/typeorm) Entities.
 
 ## Usage
 
