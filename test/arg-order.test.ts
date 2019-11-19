@@ -25,9 +25,8 @@ describe('Order By', () => {
         }
       }`)
 
-    expect(result.errors).toBeUndefined()
-    expect(result.data!.posts).toHaveLength(4)
-    expect(result.data!.posts).toMatchObject([
+    expect(result.posts).toHaveLength(4)
+    expect(result.posts).toMatchObject([
       {
         title: 'baz',
         viewCount: 50,
@@ -58,8 +57,7 @@ describe('Order By', () => {
         }
       }`)
 
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       users: [
         {
           posts: [
@@ -101,8 +99,7 @@ describe('Order By', () => {
       }
     `)
 
-    expect(result.errors).toBe(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       users: [
         {
           age: 30,
@@ -140,7 +137,7 @@ describe('Order By', () => {
       }
     `)
 
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       users: [
         {
           age: 30,

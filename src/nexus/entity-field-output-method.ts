@@ -1,38 +1,20 @@
 import { SchemaBuilder } from '../schema-builder'
 import * as Nexus from 'nexus'
 import { EntityMetadata, getConnection } from 'typeorm'
-import { columnToGraphQLTypeDef } from '../type'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
-import { GraphQLResolveInfo, GraphQLFieldResolver } from 'graphql'
-import { fieldNamingStrategy, FindManyResolveFn } from './crud-output-method'
+import { GraphQLFieldResolver } from 'graphql'
+import { namingStrategy } from './naming-strategy'
 import { getEntityTypeName, getEntityPrimaryColumn } from '../util'
 import { propertyPathToAlias } from '../query-builder'
+import { FindManyFieldConfig, FindManyFieldNextFnExtraContext } from './crud/find-many-field'
+import { CRUDFieldConfigResolveFn } from './crud-output-method'
 
 declare global {
   export interface NexusGenCustomOutputMethods<TypeName extends string> {
     entityField: EntityOutputMethod<string>
   }
-}
-
-interface EntityOutputMethodResolveFnContext<
-  TType,
-  TSource = any,
-  TArgs = { [argName: string]: any },
-  TContext = any
-> {
-  source: any
-  args: { [argName: string]: any }
-  ctx?: any
-  info: GraphQLResolveInfo
-  next: (
-    ctx: Omit<EntityOutputMethodResolveFnContext<TType, TSource, TArgs, TContext>, 'next'>,
-  ) => Promise<TType>
-}
-
-interface EntityOutputMethodResolveFn<TType> {
-  (ctx: EntityOutputMethodResolveFnContext<TType>): Promise<TType>
 }
 
 export interface EntityOutputMethod<TFieldName extends string> {
@@ -46,12 +28,12 @@ interface BaseEntityOutputMethodConfig {
   ordering?: boolean
 }
 interface UniqueEntityOutputMethodConfig<TType> extends BaseEntityOutputMethodConfig {
-  resolve?: EntityOutputMethodResolveFn<TType>
+  resolve?: CRUDFieldConfigResolveFn<TType | Promise<TType>, {}>
   pagination?: true
 }
 
 interface PaginationEntityOutputMethodConfig<TType> extends BaseEntityOutputMethodConfig {
-  resolve?: EntityOutputMethodResolveFn<TType[]>
+  resolve?: CRUDFieldConfigResolveFn<Promise<TType[] | TType[]>, FindManyFieldNextFnExtraContext>
   pagination?: false
 }
 
@@ -91,7 +73,7 @@ function buildRelationFieldPublisher(entity: Function, schemaBuilder: SchemaBuil
         )
       }
 
-      const resolve: FindManyResolveFn<any> = ctx => {
+      const resolve: FindManyFieldConfig<any>['resolve'] = ctx => {
         if (!ctx.args.where && ctx.source[relation.propertyName]) {
           return ctx.source[relation.propertyName]
         }
@@ -120,34 +102,30 @@ function buildRelationFieldPublisher(entity: Function, schemaBuilder: SchemaBuil
         }
 
         const inverseForeignKeyName = relation.inverseRelation!.foreignKeys[0].columnNames[0]
-
         return ctx.next({
           ...ctx,
           args: {
             ...ctx.args,
             where: {
-              ...ctx.args.where,
+              ...(ctx.args.where as any),
               [inverseForeignKeyName]: ctx.source[entityPrimaryKey],
             },
           },
         })
       }
 
-      t.crud[fieldNamingStrategy.findMany(relation.propertyName, relatedEntityTypeName)](
-        relation.propertyName,
-        {
-          resolve:
-            config && config.resolve
-              ? ctx =>
-                  config.resolve!({
-                    ...ctx,
-                    next: nextCtx => {
-                      return resolve({ ...nextCtx, next: ctx.next }) as Promise<any[]>
-                    },
-                  })
-              : resolve,
-        },
-      )
+      t.crud[namingStrategy.findManyField(relatedEntityTypeName)](relation.propertyName, {
+        resolve:
+          config && config.resolve
+            ? (ctx: any) =>
+                config.resolve!({
+                  ...ctx,
+                  next: (nextCtx: any) => {
+                    return resolve({ ...nextCtx, next: ctx.next }) as Promise<any[]>
+                  },
+                })
+            : resolve,
+      })
     } else {
       // Is ManyToOne or OneToOne
       const foreignKeys =
@@ -196,17 +174,7 @@ function buildColumnFieldPublisher(entity: Function, schemaBuilder: SchemaBuilde
     column: ColumnMetadata,
     config?: EntityOutputMethodConfig<any>,
   ) => {
-    let type: string | undefined
-
-    if (column.type === 'enum') {
-      type = schemaBuilder.useType(builder, {
-        type: 'enum',
-        entity,
-        column,
-      })
-    } else {
-      type = columnToGraphQLTypeDef(column, entity)
-    }
+    const type = schemaBuilder.entityColumnToTypeName(entity, column, builder)
 
     t.field((config && config.alias) || column.propertyName, {
       type,
@@ -214,11 +182,11 @@ function buildColumnFieldPublisher(entity: Function, schemaBuilder: SchemaBuilde
       nullable: column.isNullable,
       resolve:
         config && config.resolve
-          ? (source, args, ctx, info) => {
+          ? (source, args, context, info) => {
               config.resolve!({
                 source,
                 args,
-                ctx,
+                context,
                 info,
                 next: () => source[column.propertyName],
               })

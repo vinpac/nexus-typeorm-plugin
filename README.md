@@ -270,6 +270,88 @@ export const Query = queryType({
 })
 ```
 
+### Create One
+
+Creates a field that resolves into one entity instance. It includes the `where` and the `orderBy` arguments.
+
+```typescript
+export const Mutation = mutationType({
+  definition(t) {
+    t.crud.createOneUser()
+    t.crud.createOnePost()
+  },
+})
+```
+
+**Example**
+
+```graphql
+mutation {
+  createOneUser(
+    data: {
+      name: "John with posts"
+      age: 42
+      type: NORMAL
+      profile: { create: { slug: "john-with-posts", displayName: "displayName" } }
+      posts: {
+        create: [
+          {
+            title: "created post"
+            isPublic: false
+            categories: { create: [{ name: "create category 1" }, { name: "create category 2" }] }
+          }
+          { title: "created post 2", isPublic: true }
+        ]
+      }
+    }
+  ) {
+    id
+    name
+    age
+    profile {
+      slug
+      displayName
+    }
+    posts {
+      title
+      isPublic
+      categories {
+        name
+      }
+    }
+  }
+}
+```
+
+### Add business logic
+
+```typescript
+export const Mutation = mutationType({
+  definition(t) {
+    t.crud.createOneUser('addUser', {
+      args: {
+        name: stringArg({ nullable: false }),
+        postsIds: stringArg({ list: true, nullable: false }),
+      },
+      resolve: ctx => {
+        const { name, postsIds } = ctx.args
+        return ctx.next({
+          ...ctx,
+          args: {
+            data: {
+              name,
+              posts: {
+                connect: { id_in: postsIds },
+              },
+            },
+          },
+        })
+      },
+    })
+  },
+})
+```
+
 ### Auto join
 
 In order to speed up requests and decrease the number of queries made to the database, this plugin analyzes each graphql query and makes the necessary joins automatically.
@@ -288,7 +370,7 @@ In order to speed up requests and decrease the number of queries made to the dat
 Generates a SQL query that left joins Post.
 
 ```SQL
-SELECT * from User ... LEFT JOIN POST
+SELECT * from User ... LEFT JOIN Post
 ```
 
 Checkout the `tests/` directory to see examples.

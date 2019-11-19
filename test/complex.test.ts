@@ -52,8 +52,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         usersByName: [
           {
             age: 32,
@@ -71,15 +70,13 @@ describe('CRUD', () => {
           id
         }
       }`)
-      expect(categoryResult.errors).toEqual(undefined)
       const result = await query(`{
-        postsByCategoryId(categoryId: "${categoryResult.data!.category.id}") {
+        postsByCategoryId(categoryId: "${categoryResult.category.id}") {
           title
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         postsByCategoryId: [
           {
             title: 'post 1',
