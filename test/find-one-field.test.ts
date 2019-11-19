@@ -43,8 +43,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         user: {
           age: 18,
           id: expect.any(String),
@@ -63,8 +62,7 @@ describe('CRUD', () => {
           name
         }
       }`)
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         john: {
           name: 'John',
         },
@@ -80,24 +78,22 @@ describe('CRUD', () => {
         gina: user(where: { name: "Gina" }) { id }
         john: user(where: { name: "John" }) { id }
       }`)
-      expect(users.errors).toEqual(undefined)
 
       const result = await query(`{
-        post1: post(where: { userId: ${users.data!.gina.id} }) {
+        post1: post(where: { userId: ${users!.gina.id} }) {
           title
           user {
             name
           }
         }
-        post2: post(where: { userId: ${users.data!.john.id} }) {
+        post2: post(where: { userId: ${users!.john.id} }) {
           title
           user {
             name
           }
         }
       }`)
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         post1: {
           title: 'post 1',
           user: {
@@ -111,7 +107,6 @@ describe('CRUD', () => {
           },
         },
       })
-      expect(result.errors).toEqual(undefined)
       expect(getDatabaseQueriesCount()).toBe(4)
     })
 
@@ -120,8 +115,7 @@ describe('CRUD', () => {
         gina: user(orderBy: age_ASC) { name }
         john: user(orderBy: age_DESC) { name }
       }`)
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         gina: {
           name: 'Gina',
         },

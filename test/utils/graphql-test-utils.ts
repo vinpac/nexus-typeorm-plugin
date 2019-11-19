@@ -1,5 +1,5 @@
 import { GraphQLSchema, graphql } from 'graphql'
-import { makeSchema, queryType, stringArg } from 'nexus'
+import { makeSchema, queryType, stringArg, mutationType } from 'nexus'
 import { User } from 'test/entities/user'
 import { entityType } from '../../src/nexus/nexus-types'
 import { UserProfile } from 'test/entities/user-profile'
@@ -10,7 +10,6 @@ import { Email } from 'test/entities/email'
 import { getConnection } from 'typeorm'
 import { nexusTypeORMPlugin } from 'src/plugin'
 import { Category } from 'test/entities/category'
-import { FindManyResolveFnContext } from 'src'
 import { propertyPathToAlias } from 'src/query-builder'
 
 export let schema: GraphQLSchema | undefined
@@ -28,12 +27,11 @@ export function createTestSchemaSingleton() {
             t.crud.posts()
             t.crud.users('usersByName', {
               args: args => ({ ...args, name: stringArg({ nullable: false }) }),
-              resolve: (ctx: FindManyResolveFnContext<User, User, any, any>) => {
+              resolve: ctx => {
                 ctx.args.where = {
                   ...ctx.args.where,
                   name: ctx.args.name,
                 }
-
                 return ctx.next(ctx)
               },
             })
@@ -66,6 +64,13 @@ export function createTestSchemaSingleton() {
                 })
               },
             })
+          },
+        }),
+        mutationType({
+          definition: t => {
+            t.crud.createOneUser()
+            t.crud.createOnePost()
+            t.crud.createOneCategory()
           },
         }),
         entityType<User>(User, {
@@ -105,9 +110,20 @@ export async function query(
   queryString: string,
   variables?: { [key: string]: any },
   context?: object,
+  options?: { supressErrorMessage: boolean },
 ) {
   if (schema) {
-    return graphql(schema, queryString, undefined, context, variables)
+    const result = await graphql(schema, queryString, undefined, context, variables)
+
+    if (result.errors && result.errors[0]) {
+      if (!options || !options.supressErrorMessage) {
+        // eslint-disable-next-line no-console
+        console.error(result.errors[0].stack)
+      }
+      throw result.errors[0]
+    }
+
+    return result.data!
   }
 
   throw new Error('GraphQL schema is not ready!')

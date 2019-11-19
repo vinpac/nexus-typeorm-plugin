@@ -1,12 +1,10 @@
 import { SchemaBuilder } from '../schema-builder'
+import { CRUDFieldConfigResolveFn } from './crud-output-method'
 import * as Nexus from 'nexus'
-import {
-  fieldNamingStrategy,
-  CRUDFieldFindOneOutputMethodConfig,
-  CRUDFieldFindManyOutputMethodConfig,
-} from './crud-output-method'
+import { namingStrategy } from './naming-strategy'
 import { dynamicOutputProperty } from 'nexus'
 import { getEntityTypeName } from '../util'
+import { FindOneFieldNextFnExtraContext } from './crud/find-one-field'
 import { ArgsRecord } from 'nexus/dist/core'
 import { MapArgsFn } from '../args'
 
@@ -17,12 +15,10 @@ declare global {
 }
 
 export interface CRUDPropertyFieldConfig<TType> {
+  type?: Nexus.AllOutputTypes
   alias?: string
   args?: ArgsRecord | MapArgsFn
-  type?: Nexus.AllInputTypes
-  resolve?:
-    | CRUDFieldFindOneOutputMethodConfig<TType>['resolve']
-    | CRUDFieldFindManyOutputMethodConfig<TType>['resolve']
+  resolve?: CRUDFieldConfigResolveFn<TType, FindOneFieldNextFnExtraContext>
 }
 
 export interface CRUDOutputProperty {
@@ -40,7 +36,7 @@ export function buildCRUDOutputProperty(schemaBuilder: SchemaBuilder) {
       const crudOutputProperty: CRUDOutputProperty = {}
 
       entitiesStrategy.forEach(entityTypeName => {
-        const findOneFieldName = fieldNamingStrategy.findOne('', entityTypeName)
+        const findOneFieldName = namingStrategy.findOneField(entityTypeName)
         crudOutputProperty[findOneFieldName] = (fieldName = findOneFieldName, config) => {
           t.crudField(fieldName, {
             method: 'findOne',
@@ -52,10 +48,22 @@ export function buildCRUDOutputProperty(schemaBuilder: SchemaBuilder) {
           return crudOutputProperty
         }
 
-        const findManyFieldName = fieldNamingStrategy.findMany('', entityTypeName)
+        const findManyFieldName = namingStrategy.findManyField(entityTypeName)
         crudOutputProperty[findManyFieldName] = (fieldName = findManyFieldName, config) => {
           t.crudField(fieldName, {
             method: 'findMany',
+            type: entityTypeName,
+            ...config,
+            entity: entityTypeName,
+          })
+
+          return crudOutputProperty
+        }
+
+        const createOneFieldName = namingStrategy.createOneFieldName(entityTypeName)
+        crudOutputProperty[createOneFieldName] = (fieldName = createOneFieldName, config) => {
+          t.crudField(fieldName, {
+            method: 'createOne',
             type: entityTypeName,
             ...config,
             entity: entityTypeName,

@@ -38,8 +38,7 @@ describe('UniqueField', () => {
       }
     }`)
 
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       user: {
         age: 3,
         id: expect.any(String),
@@ -57,8 +56,7 @@ describe('UniqueField', () => {
       }
     }`)
 
-    expect(userResult.errors).toBe(undefined)
-    const user: User = userResult.data!.user
+    const user: User = userResult.user
     expect(user).toBeTruthy()
     const result = await query(`{
       post(where: { userId: ${user.id} }, orderBy: [createdAt_DESC]) {
@@ -67,8 +65,7 @@ describe('UniqueField', () => {
       }
     }`)
 
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       post: {
         title: 'hello 2',
       },
@@ -87,8 +84,7 @@ describe('UniqueField', () => {
       }
     }`)
 
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       user: {
         age: 3,
         name: 'Jeong',
@@ -125,8 +121,7 @@ describe('UniqueField', () => {
       }
     }`)
 
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       post: {
         id: expect.any(String),
         title: 'hello 1',
@@ -179,8 +174,7 @@ describe('UniqueField', () => {
       {},
     )
 
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       post: {
         id: expect.any(String),
         title: 'hello 1',

@@ -47,8 +47,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         users: expect.arrayContaining([
           {
             id: expect.any(String),
@@ -84,8 +83,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         greaterThan24: expect.arrayContaining([
           {
             id: expect.any(String),
@@ -118,8 +116,7 @@ describe('CRUD', () => {
           }
         }
       }`)
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         user: {
           name: 'Gina',
           posts: expect.arrayContaining([
@@ -147,8 +144,7 @@ describe('CRUD', () => {
           name
         }
       }`)
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         ageAsc: [
           {
             name: 'Gina',

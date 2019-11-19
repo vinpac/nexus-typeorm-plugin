@@ -33,8 +33,7 @@ describe('Auto Join', () => {
       }
     }`)
 
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       user: {
         name: 'foo',
         posts: [
@@ -66,8 +65,7 @@ describe('Auto Join', () => {
         }
       }
     }`)
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       user: {
         name: 'foo',
         posts: [
@@ -108,8 +106,7 @@ describe('Auto Join', () => {
     `)
 
     expect(getDatabaseQueriesCount()).toBe(1)
-    expect(result.errors).toBe(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       users: expect.arrayContaining([
         {
           id: expect.any(String),
@@ -168,9 +165,8 @@ describe('Auto Join', () => {
       }
     `)
 
-    expect(result.errors).toBe(undefined)
     expect(getDatabaseQueriesCount()).toBe(1)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       users: expect.arrayContaining([
         {
           id: expect.any(String),
@@ -291,8 +287,7 @@ describe('Auto Join', () => {
         },
       ]),
     }
-    expect(result.errors).toEqual(undefined)
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       posts: expect.arrayContaining([
         {
           title: 'foo post',

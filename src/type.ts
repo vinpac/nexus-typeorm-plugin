@@ -1,9 +1,9 @@
 import * as TypeORM from 'typeorm'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
-import { makeFirstLetterUpperCase } from './util'
 import { enumType } from 'nexus'
+import { namingStrategy } from './nexus/naming-strategy'
 
-function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
+export function typeORMColumnTypeToGraphQLType(columnType: TypeORM.ColumnType) {
   if (columnType === 'uuid') {
     return 'ID'
   } else if (
@@ -63,7 +63,7 @@ export function columnToGraphQLTypeDef(column: ColumnMetadata, entity: Function)
 
 export function enumColumnToGraphQLObject(entity: any, column: ColumnMetadata) {
   const { name: entityName } = TypeORM.getConnection().getMetadata(entity)
-  const typeName = `${entityName}${makeFirstLetterUpperCase(column.propertyName)}Enum`
+  const typeName = namingStrategy.enumType(entityName, column.propertyName)
 
   return enumType({
     name: typeName,

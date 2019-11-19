@@ -1,11 +1,18 @@
 import { GraphQLFieldResolver, GraphQLType } from 'graphql'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 import { getConnection, EntityMetadata } from 'typeorm'
-import { SchemaBuilder as NexusSchemaBuilder } from 'nexus/dist/core'
-import { enumColumnToGraphQLObject } from './type'
-import { createWhereInputObjectType } from './args/arg-where'
-import { createOrderByInputObjectType } from './args/arg-order-by'
+import { SchemaBuilder as NexusSchemaBuilder, inputObjectType, enumType } from 'nexus/dist/core'
+import { typeORMColumnTypeToGraphQLType } from './type'
+import {
+  singleOperandOperations,
+  numberOperandOperations,
+  multipleOperandOperations,
+} from './args/arg-where'
 import { getDatabaseObjectMetadata } from './decorators'
+import { namingStrategy } from './nexus/naming-strategy'
+import { getEntityTypeName } from './util'
+import { orderTypes } from './args/arg-order-by'
+import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
 
 export interface EntitiesMap {
   [entityName: string]: Function
@@ -23,30 +30,28 @@ export interface ResolversMap {
   [typeName: string]: TypeResolversMap | GraphQLType
 }
 
-interface ArgWhereTypeDefConfig {
-  type: 'whereInput'
-  entity: Function
-}
-
-interface ArgOrderByTypeDefConfig {
-  type: 'orderByInput'
-  entity: Function
-}
-
-interface EnumTypeDefConfig {
-  type: 'enum'
-  entity: Function
-  column: ColumnMetadata
-}
-
-type TypeDefRecordConfig = ArgWhereTypeDefConfig | ArgOrderByTypeDefConfig | EnumTypeDefConfig
-
-interface EntityTypesDictionary {
+interface TypesDictionary {
   enum: { [entityName: string]: { [propertyName: string]: string } }
+
   whereInput: { [entityName: string]: string }
   orderByInput: { [entityName: string]: string }
+  createOneInput: { [entityName: string]: string }
+  relationInputType: { [sourceEntityName: string]: { [relatedEntityName: string]: string } }
+  createWithoutSourceInput: { [entityName: string]: { [columnEntityName: string]: string } }
 }
 
+interface RequiredGetOrCreateTypeConfig {
+  entity: Function
+  nexusBuilder: NexusSchemaBuilder
+}
+
+interface BuildCreateOneInputTypeConfig extends RequiredGetOrCreateTypeConfig {
+  kind: 'CreateOneInput'
+}
+
+export type GetOrCreateTypeConfig = BuildCreateOneInputTypeConfig
+
+// TODO: Rename to something like EntityManager?
 export class SchemaBuilder {
   /**
    * Create a new SchemaBuilder instance from an Entity array
@@ -64,7 +69,7 @@ export class SchemaBuilder {
     return new SchemaBuilder(entitiesMap, entitiesMetadataMap)
   }
 
-  private typesDictionary: EntityTypesDictionary
+  private typesDictionary: TypesDictionary
   public entities: EntitiesMap
   public entitiesMetadata: EntitiesMetadataMap
 
@@ -75,52 +80,294 @@ export class SchemaBuilder {
       enum: {},
       whereInput: {},
       orderByInput: {},
+      createOneInput: {},
+      relationInputType: {},
+      createWithoutSourceInput: {},
     }
   }
 
-  public useType(nexusBuilder: NexusSchemaBuilder, req: TypeDefRecordConfig): string {
-    const entityName = req.entity.name
-
-    if (req.type === 'enum') {
-      if (
-        !this.typesDictionary.enum[entityName] ||
-        !this.typesDictionary.enum[entityName][req.column.propertyName]
-      ) {
-        const enumObject = enumColumnToGraphQLObject(req.entity, req.column)
-        nexusBuilder.addType(enumObject)
-        this.typesDictionary.enum[entityName] = {
-          ...this.typesDictionary.enum[entityName],
-          [req.column.propertyName]: enumObject.name,
-        }
-      }
-
-      return this.typesDictionary.enum[entityName][req.column.propertyName]
+  entityColumnToTypeName(
+    entity: Function,
+    column: ColumnMetadata,
+    nexusBuilder: NexusSchemaBuilder,
+  ): string {
+    if (column.isPrimary) {
+      return 'ID'
     }
 
-    if (req.type === 'whereInput') {
-      if (!this.typesDictionary.whereInput[entityName]) {
-        this.typesDictionary.whereInput[entityName] = createWhereInputObjectType(
-          req.entity,
-          nexusBuilder,
-          this,
-        )
-      }
-
-      return this.typesDictionary.whereInput[entityName]
+    if (column.type === 'enum') {
+      return this.useEnumTypeForColumn(entity, column, nexusBuilder)
     }
 
-    if (req.type === 'orderByInput') {
-      if (!this.typesDictionary.orderByInput[entityName]) {
-        this.typesDictionary.orderByInput[entityName] = createOrderByInputObjectType(
-          req.entity,
-          nexusBuilder,
-        )
-      }
-
-      return this.typesDictionary.orderByInput[entityName]
+    const nativeTypeName = typeORMColumnTypeToGraphQLType(column.type)
+    if (!nativeTypeName) {
+      throw new Error(
+        `Couldn't find a matching GraphQL Type to '${column.type}' at ${entity.name} Entity`,
+      )
     }
 
-    throw new Error('Invalid request to useType')
+    return nativeTypeName
+  }
+
+  useCreateOneInputType = (entity: Function, nexusBuilder: NexusSchemaBuilder) => {
+    const entityTypeName = getEntityTypeName(entity)
+    const typeName = namingStrategy.createInputType(entityTypeName)
+
+    if (this.typesDictionary.createOneInput[entityTypeName]) {
+      return this.typesDictionary.createOneInput[entityTypeName]
+    }
+
+    const entityMetadata = this.getEntityMetadata(entity)
+    nexusBuilder.addType(
+      inputObjectType({
+        name: typeName,
+        definition: t => {
+          entityMetadata.columns.forEach(column => {
+            if (column.isGenerated) {
+              return
+            }
+
+            t.field(column.propertyName, {
+              type: this.entityColumnToTypeName(entity, column, nexusBuilder),
+              required: !column.isNullable && !column.isCreateDate && !column.isUpdateDate,
+            })
+          })
+
+          entityMetadata.relations.forEach(relation => {
+            t.field(relation.propertyName, {
+              type: this.useCreateRelationInputType(entity, relation, nexusBuilder),
+              required: false,
+            })
+          })
+        },
+      }),
+    )
+
+    this.typesDictionary.createOneInput[entityTypeName] = typeName
+    return typeName
+  }
+
+  useCreateRelationInputType(
+    entity: Function,
+    relation: RelationMetadata,
+    nexusBuilder: NexusSchemaBuilder,
+  ): string {
+    const entityTypeName = getEntityTypeName(entity)
+    const relatedEntity = this.entities[relation.inverseEntityMetadata.name]
+    const relatedEntityTypeName = getEntityTypeName(relatedEntity)
+    const typeName = namingStrategy.createManyWithoutSourceInputType(
+      entityTypeName,
+      relatedEntityTypeName,
+    )
+
+    const { relationInputType } = this.typesDictionary
+    if (
+      relationInputType[entityTypeName] &&
+      relationInputType[entityTypeName][relatedEntityTypeName]
+    ) {
+      return relationInputType[entityTypeName][relatedEntityTypeName]
+    }
+
+    nexusBuilder.addType(
+      inputObjectType({
+        name: typeName,
+        definition: t => {
+          t.field('connect', {
+            type: this.useWhereInputType(relatedEntity, nexusBuilder),
+            required: false,
+          })
+          t.field('create', {
+            type: this.useCreateOneWithoutSourceInputType(relatedEntity, relation, nexusBuilder),
+            list: relation.isOneToMany || relation.isManyToMany || undefined,
+            required: false,
+          })
+        },
+      }),
+    )
+    this.typesDictionary.relationInputType = {
+      ...relationInputType,
+      [entityTypeName]: {
+        ...relationInputType[entityTypeName],
+        [relatedEntityTypeName]: typeName,
+      },
+    }
+    return typeName
+  }
+
+  useCreateOneWithoutSourceInputType(
+    entity: Function,
+    sourceRelation: RelationMetadata,
+    nexusBuilder: NexusSchemaBuilder,
+  ): string {
+    const entityMetadata = this.getEntityMetadata(entity)
+    const entityTypeName = getEntityTypeName(entity)
+    const { createWithoutSourceInput } = this.typesDictionary
+    const excludedPropertyName = sourceRelation.inverseRelation!.propertyName
+    if (
+      createWithoutSourceInput[entityTypeName] &&
+      createWithoutSourceInput[entityTypeName][excludedPropertyName]
+    ) {
+      return createWithoutSourceInput[entityTypeName][excludedPropertyName]
+    }
+    const typeName = namingStrategy.createWithoutSourceInputType(
+      entityTypeName,
+      excludedPropertyName,
+    )
+
+    const foreignKeys = sourceRelation.inverseRelation!.foreignKeys
+    nexusBuilder.addType(
+      inputObjectType({
+        name: typeName,
+        definition: t => {
+          entityMetadata.columns.forEach(column => {
+            if (column.isGenerated) {
+              return
+            }
+
+            if (
+              // Remove required foreign keys (e.g.: userId)
+              foreignKeys.length &&
+              column.propertyName === foreignKeys[0].columns[0].propertyName
+            ) {
+              return
+            }
+
+            t.field(column.propertyName, {
+              type: this.entityColumnToTypeName(entity, column, nexusBuilder),
+              required: !column.isNullable && !column.isCreateDate && !column.isUpdateDate,
+            })
+          })
+
+          entityMetadata.relations.forEach(relation => {
+            if (relation.propertyName === sourceRelation.propertyName) {
+              return
+            }
+
+            t.field(relation.propertyName, {
+              type: this.useCreateRelationInputType(entity, relation, nexusBuilder),
+              required: false,
+            })
+          })
+        },
+      }),
+    )
+
+    this.typesDictionary.createWithoutSourceInput[entityTypeName] = {
+      ...this.typesDictionary.createWithoutSourceInput[entityTypeName],
+      [excludedPropertyName]: typeName,
+    }
+    return typeName
+  }
+
+  useEnumTypeForColumn(
+    entity: Function,
+    column: ColumnMetadata,
+    nexusBuilder: NexusSchemaBuilder,
+  ): string {
+    const entityTypeName = getEntityTypeName(entity)
+    const typeName = namingStrategy.enumType(entityTypeName, column.propertyName)
+
+    if (
+      this.typesDictionary.enum[entityTypeName] &&
+      this.typesDictionary.enum[entityTypeName][column.propertyName]
+    ) {
+      return this.typesDictionary.enum[entityTypeName][column.propertyName]
+    }
+
+    nexusBuilder.addType(
+      enumType({
+        name: typeName,
+        members: column.enum!.map(String)!,
+      }),
+    )
+
+    this.typesDictionary.enum[entityTypeName] = {
+      ...this.typesDictionary.enum[entityTypeName],
+      [column.propertyName]: typeName,
+    }
+    return typeName
+  }
+
+  useWhereInputType(entity: Function, nexusBuilder: NexusSchemaBuilder): string {
+    const entityTypeName = getEntityTypeName(entity)
+
+    if (this.typesDictionary.whereInput[entityTypeName]) {
+      return this.typesDictionary.whereInput[entityTypeName]
+    }
+
+    const { columns: entityColumns } = getConnection().getMetadata(entity)
+    const typeName = namingStrategy.whereInputType(entityTypeName)
+    nexusBuilder.addType(
+      inputObjectType({
+        name: typeName,
+        definition: t => {
+          t.field('AND', { type: typeName, list: true })
+          t.field('OR', { type: typeName, list: true })
+          t.field('NOT', { type: typeName, list: true })
+          entityColumns.forEach(column => {
+            if (column.relationMetadata && column.isVirtual) {
+              return
+            }
+
+            const columnTypeName = this.entityColumnToTypeName(entity, column, nexusBuilder)
+            if (columnTypeName === 'String') {
+              singleOperandOperations.forEach(singleOperandOperation => {
+                t.field(`${column.propertyName}_${singleOperandOperation}`, {
+                  type: columnTypeName!,
+                })
+              })
+            } else if (columnTypeName === 'Int' || columnTypeName === 'Float') {
+              numberOperandOperations.forEach(numberOperandOperation => {
+                t.field(`${column.propertyName}_${numberOperandOperation}`, {
+                  type: columnTypeName!,
+                })
+              })
+            }
+
+            // Define ${arg}_${operand}: Value[]
+            multipleOperandOperations.forEach(multipleOperandOperation => {
+              t.field(`${column.propertyName}_${multipleOperandOperation}`, {
+                type: columnTypeName!,
+                list: true,
+              })
+            })
+
+            t.field(column.propertyName, {
+              type: columnTypeName,
+            })
+          })
+        },
+      }),
+    )
+
+    this.typesDictionary.whereInput[entityTypeName] = typeName
+    return typeName
+  }
+
+  useOrderByInputType(entity: Function, nexusBuilder: NexusSchemaBuilder): string {
+    const entityTypeName = getEntityTypeName(entity)
+
+    if (this.typesDictionary.orderByInput[entityTypeName]) {
+      return this.typesDictionary.orderByInput[entityTypeName]
+    }
+
+    const { columns: entityColumns } = getConnection().getMetadata(entity)
+    const typeName = namingStrategy.orderByInputType(entityTypeName)
+    const members: string[] = []
+    entityColumns.forEach(column => {
+      orderTypes.forEach(orderType => {
+        members.push(`${column.propertyName}_${orderType}`)
+      })
+    })
+    nexusBuilder.addType(
+      enumType({
+        name: typeName,
+        members,
+      }),
+    )
+
+    this.typesDictionary.orderByInput[entityTypeName] = typeName
+    return typeName
   }
 
   getEntityDataTupleByTypeName(typeName: string): [Function, EntityMetadata] {
@@ -135,5 +382,9 @@ export class SchemaBuilder {
     }
 
     return [entity, this.entitiesMetadata[entity.name]]
+  }
+
+  getEntityMetadata(entity: Function) {
+    return this.entitiesMetadata[entity.name]
   }
 }

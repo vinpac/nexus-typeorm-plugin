@@ -53,9 +53,8 @@ describe('Where', () => {
         }
       }`)
 
-    expect(result.errors).toEqual(undefined)
-    expect(result.data!.users).toHaveLength(3)
-    expect(result.data).toMatchObject({
+    expect(result.users).toHaveLength(3)
+    expect(result).toMatchObject({
       users: expect.arrayContaining([
         {
           age: 20,
@@ -89,7 +88,7 @@ describe('Where', () => {
         }
       }`)
 
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       users: [
         {
           age: 40,
@@ -123,9 +122,8 @@ describe('Where', () => {
       },
     )
 
-    expect(result.errors).toBeUndefined()
-    expect(result.data!.users).toHaveLength(2)
-    expect(result.data).toMatchObject({
+    expect(result.users).toHaveLength(2)
+    expect(result).toMatchObject({
       users: expect.arrayContaining([
         {
           age: 20,
@@ -147,9 +145,8 @@ describe('Where', () => {
       }`,
     )
 
-    expect(result.errors).toBe(undefined)
-    expect(result.data!.users).toHaveLength(2)
-    expect(result.data).toMatchObject({
+    expect(result.users).toHaveLength(2)
+    expect(result).toMatchObject({
       users: expect.arrayContaining([
         {
           name: 'baz',
@@ -173,9 +170,8 @@ describe('Where', () => {
       }`,
     )
 
-    expect(result.errors).toBe(undefined)
-    expect(result.data!.users).toHaveLength(2)
-    expect(result.data).toMatchObject({
+    expect(result.users).toHaveLength(2)
+    expect(result).toMatchObject({
       users: expect.arrayContaining([
         {
           name: 'foo',
@@ -207,8 +203,7 @@ describe('Where', () => {
       }
     `)
 
-    expect(result.errors).toBeUndefined()
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       users: expect.arrayContaining([
         {
           id: expect.any(String),
@@ -227,7 +222,7 @@ describe('Where', () => {
         },
       ]),
     })
-    expect(result.data!.users).toHaveLength(2)
+    expect(result.users).toHaveLength(2)
     expect(getDatabaseQueriesCount()).toBe(3)
   })
 })

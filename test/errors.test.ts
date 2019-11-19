@@ -56,7 +56,7 @@ describe('Basic', () => {
       }
     }`)
 
-    expect(result.data).toMatchObject({
+    expect(result).toMatchObject({
       users: expect.arrayContaining([
         {
           age: 3,
@@ -82,17 +82,24 @@ describe('Basic', () => {
   })
 
   test('throws an error if foreign key is not defined in schema', async () => {
-    const result = await query(`{
-      users {
-        id
-        email {
-          address
+    try {
+      await query(
+        `{
+        users {
+          id
+          email {
+            address
+          }
         }
-      }
-    }`)
-
-    expect(result.errors![0]).toMatchObject({
-      message: "Foreign key 'emailId' is not defined in User schema",
-    })
+      }`,
+        undefined,
+        undefined,
+        { supressErrorMessage: true },
+      )
+    } catch (error) {
+      expect(error).toMatchObject({
+        message: "Foreign key 'emailId' is not defined in User schema",
+      })
+    }
   })
 })

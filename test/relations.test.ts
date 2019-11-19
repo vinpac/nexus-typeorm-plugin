@@ -54,8 +54,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         user: {
           name: 'Gina',
           profile: {
@@ -76,8 +75,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         user: {
           name: 'Gina',
           posts: [
@@ -100,8 +98,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         user: {
           name: 'Gina',
           posts: [
@@ -124,8 +121,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         post: {
           title: 'post 2',
           user: { name: 'Gina' },
@@ -150,8 +146,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         post1: {
           title: 'post 1',
           categories: [
@@ -191,8 +186,7 @@ describe('CRUD', () => {
         }
       }`)
 
-      expect(result.errors).toEqual(undefined)
-      expect(result.data).toMatchObject({
+      expect(result).toMatchObject({
         post: {
           title: 'post 2',
           categories: [

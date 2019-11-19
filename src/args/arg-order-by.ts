@@ -1,8 +1,9 @@
 import { SchemaBuilder as NexusSchemaBuilder, enumType } from 'nexus/dist/core'
 import { getConnection } from 'typeorm'
 import { getEntityTypeName } from '../util'
+import { namingStrategy } from '../nexus/naming-strategy'
 
-const orderTypes = ['ASC', 'DESC']
+export const orderTypes = ['ASC', 'DESC']
 
 export type ArgOrder = string[]
 
@@ -34,7 +35,7 @@ export const createOrderByInputObjectType = (
   nexusBuilder: NexusSchemaBuilder,
 ): string => {
   const { columns: entityColumns } = getConnection().getMetadata(entity)
-  const typeName = `${getEntityTypeName(entity)}OrderByInput`
+  const typeName = namingStrategy.orderByInputType(getEntityTypeName(entity))
   const members: string[] = []
   entityColumns.forEach(column => {
     orderTypes.forEach(orderType => {
