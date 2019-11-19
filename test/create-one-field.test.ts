@@ -1,6 +1,7 @@
 import { query, create, setupTest, getDatabaseQueriesCount } from './utils'
 import { User, UserType } from './entities/user'
 import { Post } from './entities/post'
+import { getConnection } from 'typeorm'
 
 describe('CRUD', () => {
   describe('Create One', () => {
@@ -55,8 +56,9 @@ describe('CRUD', () => {
           name: 'New John',
         },
       })
+      const { driver } = getConnection()
       // 1 for creation and 2 for transaction
-      expect(getDatabaseQueriesCount()).toBe(3)
+      expect(getDatabaseQueriesCount()).toBe(driver.options.type === 'mysql' ? 4 : 3)
     })
     test('create two entities that have an 1:1 relation in one query', async () => {
       const result = await query(`
@@ -118,7 +120,8 @@ describe('CRUD', () => {
       // 3. INSERT UserProfile
       // 4. COMMIT_TRANSACTION
       // 5. User query to confirm data was saved
-      expect(getDatabaseQueriesCount()).toBe(5)
+      const { driver } = getConnection()
+      expect(getDatabaseQueriesCount()).toBe(driver.options.type === 'mysql' ? 6 : 5)
     })
 
     test('create one entity and connect with one to many relation', async () => {
@@ -174,7 +177,8 @@ describe('CRUD', () => {
       // 6. Update post 2
       // 7. Update post 3
       // 8. COMMIT_TRANSACTION
-      expect(getDatabaseQueriesCount()).toBe(8)
+      const { driver } = getConnection()
+      expect(getDatabaseQueriesCount()).toBe(driver.options.type === 'mysql' ? 9 : 8)
     })
 
     test('create one entity connected with many to many relation', async () => {
@@ -272,7 +276,8 @@ describe('CRUD', () => {
       // 7. Insert Post 2
       // 8. Insert PostCategory Join table
       // 9. COMMIT TRANSACTION
-      expect(getDatabaseQueriesCount()).toBe(9)
+      const { driver } = getConnection()
+      expect(getDatabaseQueriesCount()).toBe(driver.options.type === 'mysql' ? 12 : 9)
     })
 
     test('create one entity with many to one relation', async () => {

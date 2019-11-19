@@ -283,7 +283,7 @@ export const Mutation = mutationType({
 })
 ```
 
-### Example
+**Example**
 
 ```graphql
 mutation {
@@ -325,13 +325,13 @@ mutation {
 
 ### Add business logic
 
-```
+```typescript
 export const Mutation = mutationType({
   definition(t) {
     t.crud.createOneUser('addUser', {
       args: {
         name: stringArg({ nullable: false }),
-        postsIds: stringArg({ list: true, nullable: false })
+        postsIds: stringArg({ list: true, nullable: false }),
       },
       resolve: ctx => {
         const { name, postsIds } = ctx.args
@@ -341,12 +341,12 @@ export const Mutation = mutationType({
             data: {
               name,
               posts: {
-                connect: { id_in: postsIds }
-              }
-            }
-          }
+                connect: { id_in: postsIds },
+              },
+            },
+          },
         })
-      }
+      },
     })
   },
 })

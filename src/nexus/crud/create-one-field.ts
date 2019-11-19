@@ -121,7 +121,6 @@ async function createEntityFromInputObject(
   const savedInstance = await save(entityInstance).then(payload =>
     waitedPromisePayload.reduce((payload, fn) => (fn ? fn(payload) : payload), payload),
   )
-
   await Promise.all(executeAfterSaved.map(fn => fn(savedInstance)))
   return savedInstance
 }
