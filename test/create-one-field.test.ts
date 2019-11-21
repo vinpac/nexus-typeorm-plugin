@@ -2,6 +2,7 @@ import { query, create, setupTest, getDatabaseQueriesCount } from './utils'
 import { User, UserType } from './entities/user'
 import { Post } from './entities/post'
 import { getConnection } from 'typeorm'
+import { namingStrategy } from 'src/nexus/naming-strategy'
 
 describe('CRUD', () => {
   describe('Create One', () => {
@@ -390,6 +391,53 @@ describe('CRUD', () => {
       // 4. Inset Post-Category relation join table
       // 5. COMMIT TRANSACTION
       expect(getDatabaseQueriesCount()).toBe(5)
+    })
+
+    test("deep create one should't allow overriding relation", async () => {
+      const postWithoutAuthorTypeName = namingStrategy.entityWithoutRelationInputType(
+        'Post',
+        'user',
+      )
+
+      try {
+        await query(
+          `
+        mutation {
+          createOneUser(data: {
+            name: "New John",
+            age: 55
+            type: NORMAL,
+            posts: {
+              create: {
+                title: "Heey"
+                isPublic: true
+                user: {
+                  create: {
+                    name: "Other John",
+                    age: 55
+                    type: NORMAL,
+                  }
+                }
+              }
+            }
+          }) {
+            id
+            name
+            age
+          }
+        }`,
+          undefined,
+          undefined,
+          { supressErrorMessage: true },
+        )
+      } catch (error) {
+        expect(error.message).toBe(
+          `Field "user" is not defined by type ${postWithoutAuthorTypeName}.`,
+        )
+        return
+      }
+
+      throw new Error(`Field "user" is defined by type ${postWithoutAuthorTypeName}`)
     })
   })
 })

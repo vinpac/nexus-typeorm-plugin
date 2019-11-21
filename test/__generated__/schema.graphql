@@ -10,7 +10,11 @@ type Category {
 
 input CategoryCreateInput {
   name: String!
-  posts: CreateManyPostsWithoutCategoryInput
+  posts: CreateCategoriesPostsRelationInput
+}
+
+input CategoryCreateWithoutPostsInput {
+  name: String!
 }
 
 enum CategoryOrderByInput {
@@ -31,190 +35,64 @@ input CategoryWhereInput {
   OR: [CategoryWhereInput!]
 }
 
-input CreateCategoriesWithoutPostsInput {
-  name: String!
-  posts: CreateManyPostsWithoutCategoryInput
+input CreateCategoriesPostsRelationInput {
+  connect: PostWhereInput
+  create: [PostCreateWithoutCategoriesInput!]
 }
 
-input CreateEmailsWithoutUserInput {
-  address: String!
-  user: CreateManyUsersWithoutEmailInput
-}
-
-input CreateManyCategoriesWithoutPostInput {
+input CreatePostsCategoriesRelationInput {
   connect: CategoryWhereInput
-  create: [CreateCategoriesWithoutPostsInput!]
+  create: [CategoryCreateWithoutPostsInput!]
 }
 
-input CreateManyEmailsWithoutUserInput {
-  connect: EmailWhereInput
-  create: CreateEmailsWithoutUserInput
+input CreatePostsUserLikesPostsRelationInput {
+  connect: UserLikesPostWhereInput
+  create: [UserLikesPostCreateWithoutPostInput!]
 }
 
-input CreateManyPostsWithoutCategoryInput {
+input CreatePostToUserRelationInput {
+  connect: UserWhereInput
+  create: UserCreateWithoutPostsInput
+}
+
+input CreateUserFollowsToFollowerRelationInput {
+  connect: UserWhereInput
+  create: UserCreateWithoutFolloweesInput
+}
+
+input CreateUserLikesPostToPostRelationInput {
   connect: PostWhereInput
-  create: [CreatePostsWithoutCategoriesInput!]
+  create: PostCreateWithoutUserLikesPostsInput
 }
 
-input CreateManyPostsWithoutUserInput {
-  connect: PostWhereInput
-  create: [CreatePostsWithoutUserInput!]
+input CreateUserLikesPostToUserRelationInput {
+  connect: UserWhereInput
+  create: UserCreateWithoutPostsInput
 }
 
-input CreateManyPostsWithoutUserLikesPostInput {
-  connect: PostWhereInput
-  create: CreatePostsWithoutUserLikesPostsInput
-}
-
-input CreateManyUserFollowsWithoutUserInput {
+input CreateUsersFolloweesRelationInput {
   connect: UserFollowsWhereInput
-  create: [CreateUserFollowsWithoutFolloweeInput!]
+  create: [UserFollowsCreateWithoutFolloweeInput!]
 }
 
-input CreateManyUserLikesPostsWithoutPostInput {
+input CreateUsersPostsRelationInput {
+  connect: PostWhereInput
+  create: [PostCreateWithoutUserInput!]
+}
+
+input CreateUsersUserLikesPostsRelationInput {
   connect: UserLikesPostWhereInput
-  create: [CreateUserLikesPostsWithoutPostInput!]
+  create: [UserLikesPostCreateWithoutUserInput!]
 }
 
-input CreateManyUserLikesPostsWithoutUserInput {
-  connect: UserLikesPostWhereInput
-  create: [CreateUserLikesPostsWithoutUserInput!]
+input CreateUserToEmailRelationInput {
+  connect: EmailWhereInput
+  create: EmailCreateWithoutUserInput
 }
 
-input CreateManyUserProfilesWithoutUserInput {
+input CreateUserToProfileRelationInput {
   connect: UserProfileWhereInput
-  create: CreateUserProfilesWithoutUserInput
-}
-
-input CreateManyUsersWithoutEmailInput {
-  connect: UserWhereInput
-  create: CreateUsersWithoutEmailInput
-}
-
-input CreateManyUsersWithoutPostInput {
-  connect: UserWhereInput
-  create: CreateUsersWithoutPostsInput
-}
-
-input CreateManyUsersWithoutUserFollowsInput {
-  connect: UserWhereInput
-  create: CreateUsersWithoutFolloweesInput
-}
-
-input CreateManyUsersWithoutUserLikesPostInput {
-  connect: UserWhereInput
-  create: CreateUsersWithoutPostsInput
-}
-
-input CreateManyUsersWithoutUserProfileInput {
-  connect: UserWhereInput
-  create: CreateUsersWithoutProfileInput
-}
-
-input CreatePostsWithoutCategoriesInput {
-  categories: CreateManyCategoriesWithoutPostInput
-  createdAt: DateTime
-  isPublic: Boolean!
-  liked: String
-  title: String!
-  totalLikes: Int
-  user: CreateManyUsersWithoutPostInput
-  userId: Int
-  userLikesPosts: CreateManyUserLikesPostsWithoutPostInput
-  viewCount: Int
-}
-
-input CreatePostsWithoutUserInput {
-  categories: CreateManyCategoriesWithoutPostInput
-  createdAt: DateTime
-  isPublic: Boolean!
-  liked: String
-  title: String!
-  totalLikes: Int
-  user: CreateManyUsersWithoutPostInput
-  userLikesPosts: CreateManyUserLikesPostsWithoutPostInput
-  viewCount: Int
-}
-
-input CreatePostsWithoutUserLikesPostsInput {
-  categories: CreateManyCategoriesWithoutPostInput
-  createdAt: DateTime
-  isPublic: Boolean!
-  liked: String
-  title: String!
-  totalLikes: Int
-  user: CreateManyUsersWithoutPostInput
-  userId: Int
-  userLikesPosts: CreateManyUserLikesPostsWithoutPostInput
-  viewCount: Int
-}
-
-input CreateUserFollowsWithoutFolloweeInput {
-  followee: CreateManyUsersWithoutUserFollowsInput
-  follower: CreateManyUsersWithoutUserFollowsInput
-  followerId: Int!
-}
-
-input CreateUserLikesPostsWithoutPostInput {
-  post: CreateManyPostsWithoutUserLikesPostInput
-  user: CreateManyUsersWithoutUserLikesPostInput
-  userId: Int!
-}
-
-input CreateUserLikesPostsWithoutUserInput {
-  post: CreateManyPostsWithoutUserLikesPostInput
-  postId: Int!
-  user: CreateManyUsersWithoutUserLikesPostInput
-}
-
-input CreateUserProfilesWithoutUserInput {
-  displayName: String!
-  slug: String!
-  user: CreateManyUsersWithoutUserProfileInput
-}
-
-input CreateUsersWithoutEmailInput {
-  age: Int
-  email: CreateManyEmailsWithoutUserInput
-  followees: CreateManyUserFollowsWithoutUserInput
-  name: String!
-  posts: CreateManyPostsWithoutUserInput
-  profile: CreateManyUserProfilesWithoutUserInput
-  type: UserTypeEnum!
-  userLikesPosts: CreateManyUserLikesPostsWithoutUserInput
-}
-
-input CreateUsersWithoutFolloweesInput {
-  age: Int
-  email: CreateManyEmailsWithoutUserInput
-  followees: CreateManyUserFollowsWithoutUserInput
-  name: String!
-  posts: CreateManyPostsWithoutUserInput
-  profile: CreateManyUserProfilesWithoutUserInput
-  type: UserTypeEnum!
-  userLikesPosts: CreateManyUserLikesPostsWithoutUserInput
-}
-
-input CreateUsersWithoutPostsInput {
-  age: Int
-  email: CreateManyEmailsWithoutUserInput
-  followees: CreateManyUserFollowsWithoutUserInput
-  name: String!
-  posts: CreateManyPostsWithoutUserInput
-  profile: CreateManyUserProfilesWithoutUserInput
-  type: UserTypeEnum!
-  userLikesPosts: CreateManyUserLikesPostsWithoutUserInput
-}
-
-input CreateUsersWithoutProfileInput {
-  age: Int
-  email: CreateManyEmailsWithoutUserInput
-  followees: CreateManyUserFollowsWithoutUserInput
-  name: String!
-  posts: CreateManyPostsWithoutUserInput
-  profile: CreateManyUserProfilesWithoutUserInput
-  type: UserTypeEnum!
-  userLikesPosts: CreateManyUserLikesPostsWithoutUserInput
+  create: UserProfileCreateWithoutUserInput
 }
 
 """
@@ -228,6 +106,10 @@ type Email {
   address: String!
   id: ID!
   user: User!
+}
+
+input EmailCreateWithoutUserInput {
+  address: String!
 }
 
 input EmailWhereInput {
@@ -262,15 +144,50 @@ type Post {
 }
 
 input PostCreateInput {
-  categories: CreateManyCategoriesWithoutPostInput
+  categories: CreatePostsCategoriesRelationInput
   createdAt: DateTime
   isPublic: Boolean!
   liked: String
   title: String!
   totalLikes: Int
-  user: CreateManyUsersWithoutPostInput
+  user: CreatePostToUserRelationInput
   userId: Int
-  userLikesPosts: CreateManyUserLikesPostsWithoutPostInput
+  userLikesPosts: CreatePostsUserLikesPostsRelationInput
+  viewCount: Int
+}
+
+input PostCreateWithoutCategoriesInput {
+  createdAt: DateTime
+  isPublic: Boolean!
+  liked: String
+  title: String!
+  totalLikes: Int
+  user: CreatePostToUserRelationInput
+  userId: Int
+  userLikesPosts: CreatePostsUserLikesPostsRelationInput
+  viewCount: Int
+}
+
+input PostCreateWithoutUserInput {
+  categories: CreatePostsCategoriesRelationInput
+  createdAt: DateTime
+  isPublic: Boolean!
+  liked: String
+  title: String!
+  totalLikes: Int
+  userLikesPosts: CreatePostsUserLikesPostsRelationInput
+  viewCount: Int
+}
+
+input PostCreateWithoutUserLikesPostsInput {
+  categories: CreatePostsCategoriesRelationInput
+  createdAt: DateTime
+  isPublic: Boolean!
+  liked: String
+  title: String!
+  totalLikes: Int
+  user: CreatePostToUserRelationInput
+  userId: Int
   viewCount: Int
 }
 
@@ -354,13 +271,33 @@ type User {
 
 input UserCreateInput {
   age: Int
-  email: CreateManyEmailsWithoutUserInput
-  followees: CreateManyUserFollowsWithoutUserInput
+  email: CreateUserToEmailRelationInput
+  followees: CreateUsersFolloweesRelationInput
   name: String!
-  posts: CreateManyPostsWithoutUserInput
-  profile: CreateManyUserProfilesWithoutUserInput
+  posts: CreateUsersPostsRelationInput
+  profile: CreateUserToProfileRelationInput
   type: UserTypeEnum!
-  userLikesPosts: CreateManyUserLikesPostsWithoutUserInput
+  userLikesPosts: CreateUsersUserLikesPostsRelationInput
+}
+
+input UserCreateWithoutFolloweesInput {
+  age: Int
+  email: CreateUserToEmailRelationInput
+  name: String!
+  posts: CreateUsersPostsRelationInput
+  profile: CreateUserToProfileRelationInput
+  type: UserTypeEnum!
+  userLikesPosts: CreateUsersUserLikesPostsRelationInput
+}
+
+input UserCreateWithoutPostsInput {
+  age: Int
+  email: CreateUserToEmailRelationInput
+  followees: CreateUsersFolloweesRelationInput
+  name: String!
+  profile: CreateUserToProfileRelationInput
+  type: UserTypeEnum!
+  userLikesPosts: CreateUsersUserLikesPostsRelationInput
 }
 
 type UserFollows {
@@ -369,6 +306,11 @@ type UserFollows {
   follower: User!
   followerId: Int!
   id: ID!
+}
+
+input UserFollowsCreateWithoutFolloweeInput {
+  follower: CreateUserFollowsToFollowerRelationInput
+  followerId: Int!
 }
 
 enum UserFollowsOrderByInput {
@@ -406,6 +348,16 @@ type UserLikesPost {
   postId: Int!
   user: User!
   userId: Int!
+}
+
+input UserLikesPostCreateWithoutPostInput {
+  user: CreateUserLikesPostToUserRelationInput
+  userId: Int!
+}
+
+input UserLikesPostCreateWithoutUserInput {
+  post: CreateUserLikesPostToPostRelationInput
+  postId: Int!
 }
 
 enum UserLikesPostOrderByInput {
@@ -456,6 +408,11 @@ type UserProfile {
   slug: String!
   user: User!
   userId: Int!
+}
+
+input UserProfileCreateWithoutUserInput {
+  displayName: String!
+  slug: String!
 }
 
 input UserProfileWhereInput {

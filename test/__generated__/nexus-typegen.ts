@@ -30,7 +30,11 @@ export interface NexusGenInputs {
   CategoryCreateInput: {
     // input type
     name: string // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutCategoryInput'] | null // CreateManyPostsWithoutCategoryInput
+    posts?: NexusGenInputs['CreateCategoriesPostsRelationInput'] | null // CreateCategoriesPostsRelationInput
+  }
+  CategoryCreateWithoutPostsInput: {
+    // input type
+    name: string // String!
   }
   CategoryWhereInput: {
     // input type
@@ -43,191 +47,69 @@ export interface NexusGenInputs {
     NOT?: NexusGenInputs['CategoryWhereInput'][] | null // [CategoryWhereInput!]
     OR?: NexusGenInputs['CategoryWhereInput'][] | null // [CategoryWhereInput!]
   }
-  CreateCategoriesWithoutPostsInput: {
+  CreateCategoriesPostsRelationInput: {
     // input type
-    name: string // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutCategoryInput'] | null // CreateManyPostsWithoutCategoryInput
+    connect?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
+    create?: NexusGenInputs['PostCreateWithoutCategoriesInput'][] | null // [PostCreateWithoutCategoriesInput!]
   }
-  CreateEmailsWithoutUserInput: {
+  CreatePostToUserRelationInput: {
     // input type
-    address: string // String!
-    user?: NexusGenInputs['CreateManyUsersWithoutEmailInput'] | null // CreateManyUsersWithoutEmailInput
+    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
+    create?: NexusGenInputs['UserCreateWithoutPostsInput'] | null // UserCreateWithoutPostsInput
   }
-  CreateManyCategoriesWithoutPostInput: {
+  CreatePostsCategoriesRelationInput: {
     // input type
     connect?: NexusGenInputs['CategoryWhereInput'] | null // CategoryWhereInput
-    create?: NexusGenInputs['CreateCategoriesWithoutPostsInput'][] | null // [CreateCategoriesWithoutPostsInput!]
+    create?: NexusGenInputs['CategoryCreateWithoutPostsInput'][] | null // [CategoryCreateWithoutPostsInput!]
   }
-  CreateManyEmailsWithoutUserInput: {
+  CreatePostsUserLikesPostsRelationInput: {
+    // input type
+    connect?: NexusGenInputs['UserLikesPostWhereInput'] | null // UserLikesPostWhereInput
+    create?: NexusGenInputs['UserLikesPostCreateWithoutPostInput'][] | null // [UserLikesPostCreateWithoutPostInput!]
+  }
+  CreateUserFollowsToFollowerRelationInput: {
+    // input type
+    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
+    create?: NexusGenInputs['UserCreateWithoutFolloweesInput'] | null // UserCreateWithoutFolloweesInput
+  }
+  CreateUserLikesPostToPostRelationInput: {
+    // input type
+    connect?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
+    create?: NexusGenInputs['PostCreateWithoutUserLikesPostsInput'] | null // PostCreateWithoutUserLikesPostsInput
+  }
+  CreateUserLikesPostToUserRelationInput: {
+    // input type
+    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
+    create?: NexusGenInputs['UserCreateWithoutPostsInput'] | null // UserCreateWithoutPostsInput
+  }
+  CreateUserToEmailRelationInput: {
     // input type
     connect?: NexusGenInputs['EmailWhereInput'] | null // EmailWhereInput
-    create?: NexusGenInputs['CreateEmailsWithoutUserInput'] | null // CreateEmailsWithoutUserInput
+    create?: NexusGenInputs['EmailCreateWithoutUserInput'] | null // EmailCreateWithoutUserInput
   }
-  CreateManyPostsWithoutCategoryInput: {
-    // input type
-    connect?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
-    create?: NexusGenInputs['CreatePostsWithoutCategoriesInput'][] | null // [CreatePostsWithoutCategoriesInput!]
-  }
-  CreateManyPostsWithoutUserInput: {
-    // input type
-    connect?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
-    create?: NexusGenInputs['CreatePostsWithoutUserInput'][] | null // [CreatePostsWithoutUserInput!]
-  }
-  CreateManyPostsWithoutUserLikesPostInput: {
-    // input type
-    connect?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
-    create?: NexusGenInputs['CreatePostsWithoutUserLikesPostsInput'] | null // CreatePostsWithoutUserLikesPostsInput
-  }
-  CreateManyUserFollowsWithoutUserInput: {
-    // input type
-    connect?: NexusGenInputs['UserFollowsWhereInput'] | null // UserFollowsWhereInput
-    create?: NexusGenInputs['CreateUserFollowsWithoutFolloweeInput'][] | null // [CreateUserFollowsWithoutFolloweeInput!]
-  }
-  CreateManyUserLikesPostsWithoutPostInput: {
-    // input type
-    connect?: NexusGenInputs['UserLikesPostWhereInput'] | null // UserLikesPostWhereInput
-    create?: NexusGenInputs['CreateUserLikesPostsWithoutPostInput'][] | null // [CreateUserLikesPostsWithoutPostInput!]
-  }
-  CreateManyUserLikesPostsWithoutUserInput: {
-    // input type
-    connect?: NexusGenInputs['UserLikesPostWhereInput'] | null // UserLikesPostWhereInput
-    create?: NexusGenInputs['CreateUserLikesPostsWithoutUserInput'][] | null // [CreateUserLikesPostsWithoutUserInput!]
-  }
-  CreateManyUserProfilesWithoutUserInput: {
+  CreateUserToProfileRelationInput: {
     // input type
     connect?: NexusGenInputs['UserProfileWhereInput'] | null // UserProfileWhereInput
-    create?: NexusGenInputs['CreateUserProfilesWithoutUserInput'] | null // CreateUserProfilesWithoutUserInput
+    create?: NexusGenInputs['UserProfileCreateWithoutUserInput'] | null // UserProfileCreateWithoutUserInput
   }
-  CreateManyUsersWithoutEmailInput: {
+  CreateUsersFolloweesRelationInput: {
     // input type
-    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
-    create?: NexusGenInputs['CreateUsersWithoutEmailInput'] | null // CreateUsersWithoutEmailInput
+    connect?: NexusGenInputs['UserFollowsWhereInput'] | null // UserFollowsWhereInput
+    create?: NexusGenInputs['UserFollowsCreateWithoutFolloweeInput'][] | null // [UserFollowsCreateWithoutFolloweeInput!]
   }
-  CreateManyUsersWithoutPostInput: {
+  CreateUsersPostsRelationInput: {
     // input type
-    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
-    create?: NexusGenInputs['CreateUsersWithoutPostsInput'] | null // CreateUsersWithoutPostsInput
+    connect?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
+    create?: NexusGenInputs['PostCreateWithoutUserInput'][] | null // [PostCreateWithoutUserInput!]
   }
-  CreateManyUsersWithoutUserFollowsInput: {
+  CreateUsersUserLikesPostsRelationInput: {
     // input type
-    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
-    create?: NexusGenInputs['CreateUsersWithoutFolloweesInput'] | null // CreateUsersWithoutFolloweesInput
+    connect?: NexusGenInputs['UserLikesPostWhereInput'] | null // UserLikesPostWhereInput
+    create?: NexusGenInputs['UserLikesPostCreateWithoutUserInput'][] | null // [UserLikesPostCreateWithoutUserInput!]
   }
-  CreateManyUsersWithoutUserLikesPostInput: {
+  EmailCreateWithoutUserInput: {
     // input type
-    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
-    create?: NexusGenInputs['CreateUsersWithoutPostsInput'] | null // CreateUsersWithoutPostsInput
-  }
-  CreateManyUsersWithoutUserProfileInput: {
-    // input type
-    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
-    create?: NexusGenInputs['CreateUsersWithoutProfileInput'] | null // CreateUsersWithoutProfileInput
-  }
-  CreatePostsWithoutCategoriesInput: {
-    // input type
-    categories?: NexusGenInputs['CreateManyCategoriesWithoutPostInput'] | null // CreateManyCategoriesWithoutPostInput
-    createdAt?: any | null // DateTime
-    isPublic: boolean // Boolean!
-    liked?: string | null // String
-    title: string // String!
-    totalLikes?: number | null // Int
-    user?: NexusGenInputs['CreateManyUsersWithoutPostInput'] | null // CreateManyUsersWithoutPostInput
-    userId?: number | null // Int
-    userLikesPosts?: NexusGenInputs['CreateManyUserLikesPostsWithoutPostInput'] | null // CreateManyUserLikesPostsWithoutPostInput
-    viewCount?: number | null // Int
-  }
-  CreatePostsWithoutUserInput: {
-    // input type
-    categories?: NexusGenInputs['CreateManyCategoriesWithoutPostInput'] | null // CreateManyCategoriesWithoutPostInput
-    createdAt?: any | null // DateTime
-    isPublic: boolean // Boolean!
-    liked?: string | null // String
-    title: string // String!
-    totalLikes?: number | null // Int
-    user?: NexusGenInputs['CreateManyUsersWithoutPostInput'] | null // CreateManyUsersWithoutPostInput
-    userLikesPosts?: NexusGenInputs['CreateManyUserLikesPostsWithoutPostInput'] | null // CreateManyUserLikesPostsWithoutPostInput
-    viewCount?: number | null // Int
-  }
-  CreatePostsWithoutUserLikesPostsInput: {
-    // input type
-    categories?: NexusGenInputs['CreateManyCategoriesWithoutPostInput'] | null // CreateManyCategoriesWithoutPostInput
-    createdAt?: any | null // DateTime
-    isPublic: boolean // Boolean!
-    liked?: string | null // String
-    title: string // String!
-    totalLikes?: number | null // Int
-    user?: NexusGenInputs['CreateManyUsersWithoutPostInput'] | null // CreateManyUsersWithoutPostInput
-    userId?: number | null // Int
-    userLikesPosts?: NexusGenInputs['CreateManyUserLikesPostsWithoutPostInput'] | null // CreateManyUserLikesPostsWithoutPostInput
-    viewCount?: number | null // Int
-  }
-  CreateUserFollowsWithoutFolloweeInput: {
-    // input type
-    followee?: NexusGenInputs['CreateManyUsersWithoutUserFollowsInput'] | null // CreateManyUsersWithoutUserFollowsInput
-    follower?: NexusGenInputs['CreateManyUsersWithoutUserFollowsInput'] | null // CreateManyUsersWithoutUserFollowsInput
-    followerId: number // Int!
-  }
-  CreateUserLikesPostsWithoutPostInput: {
-    // input type
-    post?: NexusGenInputs['CreateManyPostsWithoutUserLikesPostInput'] | null // CreateManyPostsWithoutUserLikesPostInput
-    user?: NexusGenInputs['CreateManyUsersWithoutUserLikesPostInput'] | null // CreateManyUsersWithoutUserLikesPostInput
-    userId: number // Int!
-  }
-  CreateUserLikesPostsWithoutUserInput: {
-    // input type
-    post?: NexusGenInputs['CreateManyPostsWithoutUserLikesPostInput'] | null // CreateManyPostsWithoutUserLikesPostInput
-    postId: number // Int!
-    user?: NexusGenInputs['CreateManyUsersWithoutUserLikesPostInput'] | null // CreateManyUsersWithoutUserLikesPostInput
-  }
-  CreateUserProfilesWithoutUserInput: {
-    // input type
-    displayName: string // String!
-    slug: string // String!
-    user?: NexusGenInputs['CreateManyUsersWithoutUserProfileInput'] | null // CreateManyUsersWithoutUserProfileInput
-  }
-  CreateUsersWithoutEmailInput: {
-    // input type
-    age?: number | null // Int
-    email?: NexusGenInputs['CreateManyEmailsWithoutUserInput'] | null // CreateManyEmailsWithoutUserInput
-    followees?: NexusGenInputs['CreateManyUserFollowsWithoutUserInput'] | null // CreateManyUserFollowsWithoutUserInput
-    name: string // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutUserInput'] | null // CreateManyPostsWithoutUserInput
-    profile?: NexusGenInputs['CreateManyUserProfilesWithoutUserInput'] | null // CreateManyUserProfilesWithoutUserInput
-    type: NexusGenEnums['UserTypeEnum'] // UserTypeEnum!
-    userLikesPosts?: NexusGenInputs['CreateManyUserLikesPostsWithoutUserInput'] | null // CreateManyUserLikesPostsWithoutUserInput
-  }
-  CreateUsersWithoutFolloweesInput: {
-    // input type
-    age?: number | null // Int
-    email?: NexusGenInputs['CreateManyEmailsWithoutUserInput'] | null // CreateManyEmailsWithoutUserInput
-    followees?: NexusGenInputs['CreateManyUserFollowsWithoutUserInput'] | null // CreateManyUserFollowsWithoutUserInput
-    name: string // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutUserInput'] | null // CreateManyPostsWithoutUserInput
-    profile?: NexusGenInputs['CreateManyUserProfilesWithoutUserInput'] | null // CreateManyUserProfilesWithoutUserInput
-    type: NexusGenEnums['UserTypeEnum'] // UserTypeEnum!
-    userLikesPosts?: NexusGenInputs['CreateManyUserLikesPostsWithoutUserInput'] | null // CreateManyUserLikesPostsWithoutUserInput
-  }
-  CreateUsersWithoutPostsInput: {
-    // input type
-    age?: number | null // Int
-    email?: NexusGenInputs['CreateManyEmailsWithoutUserInput'] | null // CreateManyEmailsWithoutUserInput
-    followees?: NexusGenInputs['CreateManyUserFollowsWithoutUserInput'] | null // CreateManyUserFollowsWithoutUserInput
-    name: string // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutUserInput'] | null // CreateManyPostsWithoutUserInput
-    profile?: NexusGenInputs['CreateManyUserProfilesWithoutUserInput'] | null // CreateManyUserProfilesWithoutUserInput
-    type: NexusGenEnums['UserTypeEnum'] // UserTypeEnum!
-    userLikesPosts?: NexusGenInputs['CreateManyUserLikesPostsWithoutUserInput'] | null // CreateManyUserLikesPostsWithoutUserInput
-  }
-  CreateUsersWithoutProfileInput: {
-    // input type
-    age?: number | null // Int
-    email?: NexusGenInputs['CreateManyEmailsWithoutUserInput'] | null // CreateManyEmailsWithoutUserInput
-    followees?: NexusGenInputs['CreateManyUserFollowsWithoutUserInput'] | null // CreateManyUserFollowsWithoutUserInput
-    name: string // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutUserInput'] | null // CreateManyPostsWithoutUserInput
-    profile?: NexusGenInputs['CreateManyUserProfilesWithoutUserInput'] | null // CreateManyUserProfilesWithoutUserInput
-    type: NexusGenEnums['UserTypeEnum'] // UserTypeEnum!
-    userLikesPosts?: NexusGenInputs['CreateManyUserLikesPostsWithoutUserInput'] | null // CreateManyUserLikesPostsWithoutUserInput
+    address: string // String!
   }
   EmailWhereInput: {
     // input type
@@ -242,15 +124,50 @@ export interface NexusGenInputs {
   }
   PostCreateInput: {
     // input type
-    categories?: NexusGenInputs['CreateManyCategoriesWithoutPostInput'] | null // CreateManyCategoriesWithoutPostInput
+    categories?: NexusGenInputs['CreatePostsCategoriesRelationInput'] | null // CreatePostsCategoriesRelationInput
     createdAt?: any | null // DateTime
     isPublic: boolean // Boolean!
     liked?: string | null // String
     title: string // String!
     totalLikes?: number | null // Int
-    user?: NexusGenInputs['CreateManyUsersWithoutPostInput'] | null // CreateManyUsersWithoutPostInput
+    user?: NexusGenInputs['CreatePostToUserRelationInput'] | null // CreatePostToUserRelationInput
     userId?: number | null // Int
-    userLikesPosts?: NexusGenInputs['CreateManyUserLikesPostsWithoutPostInput'] | null // CreateManyUserLikesPostsWithoutPostInput
+    userLikesPosts?: NexusGenInputs['CreatePostsUserLikesPostsRelationInput'] | null // CreatePostsUserLikesPostsRelationInput
+    viewCount?: number | null // Int
+  }
+  PostCreateWithoutCategoriesInput: {
+    // input type
+    createdAt?: any | null // DateTime
+    isPublic: boolean // Boolean!
+    liked?: string | null // String
+    title: string // String!
+    totalLikes?: number | null // Int
+    user?: NexusGenInputs['CreatePostToUserRelationInput'] | null // CreatePostToUserRelationInput
+    userId?: number | null // Int
+    userLikesPosts?: NexusGenInputs['CreatePostsUserLikesPostsRelationInput'] | null // CreatePostsUserLikesPostsRelationInput
+    viewCount?: number | null // Int
+  }
+  PostCreateWithoutUserInput: {
+    // input type
+    categories?: NexusGenInputs['CreatePostsCategoriesRelationInput'] | null // CreatePostsCategoriesRelationInput
+    createdAt?: any | null // DateTime
+    isPublic: boolean // Boolean!
+    liked?: string | null // String
+    title: string // String!
+    totalLikes?: number | null // Int
+    userLikesPosts?: NexusGenInputs['CreatePostsUserLikesPostsRelationInput'] | null // CreatePostsUserLikesPostsRelationInput
+    viewCount?: number | null // Int
+  }
+  PostCreateWithoutUserLikesPostsInput: {
+    // input type
+    categories?: NexusGenInputs['CreatePostsCategoriesRelationInput'] | null // CreatePostsCategoriesRelationInput
+    createdAt?: any | null // DateTime
+    isPublic: boolean // Boolean!
+    liked?: string | null // String
+    title: string // String!
+    totalLikes?: number | null // Int
+    user?: NexusGenInputs['CreatePostToUserRelationInput'] | null // CreatePostToUserRelationInput
+    userId?: number | null // Int
     viewCount?: number | null // Int
   }
   PostWhereInput: {
@@ -292,13 +209,38 @@ export interface NexusGenInputs {
   UserCreateInput: {
     // input type
     age?: number | null // Int
-    email?: NexusGenInputs['CreateManyEmailsWithoutUserInput'] | null // CreateManyEmailsWithoutUserInput
-    followees?: NexusGenInputs['CreateManyUserFollowsWithoutUserInput'] | null // CreateManyUserFollowsWithoutUserInput
+    email?: NexusGenInputs['CreateUserToEmailRelationInput'] | null // CreateUserToEmailRelationInput
+    followees?: NexusGenInputs['CreateUsersFolloweesRelationInput'] | null // CreateUsersFolloweesRelationInput
     name: string // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutUserInput'] | null // CreateManyPostsWithoutUserInput
-    profile?: NexusGenInputs['CreateManyUserProfilesWithoutUserInput'] | null // CreateManyUserProfilesWithoutUserInput
+    posts?: NexusGenInputs['CreateUsersPostsRelationInput'] | null // CreateUsersPostsRelationInput
+    profile?: NexusGenInputs['CreateUserToProfileRelationInput'] | null // CreateUserToProfileRelationInput
     type: NexusGenEnums['UserTypeEnum'] // UserTypeEnum!
-    userLikesPosts?: NexusGenInputs['CreateManyUserLikesPostsWithoutUserInput'] | null // CreateManyUserLikesPostsWithoutUserInput
+    userLikesPosts?: NexusGenInputs['CreateUsersUserLikesPostsRelationInput'] | null // CreateUsersUserLikesPostsRelationInput
+  }
+  UserCreateWithoutFolloweesInput: {
+    // input type
+    age?: number | null // Int
+    email?: NexusGenInputs['CreateUserToEmailRelationInput'] | null // CreateUserToEmailRelationInput
+    name: string // String!
+    posts?: NexusGenInputs['CreateUsersPostsRelationInput'] | null // CreateUsersPostsRelationInput
+    profile?: NexusGenInputs['CreateUserToProfileRelationInput'] | null // CreateUserToProfileRelationInput
+    type: NexusGenEnums['UserTypeEnum'] // UserTypeEnum!
+    userLikesPosts?: NexusGenInputs['CreateUsersUserLikesPostsRelationInput'] | null // CreateUsersUserLikesPostsRelationInput
+  }
+  UserCreateWithoutPostsInput: {
+    // input type
+    age?: number | null // Int
+    email?: NexusGenInputs['CreateUserToEmailRelationInput'] | null // CreateUserToEmailRelationInput
+    followees?: NexusGenInputs['CreateUsersFolloweesRelationInput'] | null // CreateUsersFolloweesRelationInput
+    name: string // String!
+    profile?: NexusGenInputs['CreateUserToProfileRelationInput'] | null // CreateUserToProfileRelationInput
+    type: NexusGenEnums['UserTypeEnum'] // UserTypeEnum!
+    userLikesPosts?: NexusGenInputs['CreateUsersUserLikesPostsRelationInput'] | null // CreateUsersUserLikesPostsRelationInput
+  }
+  UserFollowsCreateWithoutFolloweeInput: {
+    // input type
+    follower?: NexusGenInputs['CreateUserFollowsToFollowerRelationInput'] | null // CreateUserFollowsToFollowerRelationInput
+    followerId: number // Int!
   }
   UserFollowsWhereInput: {
     // input type
@@ -320,6 +262,16 @@ export interface NexusGenInputs {
     NOT?: NexusGenInputs['UserFollowsWhereInput'][] | null // [UserFollowsWhereInput!]
     OR?: NexusGenInputs['UserFollowsWhereInput'][] | null // [UserFollowsWhereInput!]
   }
+  UserLikesPostCreateWithoutPostInput: {
+    // input type
+    user?: NexusGenInputs['CreateUserLikesPostToUserRelationInput'] | null // CreateUserLikesPostToUserRelationInput
+    userId: number // Int!
+  }
+  UserLikesPostCreateWithoutUserInput: {
+    // input type
+    post?: NexusGenInputs['CreateUserLikesPostToPostRelationInput'] | null // CreateUserLikesPostToPostRelationInput
+    postId: number // Int!
+  }
   UserLikesPostWhereInput: {
     // input type
     AND?: NexusGenInputs['UserLikesPostWhereInput'][] | null // [UserLikesPostWhereInput!]
@@ -339,6 +291,11 @@ export interface NexusGenInputs {
     userId_in?: number[] | null // [Int!]
     userId_lt?: number | null // Int
     userId_lte?: number | null // Int
+  }
+  UserProfileCreateWithoutUserInput: {
+    // input type
+    displayName: string // String!
+    slug: string // String!
   }
   UserProfileWhereInput: {
     // input type
@@ -488,40 +445,36 @@ export interface NexusGenRootTypes {
 
 export interface NexusGenAllTypes extends NexusGenRootTypes {
   CategoryCreateInput: NexusGenInputs['CategoryCreateInput']
+  CategoryCreateWithoutPostsInput: NexusGenInputs['CategoryCreateWithoutPostsInput']
   CategoryWhereInput: NexusGenInputs['CategoryWhereInput']
-  CreateCategoriesWithoutPostsInput: NexusGenInputs['CreateCategoriesWithoutPostsInput']
-  CreateEmailsWithoutUserInput: NexusGenInputs['CreateEmailsWithoutUserInput']
-  CreateManyCategoriesWithoutPostInput: NexusGenInputs['CreateManyCategoriesWithoutPostInput']
-  CreateManyEmailsWithoutUserInput: NexusGenInputs['CreateManyEmailsWithoutUserInput']
-  CreateManyPostsWithoutCategoryInput: NexusGenInputs['CreateManyPostsWithoutCategoryInput']
-  CreateManyPostsWithoutUserInput: NexusGenInputs['CreateManyPostsWithoutUserInput']
-  CreateManyPostsWithoutUserLikesPostInput: NexusGenInputs['CreateManyPostsWithoutUserLikesPostInput']
-  CreateManyUserFollowsWithoutUserInput: NexusGenInputs['CreateManyUserFollowsWithoutUserInput']
-  CreateManyUserLikesPostsWithoutPostInput: NexusGenInputs['CreateManyUserLikesPostsWithoutPostInput']
-  CreateManyUserLikesPostsWithoutUserInput: NexusGenInputs['CreateManyUserLikesPostsWithoutUserInput']
-  CreateManyUserProfilesWithoutUserInput: NexusGenInputs['CreateManyUserProfilesWithoutUserInput']
-  CreateManyUsersWithoutEmailInput: NexusGenInputs['CreateManyUsersWithoutEmailInput']
-  CreateManyUsersWithoutPostInput: NexusGenInputs['CreateManyUsersWithoutPostInput']
-  CreateManyUsersWithoutUserFollowsInput: NexusGenInputs['CreateManyUsersWithoutUserFollowsInput']
-  CreateManyUsersWithoutUserLikesPostInput: NexusGenInputs['CreateManyUsersWithoutUserLikesPostInput']
-  CreateManyUsersWithoutUserProfileInput: NexusGenInputs['CreateManyUsersWithoutUserProfileInput']
-  CreatePostsWithoutCategoriesInput: NexusGenInputs['CreatePostsWithoutCategoriesInput']
-  CreatePostsWithoutUserInput: NexusGenInputs['CreatePostsWithoutUserInput']
-  CreatePostsWithoutUserLikesPostsInput: NexusGenInputs['CreatePostsWithoutUserLikesPostsInput']
-  CreateUserFollowsWithoutFolloweeInput: NexusGenInputs['CreateUserFollowsWithoutFolloweeInput']
-  CreateUserLikesPostsWithoutPostInput: NexusGenInputs['CreateUserLikesPostsWithoutPostInput']
-  CreateUserLikesPostsWithoutUserInput: NexusGenInputs['CreateUserLikesPostsWithoutUserInput']
-  CreateUserProfilesWithoutUserInput: NexusGenInputs['CreateUserProfilesWithoutUserInput']
-  CreateUsersWithoutEmailInput: NexusGenInputs['CreateUsersWithoutEmailInput']
-  CreateUsersWithoutFolloweesInput: NexusGenInputs['CreateUsersWithoutFolloweesInput']
-  CreateUsersWithoutPostsInput: NexusGenInputs['CreateUsersWithoutPostsInput']
-  CreateUsersWithoutProfileInput: NexusGenInputs['CreateUsersWithoutProfileInput']
+  CreateCategoriesPostsRelationInput: NexusGenInputs['CreateCategoriesPostsRelationInput']
+  CreatePostToUserRelationInput: NexusGenInputs['CreatePostToUserRelationInput']
+  CreatePostsCategoriesRelationInput: NexusGenInputs['CreatePostsCategoriesRelationInput']
+  CreatePostsUserLikesPostsRelationInput: NexusGenInputs['CreatePostsUserLikesPostsRelationInput']
+  CreateUserFollowsToFollowerRelationInput: NexusGenInputs['CreateUserFollowsToFollowerRelationInput']
+  CreateUserLikesPostToPostRelationInput: NexusGenInputs['CreateUserLikesPostToPostRelationInput']
+  CreateUserLikesPostToUserRelationInput: NexusGenInputs['CreateUserLikesPostToUserRelationInput']
+  CreateUserToEmailRelationInput: NexusGenInputs['CreateUserToEmailRelationInput']
+  CreateUserToProfileRelationInput: NexusGenInputs['CreateUserToProfileRelationInput']
+  CreateUsersFolloweesRelationInput: NexusGenInputs['CreateUsersFolloweesRelationInput']
+  CreateUsersPostsRelationInput: NexusGenInputs['CreateUsersPostsRelationInput']
+  CreateUsersUserLikesPostsRelationInput: NexusGenInputs['CreateUsersUserLikesPostsRelationInput']
+  EmailCreateWithoutUserInput: NexusGenInputs['EmailCreateWithoutUserInput']
   EmailWhereInput: NexusGenInputs['EmailWhereInput']
   PostCreateInput: NexusGenInputs['PostCreateInput']
+  PostCreateWithoutCategoriesInput: NexusGenInputs['PostCreateWithoutCategoriesInput']
+  PostCreateWithoutUserInput: NexusGenInputs['PostCreateWithoutUserInput']
+  PostCreateWithoutUserLikesPostsInput: NexusGenInputs['PostCreateWithoutUserLikesPostsInput']
   PostWhereInput: NexusGenInputs['PostWhereInput']
   UserCreateInput: NexusGenInputs['UserCreateInput']
+  UserCreateWithoutFolloweesInput: NexusGenInputs['UserCreateWithoutFolloweesInput']
+  UserCreateWithoutPostsInput: NexusGenInputs['UserCreateWithoutPostsInput']
+  UserFollowsCreateWithoutFolloweeInput: NexusGenInputs['UserFollowsCreateWithoutFolloweeInput']
   UserFollowsWhereInput: NexusGenInputs['UserFollowsWhereInput']
+  UserLikesPostCreateWithoutPostInput: NexusGenInputs['UserLikesPostCreateWithoutPostInput']
+  UserLikesPostCreateWithoutUserInput: NexusGenInputs['UserLikesPostCreateWithoutUserInput']
   UserLikesPostWhereInput: NexusGenInputs['UserLikesPostWhereInput']
+  UserProfileCreateWithoutUserInput: NexusGenInputs['UserProfileCreateWithoutUserInput']
   UserProfileWhereInput: NexusGenInputs['UserProfileWhereInput']
   UserWhereInput: NexusGenInputs['UserWhereInput']
   CategoryOrderByInput: NexusGenEnums['CategoryOrderByInput']
@@ -761,40 +714,36 @@ export type NexusGenObjectNames =
 
 export type NexusGenInputNames =
   | 'CategoryCreateInput'
+  | 'CategoryCreateWithoutPostsInput'
   | 'CategoryWhereInput'
-  | 'CreateCategoriesWithoutPostsInput'
-  | 'CreateEmailsWithoutUserInput'
-  | 'CreateManyCategoriesWithoutPostInput'
-  | 'CreateManyEmailsWithoutUserInput'
-  | 'CreateManyPostsWithoutCategoryInput'
-  | 'CreateManyPostsWithoutUserInput'
-  | 'CreateManyPostsWithoutUserLikesPostInput'
-  | 'CreateManyUserFollowsWithoutUserInput'
-  | 'CreateManyUserLikesPostsWithoutPostInput'
-  | 'CreateManyUserLikesPostsWithoutUserInput'
-  | 'CreateManyUserProfilesWithoutUserInput'
-  | 'CreateManyUsersWithoutEmailInput'
-  | 'CreateManyUsersWithoutPostInput'
-  | 'CreateManyUsersWithoutUserFollowsInput'
-  | 'CreateManyUsersWithoutUserLikesPostInput'
-  | 'CreateManyUsersWithoutUserProfileInput'
-  | 'CreatePostsWithoutCategoriesInput'
-  | 'CreatePostsWithoutUserInput'
-  | 'CreatePostsWithoutUserLikesPostsInput'
-  | 'CreateUserFollowsWithoutFolloweeInput'
-  | 'CreateUserLikesPostsWithoutPostInput'
-  | 'CreateUserLikesPostsWithoutUserInput'
-  | 'CreateUserProfilesWithoutUserInput'
-  | 'CreateUsersWithoutEmailInput'
-  | 'CreateUsersWithoutFolloweesInput'
-  | 'CreateUsersWithoutPostsInput'
-  | 'CreateUsersWithoutProfileInput'
+  | 'CreateCategoriesPostsRelationInput'
+  | 'CreatePostToUserRelationInput'
+  | 'CreatePostsCategoriesRelationInput'
+  | 'CreatePostsUserLikesPostsRelationInput'
+  | 'CreateUserFollowsToFollowerRelationInput'
+  | 'CreateUserLikesPostToPostRelationInput'
+  | 'CreateUserLikesPostToUserRelationInput'
+  | 'CreateUserToEmailRelationInput'
+  | 'CreateUserToProfileRelationInput'
+  | 'CreateUsersFolloweesRelationInput'
+  | 'CreateUsersPostsRelationInput'
+  | 'CreateUsersUserLikesPostsRelationInput'
+  | 'EmailCreateWithoutUserInput'
   | 'EmailWhereInput'
   | 'PostCreateInput'
+  | 'PostCreateWithoutCategoriesInput'
+  | 'PostCreateWithoutUserInput'
+  | 'PostCreateWithoutUserLikesPostsInput'
   | 'PostWhereInput'
   | 'UserCreateInput'
+  | 'UserCreateWithoutFolloweesInput'
+  | 'UserCreateWithoutPostsInput'
+  | 'UserFollowsCreateWithoutFolloweeInput'
   | 'UserFollowsWhereInput'
+  | 'UserLikesPostCreateWithoutPostInput'
+  | 'UserLikesPostCreateWithoutUserInput'
   | 'UserLikesPostWhereInput'
+  | 'UserProfileCreateWithoutUserInput'
   | 'UserProfileWhereInput'
   | 'UserWhereInput'
 

@@ -26,12 +26,65 @@ input CategoryWhereInput {
   OR: [CategoryWhereInput!]
 }
 
+input CreateCategoriesWithoutPostsInput {
+  name: String!
+  posts: CreateManyPostsWithoutCategoryInput
+}
+
+input CreateManyCategoriesWithoutPostInput {
+  connect: CategoryWhereInput
+  create: [CreateCategoriesWithoutPostsInput!]
+}
+
+input CreateManyCategoriesWithoutUserInput {
+  connect: CategoryWhereInput
+  create: [CreateCategoriesWithoutPostsInput!]
+}
+
+input CreateManyPostsWithoutCategoryInput {
+  connect: PostWhereInput
+  create: [CreatePostsWithoutCategoriesInput!]
+}
+
+input CreateManyPostsWithoutUserInput {
+  connect: PostWhereInput
+  create: [CreatePostsWithoutAuthorInput!]
+}
+
+input CreateManyUsersWithoutPostInput {
+  connect: UserWhereInput
+  create: CreateUsersWithoutPostsInput
+}
+
+input CreatePostsWithoutAuthorInput {
+  author: CreateManyUsersWithoutPostInput
+  categories: CreateManyCategoriesWithoutPostInput
+  title: String!
+}
+
+input CreatePostsWithoutCategoriesInput {
+  author: CreateManyUsersWithoutPostInput
+  categories: CreateManyCategoriesWithoutPostInput
+  title: String!
+}
+
+input CreateUsersWithoutPostsInput {
+  age: Int!
+  categories: CreateManyCategoriesWithoutUserInput
+  name: String!
+  posts: CreateManyPostsWithoutUserInput
+}
+
 """
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the
 `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO
 8601 standard for representation of dates and times using the Gregorian calendar.
 """
 scalar DateTime
+
+type Mutation {
+  createOneUser(data: UserCreateInput!): User!
+}
 
 type Post {
   author: User!
@@ -73,6 +126,13 @@ type User {
   id: ID!
   name: String!
   posts(first: Int, last: Int, orderBy: [PostOrderByInput!], skip: Int, where: PostWhereInput): [Post!]!
+}
+
+input UserCreateInput {
+  age: Int!
+  categories: CreateManyCategoriesWithoutUserInput
+  name: String!
+  posts: CreateManyPostsWithoutUserInput
 }
 
 enum UserOrderByInput {

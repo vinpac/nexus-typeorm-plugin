@@ -11,8 +11,12 @@ export const namingStrategy = {
   enumType: (entityName: string, propertyName: string) =>
     `${entityName}${makeFirstLetterUpperCase(propertyName)}Enum`,
   createOneFieldName: (entityName: string) => camelCase(`createOne${entityName}`),
-  createManyWithoutSourceInputType: (sourceEntityName: string, relatedEntityName: string) =>
-    `CreateMany${pluralize(relatedEntityName)}Without${sourceEntityName}Input`,
-  createWithoutSourceInputType: (entityName: string, propertyName: string) =>
-    `Create${pluralize(entityName)}Without${makeFirstLetterUpperCase(propertyName)}Input`,
+  createOneRelationInputType: (sourceEntityName: string, propertyName: string) =>
+    `Create${sourceEntityName}To${makeFirstLetterUpperCase(camelCase(propertyName))}RelationInput`,
+  createManyRelationInputType: (sourceEntityName: string, propertyName: string) =>
+    `Create${pluralize(sourceEntityName)}${makeFirstLetterUpperCase(
+      camelCase(propertyName),
+    )}RelationInput`,
+  entityWithoutRelationInputType: (entityName: string, propertyName: string) =>
+    `${entityName}CreateWithout${makeFirstLetterUpperCase(camelCase(propertyName))}Input`,
 } as const

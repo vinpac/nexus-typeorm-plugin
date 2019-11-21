@@ -1,90 +1,79 @@
-import {
-  ColumnEntityOutputMethodConfig,
-  UniqueEntityOutputMethodConfig,
-  PaginationEntityOutputMethodConfig,
-  CRUDFindOneMethod,
-  CRUDFindManyMethod,
-  CRUDCreateOneMethod,
-} from 'nexus-typeorm-plugin/nexus'
 
-interface EntityFieldPublisher<TConfig> {
-  (config?: TConfig): void
-}
+import {
+  EntityPropertyColumnDefFieldPublisher,
+  EntityPropertyFindOneFieldPublisher,
+  EntityPropertyFindManyFieldPublisher,
+  CRUDPropertyFindOneFieldPublisher,
+  CRUDPropertyFindManyFieldPublisher,
+  CRUDPropertyCreateOneFieldPublisher
+} from 'nexus-typeorm-plugin'
 
 declare global {
   export interface NexusTypeORMEntities {
-    User: {
+    'User': {
       id: number
       name: string
       age: number
-      posts: NexusTypeORMEntity<'Post'>[] | null
-      categories: NexusTypeORMEntity<'Category'>[] | null
+      posts: NexusTypeORMEntity<'Post'>[]| null
+      categories: NexusTypeORMEntity<'Category'>[]| null
     }
-    Category: {
+    'Category': {
       id: number
       name: string
-      posts: NexusTypeORMEntity<'Post'>[] | null
+      posts: NexusTypeORMEntity<'Post'>[]| null
     }
-    Post: {
+    'Post': {
       id: number
       title: string
-      author: NexusTypeORMEntity<'User'> | null
-      categories: NexusTypeORMEntity<'Category'>[] | null
+      author: NexusTypeORMEntity<'User'>| null
+      categories: NexusTypeORMEntity<'Category'>[]| null
     }
   }
 
   export interface NexusTypeORMCRUDPropertyMap {
-    Mutation: {
-      createOneUser: CRUDCreateOneMethod<NexusTypeORMEntity<'User'>>
-      createOneCategory: CRUDCreateOneMethod<NexusTypeORMEntity<'Category'>>
-      createOnePost: CRUDCreateOneMethod<NexusTypeORMEntity<'Post'>>
+    'Mutation': {
+      createOneUser: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      createOneCategory: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      createOnePost: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Post'>>
     }
-    Query: {
-      user: CRUDFindOneMethod<NexusTypeORMEntity<'User'>>
-      users: CRUDFindManyMethod<NexusTypeORMEntity<'User'>>
-      category: CRUDFindOneMethod<NexusTypeORMEntity<'Category'>>
-      categories: CRUDFindManyMethod<NexusTypeORMEntity<'Category'>>
-      post: CRUDFindOneMethod<NexusTypeORMEntity<'Post'>>
-      posts: CRUDFindManyMethod<NexusTypeORMEntity<'Post'>>
+    'Query': {
+      user: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      users: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'User'>>
+      category: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      categories: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
+      post: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Post'>>
+      posts: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
     }
   }
 
   export interface NexusTypeORMEntityPropertyMap {
-    User: {
-      id: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'User'>, any>>
-      name: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'User'>, any>>
-      age: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'User'>, any>>
-      posts: EntityFieldPublisher<PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>>>
-      categories: EntityFieldPublisher<
-        PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'Category'>>
-      >
+    'User': {
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'User'>>
+      name: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'User'>>
+      age: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'User'>>
+      posts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
+      categories: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
     }
-    Category: {
-      id: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Category'>, any>>
-      name: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Category'>, any>
-      >
-      posts: EntityFieldPublisher<PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>>>
+    'Category': {
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Category'>>
+      name: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Category'>>
+      posts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
     }
-    Post: {
-      id: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>>
-      title: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>>
-      author: EntityFieldPublisher<UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'User'>>>
-      categories: EntityFieldPublisher<
-        PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'Category'>>
-      >
+    'Post': {
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      title: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      author: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      categories: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
     }
   }
 
-  export type NexusTypeORMEntityProperty<
-    TypeName
-  > = TypeName extends keyof NexusTypeORMEntityPropertyMap
+  export type NexusTypeORMEntityProperty<TypeName> = TypeName extends keyof NexusTypeORMEntityPropertyMap
     ? NexusTypeORMEntityPropertyMap[TypeName]
     : undefined
   export type NexusTypeORMCRUDProperty<TypeName> = TypeName extends 'Mutation'
     ? NexusTypeORMCRUDPropertyMap['Mutation']
     : NexusTypeORMCRUDPropertyMap['Query']
-  export type NexusTypeORMEntity<TypeName> = TypeName extends keyof NexusTypeORMEntities
-    ? NexusTypeORMEntities[TypeName]
-    : undefined
+  export type NexusTypeORMEntity<
+    TypeName
+  > = TypeName extends keyof NexusTypeORMEntities ? NexusTypeORMEntities[TypeName] : undefined
 }

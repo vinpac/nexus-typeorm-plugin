@@ -12,7 +12,7 @@ import {
   ManyToMany,
 } from 'typeorm'
 import { NexusEntity, nexusTypeORMPlugin, entityType } from 'nexus-typeorm-plugin'
-import { queryType, makeSchema } from 'nexus'
+import { queryType, makeSchema, mutationType } from 'nexus'
 import { propertyPathToAlias } from 'nexus-typeorm-plugin/dist/query-builder'
 
 dotenv.config()
@@ -136,14 +136,21 @@ async function main() {
     },
   })
 
+  const mutation = mutationType({
+    definition: t => {
+      t.crud.createOneUser()
+    },
+  })
+
   const schema = makeSchema({
     types: [
       nexusTypeORMPlugin({
-        output: {
+        outputs: {
           typegen: path.resolve('generated', 'nexus-typeorm-typegen.ts'),
         },
       }),
       query,
+      mutation,
       entityType(User),
       entityType(Post),
       entityType(Category),

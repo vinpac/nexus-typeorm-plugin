@@ -164,13 +164,13 @@ export class EntityTypeDefManager {
     relation: RelationMetadata,
     nexusBuilder: NexusSchemaBuilder,
   ): Nexus.core.AllInputTypes {
+    const isRelationAnArray = relation.isOneToMany || relation.isManyToMany
     const entityTypeName = getEntityTypeName(entity)
     const relatedEntity = this.entities[relation.inverseEntityMetadata.name]
     const relatedEntityTypeName = getEntityTypeName(relatedEntity)
-    const typeName = namingStrategy.createManyWithoutSourceInputType(
-      entityTypeName,
-      relatedEntityTypeName,
-    ) as Nexus.core.AllInputTypes
+    const typeName = namingStrategy[
+      isRelationAnArray ? 'createManyRelationInputType' : 'createOneRelationInputType'
+    ](entityTypeName, relation.propertyName) as Nexus.core.AllInputTypes
 
     const { relationInputType } = this.typesDictionary
     if (
@@ -189,8 +189,12 @@ export class EntityTypeDefManager {
             required: false,
           })
           t.field('create', {
-            type: this.useCreateOneWithoutSourceInputType(relatedEntity, relation, nexusBuilder),
-            list: relation.isOneToMany || relation.isManyToMany || undefined,
+            type: this.useCreateOneWithoutRelationInputType(
+              relatedEntity,
+              relation.inverseRelation!,
+              nexusBuilder,
+            ),
+            list: isRelationAnArray || undefined,
             required: false,
           })
         },
@@ -207,27 +211,27 @@ export class EntityTypeDefManager {
     return typeName
   }
 
-  useCreateOneWithoutSourceInputType(
+  useCreateOneWithoutRelationInputType(
     entity: Function,
-    sourceRelation: RelationMetadata,
+    excludedRelation: RelationMetadata,
     nexusBuilder: NexusSchemaBuilder,
   ): Nexus.core.AllInputTypes {
     const entityMetadata = this.getEntityMetadata(entity)
     const entityTypeName = getEntityTypeName(entity)
-    const { createWithoutSourceInput } = this.typesDictionary
-    const excludedPropertyName = sourceRelation.inverseRelation!.propertyName
+    const { createWithoutSourceInput: createWithoutRelationInput } = this.typesDictionary
+    const { propertyName: excludedPropertyName } = excludedRelation
     if (
-      createWithoutSourceInput[entityTypeName] &&
-      createWithoutSourceInput[entityTypeName][excludedPropertyName]
+      createWithoutRelationInput[entityTypeName] &&
+      createWithoutRelationInput[entityTypeName][excludedPropertyName]
     ) {
-      return createWithoutSourceInput[entityTypeName][excludedPropertyName]
+      return createWithoutRelationInput[entityTypeName][excludedPropertyName]
     }
-    const typeName = namingStrategy.createWithoutSourceInputType(
+    const typeName = namingStrategy.entityWithoutRelationInputType(
       entityTypeName,
       excludedPropertyName,
     ) as Nexus.core.AllInputTypes
 
-    const foreignKeys = sourceRelation.inverseRelation!.foreignKeys
+    const foreignKeys = excludedRelation.foreignKeys
     nexusBuilder.addType(
       inputObjectType({
         name: typeName,
@@ -256,7 +260,7 @@ export class EntityTypeDefManager {
           })
 
           entityMetadata.relations.forEach(relation => {
-            if (relation.propertyName === sourceRelation.propertyName) {
+            if (relation.propertyName === excludedPropertyName) {
               return
             }
 

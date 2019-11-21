@@ -16,6 +16,24 @@ declare global {
       user: NexusTypeORMEntity<'User'> | null
       post: NexusTypeORMEntity<'Post'> | null
     }
+    Category: {
+      id: number
+      name: string
+      posts: NexusTypeORMEntity<'Post'>[] | null
+    }
+    Post: {
+      id: number
+      title: string
+      isPublic: boolean
+      viewCount: number | null
+      userId: number | null
+      createdAt: string
+      totalLikes: number | null
+      liked: string | null
+      user: NexusTypeORMEntity<'User'>
+      userLikesPosts: NexusTypeORMEntity<'UserLikesPost'>[] | null
+      categories: NexusTypeORMEntity<'Category'>[] | null
+    }
     Email: {
       id: number
       address: string
@@ -46,24 +64,6 @@ declare global {
       userLikesPosts: NexusTypeORMEntity<'UserLikesPost'>[] | null
       profile: NexusTypeORMEntity<'UserProfile'> | null
     }
-    Category: {
-      id: number
-      name: string
-      posts: NexusTypeORMEntity<'Post'>[] | null
-    }
-    Post: {
-      id: number
-      title: string
-      isPublic: boolean
-      viewCount: number | null
-      userId: number | null
-      createdAt: string
-      totalLikes: number | null
-      liked: string | null
-      user: NexusTypeORMEntity<'User'>
-      userLikesPosts: NexusTypeORMEntity<'UserLikesPost'>[] | null
-      categories: NexusTypeORMEntity<'Category'>[] | null
-    }
   }
 
   export interface NexusTypeORMCRUDPropertyMap {
@@ -71,16 +71,20 @@ declare global {
       createOneUserLikesPost: CRUDPropertyCreateOneFieldPublisher<
         NexusTypeORMEntity<'UserLikesPost'>
       >
+      createOneCategory: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      createOnePost: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Post'>>
       createOneEmail: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Email'>>
       createOneUserFollows: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
       createOneUserProfile: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
       createOneUser: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'User'>>
-      createOneCategory: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Category'>>
-      createOnePost: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Post'>>
     }
     Query: {
       userLikesPost: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
       userLikesPosts: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
+      category: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      categories: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
+      post: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Post'>>
+      posts: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
       email: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Email'>>
       emails: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Email'>>
       userFollows: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
@@ -88,10 +92,6 @@ declare global {
       userProfiles: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
       user: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
       users: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'User'>>
-      category: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Category'>>
-      categories: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
-      post: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Post'>>
-      posts: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
     }
   }
 
@@ -102,6 +102,24 @@ declare global {
       postId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
       user: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
       post: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Post'>>
+    }
+    Category: {
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Category'>>
+      name: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Category'>>
+      posts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
+    }
+    Post: {
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      title: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      isPublic: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      viewCount: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      userId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      createdAt: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      totalLikes: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      liked: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      user: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      userLikesPosts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
+      categories: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
     }
     Email: {
       id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Email'>>
@@ -132,24 +150,6 @@ declare global {
       followees: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
       userLikesPosts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
       profile: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
-    }
-    Category: {
-      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Category'>>
-      name: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Category'>>
-      posts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
-    }
-    Post: {
-      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
-      title: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
-      isPublic: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
-      viewCount: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
-      userId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
-      createdAt: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
-      totalLikes: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
-      liked: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
-      user: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
-      userLikesPosts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
-      categories: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
     }
   }
 
