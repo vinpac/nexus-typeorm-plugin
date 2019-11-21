@@ -99,7 +99,7 @@ async function main() {
       t.crud.posts()
       t.crud.users('listUsers')
       t.crud.users('listUsersWithNameJohn', {
-        resolve: (ctx: FindManyResolveFnContext<User, User, any, any>) => {
+        resolve: ctx => {
           ctx.args.where = {
             ...ctx.args.where,
             name: 'John',

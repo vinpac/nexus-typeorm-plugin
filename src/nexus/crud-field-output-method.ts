@@ -1,9 +1,9 @@
 import { dynamicOutputMethod } from 'nexus'
 import { EntityTypeDefManager } from '../entity-type-def-manager'
 import { QueryBuilderConfig } from '../query-builder'
-import { CreateOneFieldConfig, defineCreateOneField } from './crud/create-one-field'
-import { FindOneFieldConfig, defineFindOneField } from './crud/find-one-field'
-import { FindManyFieldConfig, defineFindManyField } from './crud/find-many-field'
+import { CreateOneFieldPublisherConfig, defineCreateOneField } from './crud/create-one-field'
+import { FindOneFieldPublisherConfig, defineFindOneField } from './crud/find-one-field'
+import { FindManyFieldPublisherConfig, defineFindManyField } from './crud/find-many-field'
 import { GraphQLResolveInfo } from 'graphql'
 
 declare global {
@@ -49,17 +49,20 @@ export interface OverrideQueryBuilderConfigFn {
   (config: QueryBuilderConfig): QueryBuilderConfig
 }
 
-export interface CRUDFieldFindOneOutputMethodConfig<TType> extends FindOneFieldConfig<TType> {
+export interface CRUDFieldFindOneOutputMethodConfig<TType>
+  extends FindOneFieldPublisherConfig<TType> {
   entity: string
   method: 'findOne'
 }
 
-export interface CRUDFieldFindManyOutputMethodConfig<TType> extends FindManyFieldConfig<TType> {
+export interface CRUDFieldFindManyOutputMethodConfig<TType>
+  extends FindManyFieldPublisherConfig<TType> {
   entity: string
   method: 'findMany'
 }
 
-export interface CRUDFieldCreateOneOutputMethodConfig<TType> extends CreateOneFieldConfig<TType> {
+export interface CRUDFieldCreateOneOutputMethodConfig<TType>
+  extends CreateOneFieldPublisherConfig<TType> {
   entity: string
   method: 'createOne'
 }

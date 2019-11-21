@@ -8,7 +8,7 @@ import { grapQLInfoToEntityJoins, getEntityTypeName } from '../../util'
 import { EntityTypeDefManager } from '../../entity-type-def-manager'
 import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { GraphQLResolveInfo } from 'graphql'
-import { OverrideQueryBuilderConfigFn, CRUDFieldConfigResolveFn } from '../crud-output-method'
+import { OverrideQueryBuilderConfigFn, CRUDFieldConfigResolveFn } from '../crud-field-output-method'
 
 interface FindOneResolverArgs {
   where?: ArgWhereType
@@ -28,15 +28,11 @@ interface FindOneResolver<TType> {
   ): Promise<TType>
 }
 
-export interface FindOneFieldConfig<TEntity> {
+export interface FindOneFieldPublisherConfig<TEntity> {
   type?: Nexus.core.AllOutputTypes
   args?: ArgsRecord | MapArgsFn
   nullable?: boolean
   resolve?: CRUDFieldConfigResolveFn<TEntity, FindOneFieldNextFnExtraContext>
-}
-
-export interface CRUDFindOneMethod<TEntity> {
-  (fieldName?: string, config?: FindOneFieldConfig<TEntity>): void
 }
 
 export function defineFindOneField(
@@ -44,7 +40,7 @@ export function defineFindOneField(
   factoryConfig: OutputPropertyFactoryConfig<any>,
   manager: EntityTypeDefManager,
   givenFieldName?: string,
-  config: FindOneFieldConfig<any> = {},
+  config: FindOneFieldPublisherConfig<any> = {},
 ) {
   const { typeDef: t, builder } = factoryConfig
   const type = config.type || getEntityTypeName(entity)

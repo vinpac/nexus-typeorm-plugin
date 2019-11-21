@@ -1,23 +1,35 @@
 import { EntityTypeDefManager } from '../entity-type-def-manager'
-import { CRUDFieldConfigResolveFn } from './crud-output-method'
+import { CRUDFieldConfigResolveFn } from './crud-field-output-method'
 import * as Nexus from 'nexus'
 import { namingStrategy } from './naming-strategy'
 import { dynamicOutputProperty } from 'nexus'
 import { getEntityTypeName } from '../util'
-import { FindOneFieldNextFnExtraContext, CRUDFindOneMethod } from './crud/find-one-field'
+import { FindOneFieldNextFnExtraContext, FindOneFieldPublisherConfig } from './crud/find-one-field'
 import { ArgsRecord } from 'nexus/dist/core'
 import { MapArgsFn } from '../args'
+import { FindManyFieldPublisherConfig } from './crud/find-many-field'
+import { CreateOneFieldPublisherConfig } from './crud/create-one-field'
 
-export interface CRUDPropertyFieldConfig<TType> {
+export interface CRUDPropertyFieldPublisherConfig<TType> {
   type?: Nexus.AllOutputTypes
   alias?: string
   args?: ArgsRecord | MapArgsFn
   resolve?: CRUDFieldConfigResolveFn<TType, FindOneFieldNextFnExtraContext>
 }
 
-type CRUDOutputPropertyMethod = CRUDFindOneMethod<any>
+export interface CRUDPropertyFindOneFieldPublisher<TEntity> {
+  (fieldName?: string, config?: FindOneFieldPublisherConfig<TEntity>): void
+}
+export interface CRUDPropertyFindManyFieldPublisher<TEntity> {
+  (fieldName?: string, config?: FindManyFieldPublisherConfig<TEntity>): void
+}
+export interface CRUDPropertyCreateOneFieldPublisher<TEntity> {
+  (fieldName?: string, config?: CreateOneFieldPublisherConfig<TEntity>): void
+}
+
+type CRUDOutputPropertyAnyMethod = CRUDPropertyFindOneFieldPublisher<any>
 export interface CRUDOutputProperty {
-  [key: string]: CRUDOutputPropertyMethod
+  [key: string]: CRUDOutputPropertyAnyMethod
 }
 
 export function buildCRUDOutputProperty(manager: EntityTypeDefManager) {

@@ -1,7 +1,7 @@
 {
   "name": "nexus-typeorm-plugin",
   "description": "Create schemas from TypeORM models easily with this nexus plugin. Comes with dataloader!",
-  "version": "0.0.1-alpha.7",
+  "version": "0.0.1-alpha.8",
   "main": "./dist/index.js",
   "private": false,
   "typings": "./dist/index.d.ts",
@@ -16,8 +16,7 @@
     "dataloader"
   ],
   "files": [
-    "dist",
-    "nexus.js"
+    "dist"
   ],
   "devDependencies": {
     "@types/dotenv": "^6.1.1",

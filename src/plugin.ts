@@ -8,7 +8,7 @@ import { buildEntityOutputProperty } from './nexus/entity-output-property'
 import { buildEntityFieldsOutputMethod } from './nexus/entity-fields-output-method'
 import { buildEntityFieldOutputMethod } from './nexus/entity-field-output-method'
 import { buildCRUDOutputProperty } from './nexus/crud-output-property'
-import { buildCRUDOutputMethod } from './nexus/crud-output-method'
+import { buildCRUDOutputMethod } from './nexus/crud-field-output-method'
 import { writeTypeGen } from './typegen'
 
 export interface NexusTypeORMPluginConfig {

@@ -8,8 +8,11 @@ import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import { namingStrategy } from './naming-strategy'
 import { getEntityTypeName, getEntityPrimaryColumn } from '../util'
 import { propertyPathToAlias } from '../query-builder'
-import { FindManyFieldConfig, FindManyFieldNextFnExtraContext } from './crud/find-many-field'
-import { CRUDFieldConfigResolveFn } from './crud-output-method'
+import {
+  FindManyFieldPublisherConfig,
+  FindManyFieldNextFnExtraContext,
+} from './crud/find-many-field'
+import { CRUDFieldConfigResolveFn } from './crud-field-output-method'
 
 declare global {
   export interface NexusTypeORMEntityOutputMethod<TEntity> {
@@ -17,7 +20,7 @@ declare global {
   }
 }
 
-interface BaseEntityOutputMethodConfig {
+interface EntityPropertyCRUDMethodConfig {
   alias?: string
   type?: Nexus.core.AllOutputTypes
   filtering?: boolean
@@ -33,25 +36,26 @@ interface ColumnEntityOutputMethodConfigResolveFn<
   (ctx: { source: TSource; args: TArgs; context: TContext; info: GraphQLResolveInfo }): TPayload
 }
 
-export interface ColumnEntityOutputMethodConfig<TEntity, TPayload> {
+export interface EntityColumnFieldPublisherConfig<TEntity, TPayload> {
+  type?: Nexus.AllOutputTypes
   alias?: string
   resolve?: ColumnEntityOutputMethodConfigResolveFn<TPayload, TEntity>
 }
 
-export interface UniqueEntityOutputMethodConfig<TType> extends BaseEntityOutputMethodConfig {
+export interface EntityFindOneFieldPublisherConfig<TType> extends EntityPropertyCRUDMethodConfig {
   resolve?: CRUDFieldConfigResolveFn<TType, {}>
   pagination?: true
 }
 
-export interface PaginationEntityOutputMethodConfig<TType> extends BaseEntityOutputMethodConfig {
+export interface EntityFindManyFieldPublisherConfig<TType> extends EntityPropertyCRUDMethodConfig {
   resolve?: CRUDFieldConfigResolveFn<TType[], FindManyFieldNextFnExtraContext>
   pagination?: false
 }
 
 export type EntityOutputMethodConfig<TType> =
-  | ColumnEntityOutputMethodConfig<TType, any>
-  | UniqueEntityOutputMethodConfig<TType>
-  | PaginationEntityOutputMethodConfig<TType>
+  | EntityColumnFieldPublisherConfig<TType, any>
+  | EntityFindOneFieldPublisherConfig<TType>
+  | EntityFindManyFieldPublisherConfig<TType>
 
 function buildRelationFieldPublisher(entity: Function, manager: EntityTypeDefManager) {
   return (
@@ -85,7 +89,7 @@ function buildRelationFieldPublisher(entity: Function, manager: EntityTypeDefMan
         )
       }
 
-      const resolve: FindManyFieldConfig<any>['resolve'] = ctx => {
+      const resolve: FindManyFieldPublisherConfig<any>['resolve'] = ctx => {
         if (!ctx.args.where && ctx.source[relation.propertyName]) {
           return ctx.source[relation.propertyName]
         }

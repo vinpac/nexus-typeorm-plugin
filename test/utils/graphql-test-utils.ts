@@ -28,7 +28,7 @@ export function createTestSchemaSingleton() {
         nexusTypeORMPlugin({
           outputs: {
             typegen: path.resolve('test', '__generated__', 'nexus-typeorm-typegen.ts'),
-            format: str => str.replace("'nexus-typeorm-plugin/nexus'", "'../../src/nexus/typings'"),
+            format: str => str.replace("'nexus-typeorm-plugin'", "'../../src'"),
           },
         }),
         queryType({
@@ -92,14 +92,14 @@ export function createTestSchemaSingleton() {
             t.entityFields()
             t.crud.userFollows('followers', {
               type: 'User',
-              resolve: async ctx => {
+              resolve: async (ctx: any) => {
                 const follows = await ctx.next(ctx)
 
                 return getConnection()
                   .getRepository(User)
                   .createQueryBuilder()
                   .where('id IN (:...ids)', {
-                    ids: follows.map(follow => follow.followerId),
+                    ids: follows.map((follow: any) => follow.followerId),
                   })
                   .getMany()
               },

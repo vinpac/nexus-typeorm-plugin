@@ -12,7 +12,7 @@ import { grapQLInfoToEntityJoins, getEntityTypeName } from '../../util'
 import { EntityTypeDefManager } from '../../entity-type-def-manager'
 import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { GraphQLResolveInfo } from 'graphql'
-import { OverrideQueryBuilderConfigFn, CRUDFieldConfigResolveFn } from '../crud-output-method'
+import { OverrideQueryBuilderConfigFn, CRUDFieldConfigResolveFn } from '../crud-field-output-method'
 import { intArg } from 'nexus'
 
 interface FindManyResolverArgs {
@@ -36,23 +36,18 @@ interface FindManyResolver<TType> {
   ): Promise<TType[]>
 }
 
-export interface FindManyFieldConfig<TType> {
+export interface FindManyFieldPublisherConfig<TType> {
   type?: Nexus.core.AllOutputTypes
   args?: ArgsRecord | MapArgsFn
   resolve?: CRUDFieldConfigResolveFn<TType[], FindManyFieldNextFnExtraContext>
   nullable?: boolean
 }
-
-export interface CRUDFindManyMethod<TEntity> {
-  (fieldName?: string, config?: FindManyFieldConfig<TEntity>): void
-}
-
 export function defineFindManyField(
   entity: Function,
   { typeDef: t, builder }: OutputPropertyFactoryConfig<any>,
   manager: EntityTypeDefManager,
   givenFieldName?: string,
-  config: FindManyFieldConfig<any> = {},
+  config: FindManyFieldPublisherConfig<any> = {},
 ) {
   const type = config.type || getEntityTypeName(entity)
 

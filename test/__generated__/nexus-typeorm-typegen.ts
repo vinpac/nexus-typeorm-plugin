@@ -1,15 +1,11 @@
 import {
-  ColumnEntityOutputMethodConfig,
-  UniqueEntityOutputMethodConfig,
-  PaginationEntityOutputMethodConfig,
-  CRUDFindOneMethod,
-  CRUDFindManyMethod,
-  CRUDCreateOneMethod,
-} from '../../src/nexus/typings'
-
-interface EntityFieldPublisher<TConfig> {
-  (config?: TConfig): void
-}
+  EntityPropertyColumnDefFieldPublisher,
+  EntityPropertyFindOneFieldPublisher,
+  EntityPropertyFindManyFieldPublisher,
+  CRUDPropertyFindOneFieldPublisher,
+  CRUDPropertyFindManyFieldPublisher,
+  CRUDPropertyCreateOneFieldPublisher,
+} from '../../src'
 
 declare global {
   export interface NexusTypeORMEntities {
@@ -19,24 +15,6 @@ declare global {
       postId: number
       user: NexusTypeORMEntity<'User'> | null
       post: NexusTypeORMEntity<'Post'> | null
-    }
-    Category: {
-      id: number
-      name: string
-      posts: NexusTypeORMEntity<'Post'>[] | null
-    }
-    Post: {
-      id: number
-      title: string
-      isPublic: boolean
-      viewCount: number | null
-      userId: number | null
-      createdAt: string
-      totalLikes: number | null
-      liked: string | null
-      user: NexusTypeORMEntity<'User'>
-      userLikesPosts: NexusTypeORMEntity<'UserLikesPost'>[] | null
-      categories: NexusTypeORMEntity<'Category'>[] | null
     }
     Email: {
       id: number
@@ -68,132 +46,110 @@ declare global {
       userLikesPosts: NexusTypeORMEntity<'UserLikesPost'>[] | null
       profile: NexusTypeORMEntity<'UserProfile'> | null
     }
+    Category: {
+      id: number
+      name: string
+      posts: NexusTypeORMEntity<'Post'>[] | null
+    }
+    Post: {
+      id: number
+      title: string
+      isPublic: boolean
+      viewCount: number | null
+      userId: number | null
+      createdAt: string
+      totalLikes: number | null
+      liked: string | null
+      user: NexusTypeORMEntity<'User'>
+      userLikesPosts: NexusTypeORMEntity<'UserLikesPost'>[] | null
+      categories: NexusTypeORMEntity<'Category'>[] | null
+    }
   }
 
   export interface NexusTypeORMCRUDPropertyMap {
     Mutation: {
-      createOneUserLikesPost: CRUDCreateOneMethod<NexusTypeORMEntity<'UserLikesPost'>>
-      createOneCategory: CRUDCreateOneMethod<NexusTypeORMEntity<'Category'>>
-      createOnePost: CRUDCreateOneMethod<NexusTypeORMEntity<'Post'>>
-      createOneEmail: CRUDCreateOneMethod<NexusTypeORMEntity<'Email'>>
-      createOneUserFollows: CRUDCreateOneMethod<NexusTypeORMEntity<'UserFollows'>>
-      createOneUserProfile: CRUDCreateOneMethod<NexusTypeORMEntity<'UserProfile'>>
-      createOneUser: CRUDCreateOneMethod<NexusTypeORMEntity<'User'>>
+      createOneUserLikesPost: CRUDPropertyCreateOneFieldPublisher<
+        NexusTypeORMEntity<'UserLikesPost'>
+      >
+      createOneEmail: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Email'>>
+      createOneUserFollows: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
+      createOneUserProfile: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+      createOneUser: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      createOneCategory: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      createOnePost: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Post'>>
     }
     Query: {
-      userLikesPost: CRUDFindOneMethod<NexusTypeORMEntity<'UserLikesPost'>>
-      userLikesPosts: CRUDFindManyMethod<NexusTypeORMEntity<'UserLikesPost'>>
-      category: CRUDFindOneMethod<NexusTypeORMEntity<'Category'>>
-      categories: CRUDFindManyMethod<NexusTypeORMEntity<'Category'>>
-      post: CRUDFindOneMethod<NexusTypeORMEntity<'Post'>>
-      posts: CRUDFindManyMethod<NexusTypeORMEntity<'Post'>>
-      email: CRUDFindOneMethod<NexusTypeORMEntity<'Email'>>
-      emails: CRUDFindManyMethod<NexusTypeORMEntity<'Email'>>
-      userFollows: CRUDFindManyMethod<NexusTypeORMEntity<'UserFollows'>>
-      userProfile: CRUDFindOneMethod<NexusTypeORMEntity<'UserProfile'>>
-      userProfiles: CRUDFindManyMethod<NexusTypeORMEntity<'UserProfile'>>
-      user: CRUDFindOneMethod<NexusTypeORMEntity<'User'>>
-      users: CRUDFindManyMethod<NexusTypeORMEntity<'User'>>
+      userLikesPost: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
+      userLikesPosts: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
+      email: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Email'>>
+      emails: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Email'>>
+      userFollows: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
+      userProfile: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+      userProfiles: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+      user: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      users: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'User'>>
+      category: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      categories: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
+      post: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Post'>>
+      posts: CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
     }
   }
 
   export interface NexusTypeORMEntityPropertyMap {
     UserLikesPost: {
-      id: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserLikesPost'>, any>
-      >
-      userId: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserLikesPost'>, any>
-      >
-      postId: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserLikesPost'>, any>
-      >
-      user: EntityFieldPublisher<UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'User'>>>
-      post: EntityFieldPublisher<UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>>>
-    }
-    Category: {
-      id: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Category'>, any>>
-      name: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Category'>, any>
-      >
-      posts: EntityFieldPublisher<PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>>>
-    }
-    Post: {
-      id: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>>
-      title: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>>
-      isPublic: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>
-      >
-      viewCount: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>
-      >
-      userId: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>>
-      createdAt: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>
-      >
-      totalLikes: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>
-      >
-      liked: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>, any>>
-      user: EntityFieldPublisher<UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'User'>>>
-      userLikesPosts: EntityFieldPublisher<
-        PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'UserLikesPost'>>
-      >
-      categories: EntityFieldPublisher<
-        PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'Category'>>
-      >
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
+      userId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
+      postId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
+      user: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      post: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Post'>>
     }
     Email: {
-      id: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Email'>, any>>
-      address: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'Email'>, any>
-      >
-      user: EntityFieldPublisher<UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'User'>>>
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Email'>>
+      address: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Email'>>
+      user: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
     }
     UserFollows: {
-      id: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserFollows'>, any>
-      >
-      followerId: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserFollows'>, any>
-      >
-      followeeId: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserFollows'>, any>
-      >
-      follower: EntityFieldPublisher<UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'User'>>>
-      followee: EntityFieldPublisher<UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'User'>>>
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
+      followerId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
+      followeeId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
+      follower: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      followee: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
     }
     UserProfile: {
-      id: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserProfile'>, any>
-      >
-      displayName: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserProfile'>, any>
-      >
-      slug: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserProfile'>, any>
-      >
-      userId: EntityFieldPublisher<
-        ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'UserProfile'>, any>
-      >
-      user: EntityFieldPublisher<UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'User'>>>
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+      displayName: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+      slug: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+      userId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+      user: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
     }
     User: {
-      id: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'User'>, any>>
-      name: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'User'>, any>>
-      age: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'User'>, any>>
-      type: EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'User'>, any>>
-      email: EntityFieldPublisher<UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'Email'>>>
-      posts: EntityFieldPublisher<PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'Post'>>>
-      followees: EntityFieldPublisher<
-        PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'UserFollows'>>
-      >
-      userLikesPosts: EntityFieldPublisher<
-        PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'UserLikesPost'>>
-      >
-      profile: EntityFieldPublisher<
-        UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'UserProfile'>>
-      >
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'User'>>
+      name: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'User'>>
+      age: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'User'>>
+      type: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'User'>>
+      email: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'Email'>>
+      posts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
+      followees: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
+      userLikesPosts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
+      profile: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+    }
+    Category: {
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Category'>>
+      name: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Category'>>
+      posts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
+    }
+    Post: {
+      id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      title: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      isPublic: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      viewCount: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      userId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      createdAt: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      totalLikes: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      liked: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      user: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      userLikesPosts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>
+      categories: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
     }
   }
 

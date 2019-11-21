@@ -109,7 +109,7 @@ export function writeTypeGen(
       entitiesInterfaces[entityTypeName][column.propertyName] = typeORMColumnToGraphQLType(column)
       entityPropertyInterfaces[entityTypeName][
         column.propertyName
-      ] = `EntityFieldPublisher<ColumnEntityOutputMethodConfig<NexusTypeORMEntity<'${entityTypeName}'>, any>>`
+      ] = `EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'${entityTypeName}'>>`
     })
 
     entityMetadata.relations.forEach(relation => {
@@ -122,22 +122,20 @@ export function writeTypeGen(
       ] = `NexusTypeORMEntity<'${relatedEntityTypeName}'>${isArray ? '[]' : ''}${
         relation.isNullable ? '| null' : ''
       }`
-      entityPropertyInterfaces[entityTypeName][relation.propertyName] = `EntityFieldPublisher<${
-        isArray
-          ? `PaginationEntityOutputMethodConfig<NexusTypeORMEntity<'${relatedEntityTypeName}'>>`
-          : `UniqueEntityOutputMethodConfig<NexusTypeORMEntity<'${relatedEntityTypeName}'>>`
-      }>`
+      entityPropertyInterfaces[entityTypeName][relation.propertyName] = isArray
+        ? `EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'${relatedEntityTypeName}'>>`
+        : `EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'${relatedEntityTypeName}'>>`
     })
 
     crudPropertyInterfaces.Query[
       namingStrategy.findOneField(entityTypeName)
-    ] = `CRUDFindOneMethod<NexusTypeORMEntity<'${entityTypeName}'>>`
+    ] = `CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'${entityTypeName}'>>`
     crudPropertyInterfaces.Query[
       namingStrategy.findManyField(entityTypeName)
-    ] = `CRUDFindManyMethod<NexusTypeORMEntity<'${entityTypeName}'>>`
+    ] = `CRUDPropertyFindManyFieldPublisher<NexusTypeORMEntity<'${entityTypeName}'>>`
     crudPropertyInterfaces.Mutation[
       namingStrategy.createOneFieldName(entityTypeName)
-    ] = `CRUDCreateOneMethod<NexusTypeORMEntity<'${entityTypeName}'>>`
+    ] = `CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'${entityTypeName}'>>`
   })
 
   const convertSubInterfaceMapToString = (
@@ -160,17 +158,13 @@ export function writeTypeGen(
 
   let body = `
 import {
-  ColumnEntityOutputMethodConfig,
-  UniqueEntityOutputMethodConfig,
-  PaginationEntityOutputMethodConfig,
-  CRUDFindOneMethod,
-  CRUDFindManyMethod,
-  CRUDCreateOneMethod
-} from 'nexus-typeorm-plugin/nexus'
-
-interface EntityFieldPublisher<TConfig> {
-  (config?: TConfig): void
-}
+  EntityPropertyColumnDefFieldPublisher,
+  EntityPropertyFindOneFieldPublisher,
+  EntityPropertyFindManyFieldPublisher,
+  CRUDPropertyFindOneFieldPublisher,
+  CRUDPropertyFindManyFieldPublisher,
+  CRUDPropertyCreateOneFieldPublisher
+} from 'nexus-typeorm-plugin'
 
 declare global {
 ${convertSubInterfaceMapToString('NexusTypeORMEntities', entitiesInterfaces, '  ')}

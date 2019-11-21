@@ -5,19 +5,15 @@ import * as Nexus from 'nexus'
 import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { MapArgsFn } from '../../args'
 import { ArgsRecord } from 'nexus/dist/core'
-import { CRUDFieldConfigResolveFn } from '../crud-output-method'
+import { CRUDFieldConfigResolveFn } from '../crud-field-output-method'
 import { getConnection } from 'typeorm'
 import { translateWhereClause, ArgWhereType } from '../../args/arg-where'
 
-export interface CreateOneFieldConfig<TEntity> {
+export interface CreateOneFieldPublisherConfig<TEntity> {
   type?: Nexus.core.AllOutputTypes
   args?: ArgsRecord | MapArgsFn
   resolve?: CRUDFieldConfigResolveFn<TEntity>
   nullable?: boolean
-}
-
-export interface CRUDCreateOneMethod<TEntity> {
-  (fieldName?: string, config?: CreateOneFieldConfig<TEntity>): void
 }
 
 interface AnyEntityInput {
@@ -134,7 +130,7 @@ export function defineCreateOneField(
   factoryConfig: OutputPropertyFactoryConfig<any>,
   manager: EntityTypeDefManager,
   givenFieldName?: string,
-  config: CreateOneFieldConfig<any> = {},
+  config: CreateOneFieldPublisherConfig<any> = {},
 ) {
   const { typeDef: t, builder } = factoryConfig
   const typeName = config.type || getEntityTypeName(entity)

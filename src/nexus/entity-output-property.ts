@@ -1,13 +1,27 @@
 import { dynamicOutputProperty } from 'nexus'
 import { EntityTypeDefManager } from '../entity-type-def-manager'
-import { EntityOutputMethodConfig } from './entity-field-output-method'
+import {
+  EntityOutputMethodConfig,
+  EntityColumnFieldPublisherConfig,
+  EntityFindOneFieldPublisherConfig,
+} from './entity-field-output-method'
 
-export interface EntityFieldPublisher<TEntity> {
+export interface EntityPropertyAnyFieldPublisher<TEntity> {
   (config?: EntityOutputMethodConfig<TEntity>): void
 }
 
 export type EntityOutputProperty<TEntity, TFieldName extends string> = {
-  [key in TFieldName]: EntityFieldPublisher<TEntity>
+  [key in TFieldName]: EntityPropertyAnyFieldPublisher<TEntity>
+}
+
+export interface EntityPropertyColumnDefFieldPublisher<TEntity> {
+  (config?: EntityColumnFieldPublisherConfig<TEntity, any>): void
+}
+export interface EntityPropertyFindOneFieldPublisher<TEntity> {
+  (config?: EntityFindOneFieldPublisherConfig<TEntity>): void
+}
+export interface EntityPropertyFindManyFieldPublisher<TEntity> {
+  (config?: EntityFindOneFieldPublisherConfig<TEntity>): void
 }
 
 export function buildEntityOutputProperty(manager: EntityTypeDefManager) {
