@@ -11,8 +11,7 @@ import {
   createConnection,
   ManyToMany,
 } from 'typeorm'
-import { NexusEntity, nexusTypeORMPlugin } from 'nexus-typeorm-plugin'
-import { entityType } from 'nexus-typeorm-plugin/dist/nexus/nexus-types'
+import { NexusEntity, nexusTypeORMPlugin, entityType } from 'nexus-typeorm-plugin'
 import { queryType, makeSchema } from 'nexus'
 import { propertyPathToAlias } from 'nexus-typeorm-plugin/dist/query-builder'
 
