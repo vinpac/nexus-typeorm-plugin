@@ -34,7 +34,7 @@ export function buildCRUDOutputProperty(manager: EntityTypeDefManager) {
       entitiesStrategy.forEach(entityTypeName => {
         const findOneFieldName = namingStrategy.findOneField(entityTypeName)
         crudOutputProperty[findOneFieldName] = (fieldName = findOneFieldName, config) => {
-          t.crudField(fieldName, {
+          ;(t as any).crudField(fieldName, {
             method: 'findOne',
             type: entityTypeName,
             ...config,
@@ -46,7 +46,7 @@ export function buildCRUDOutputProperty(manager: EntityTypeDefManager) {
 
         const findManyFieldName = namingStrategy.findManyField(entityTypeName)
         crudOutputProperty[findManyFieldName] = (fieldName = findManyFieldName, config) => {
-          t.crudField(fieldName, {
+          ;(t as any).crudField(fieldName, {
             method: 'findMany',
             type: entityTypeName,
             ...config,
@@ -58,7 +58,7 @@ export function buildCRUDOutputProperty(manager: EntityTypeDefManager) {
 
         const createOneFieldName = namingStrategy.createOneFieldName(entityTypeName)
         crudOutputProperty[createOneFieldName] = (fieldName = createOneFieldName, config) => {
-          t.crudField(fieldName, {
+          ;(t as any).crudField(fieldName, {
             method: 'createOne',
             type: entityTypeName,
             ...config,

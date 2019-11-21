@@ -40,7 +40,7 @@ export function buildEntityFieldsOutputMethod(manager: EntityTypeDefManager) {
       const fieldNames = argsToFieldNames(args, manager, typeName)
 
       fieldNames.forEach(fieldName => {
-        ;(t.entity as any)[fieldName]()
+        ;(t as any).entity[fieldName]()
       })
     },
   })

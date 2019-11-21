@@ -6,6 +6,5 @@
       "@/*": ["*"]
     }
   },
-  "exclude": ["examples", "dist", "test/!(__generated__)"],
-  "include": ["test/__generated__"]
+  "exclude": ["examples", "dist", "test"]
 }

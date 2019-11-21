@@ -142,7 +142,17 @@ async function main() {
   })
 
   const schema = makeSchema({
-    types: [nexusTypeORMPlugin(), query, entityType(User), entityType(Post), entityType(Category)],
+    types: [
+      nexusTypeORMPlugin({
+        outputs: {
+          typegen: path.resolve('generated', 'nexus-typeorm-typegen.ts'),
+        },
+      }),
+      query,
+      entityType(User),
+      entityType(Post),
+      entityType(Category),
+    ],
     outputs: {
       schema: path.resolve('generated', 'schema.graphql'),
       typegen: path.resolve('generated', 'nexus-typegen.ts'),

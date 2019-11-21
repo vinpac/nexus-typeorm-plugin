@@ -125,7 +125,7 @@ function buildRelationFieldPublisher(entity: Function, manager: EntityTypeDefMan
           },
         })
       }
-      ;(t.crud as any)[namingStrategy.findManyField(relatedEntityTypeName)](relation.propertyName, {
+      ;(t as any).crud[namingStrategy.findManyField(relatedEntityTypeName)](relation.propertyName, {
         resolve:
           config && config.resolve
             ? (ctx: any) =>

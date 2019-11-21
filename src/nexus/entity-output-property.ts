@@ -20,13 +20,13 @@ export function buildEntityOutputProperty(manager: EntityTypeDefManager) {
       const entityOutputProperty: EntityOutputProperty<any, string> = {}
       entityMetadata.columns.forEach(column => {
         entityOutputProperty[column.propertyName] = config => {
-          t.entityField(column.propertyName, config)
+          ;(t as any).entityField(column.propertyName, config)
         }
       })
 
       entityMetadata.relations.forEach(relation => {
         entityOutputProperty[relation.propertyName] = config => {
-          t.entityField(relation.propertyName, config)
+          ;(t as any).entityField(relation.propertyName, config)
         }
       })
 
