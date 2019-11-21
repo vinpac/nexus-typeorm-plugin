@@ -1,7 +1,7 @@
 import { GraphQLSchema, graphql } from 'graphql'
 import { makeSchema, queryType, stringArg, mutationType, objectType } from 'nexus'
 import { User } from 'test/entities/user'
-import { entityType } from '../../src/nexus/nexus-types'
+import { entityType } from '../../src/nexus/entity-type'
 import { UserProfile } from 'test/entities/user-profile'
 import { Post } from 'test/entities/post'
 import { UserLikesPost } from 'test/entities/user-likes-post'
@@ -26,8 +26,9 @@ export function createTestSchemaSingleton() {
     schema = makeSchema({
       types: [
         nexusTypeORMPlugin({
-          output: {
+          outputs: {
             typegen: path.resolve('test', '__generated__', 'nexus-typeorm-typegen.ts'),
+            format: str => str.replace("'nexus-typeorm-plugin/nexus'", "'../../src/nexus/typings'"),
           },
         }),
         queryType({

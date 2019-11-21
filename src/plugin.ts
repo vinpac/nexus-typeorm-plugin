@@ -12,9 +12,10 @@ import { buildCRUDOutputMethod } from './nexus/crud-output-method'
 import { writeTypeGen } from './typegen'
 
 export interface NexusTypeORMPluginConfig {
-  output:
+  outputs:
     | {
         typegen: string
+        format?: (text: string) => string
       }
     | false
 }
@@ -28,8 +29,8 @@ export function nexusTypeORMPlugin(
   | GraphQLScalarType
 > {
   const manager = EntityTypeDefManager.fromEntitiesList(getDecoratedEntities())
-  if (config.output) {
-    writeTypeGen(config.output.typegen, manager)
+  if (config.outputs) {
+    writeTypeGen(config.outputs.typegen, manager, config.outputs.format)
   }
 
   return [

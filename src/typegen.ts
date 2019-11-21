@@ -86,7 +86,11 @@ function typeORMColumnToGraphQLType(column: ColumnMetadata) {
   return typeName
 }
 
-export function writeTypeGen(outputPath: string, manager: EntityTypeDefManager) {
+export function writeTypeGen(
+  outputPath: string,
+  manager: EntityTypeDefManager,
+  format?: (fileBody: string) => string,
+) {
   const entitiesInterfaces: InterfaceMapShape = {}
   const entityPropertyInterfaces: InterfaceMapShape = {}
   const crudPropertyInterfaces: InterfaceMapShape = {
@@ -154,7 +158,7 @@ export function writeTypeGen(outputPath: string, manager: EntityTypeDefManager) 
     return str
   }
 
-  const body = `
+  let body = `
 import {
   ColumnEntityOutputMethodConfig,
   UniqueEntityOutputMethodConfig,
@@ -162,7 +166,7 @@ import {
   CRUDFindOneMethod,
   CRUDFindManyMethod,
   CRUDCreateOneMethod
-} from '../../src/nexus/typings'
+} from 'nexus-typeorm-plugin/nexus'
 
 interface EntityFieldPublisher<TConfig> {
   (config?: TConfig): void
@@ -186,6 +190,10 @@ ${convertSubInterfaceMapToString('NexusTypeORMEntityPropertyMap', entityProperty
   > = TypeName extends keyof NexusTypeORMEntities ? NexusTypeORMEntities[TypeName] : undefined
 }
 `
+
+  if (format) {
+    body = format(body)
+  }
 
   mkdirp.sync(path.dirname(outputPath))
   writeFileSync(outputPath, body, 'utf8')

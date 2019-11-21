@@ -8,15 +8,15 @@ import { core } from "nexus"
 
 declare global {
   interface NexusGenCustomOutputMethods<TypeName extends string> {
-    entityField(...args: any): void
-    crudField(...args: any): void
+    entityField: NexusTypeORMEntityOutputMethod<NexusTypeORMEntity<TypeName>>
+    crudField: NexusTypeORMCRUDMethod<NexusTypeORMEntity<TypeName>>
     entityFields(...args: any): void
   }
 }
 declare global {
   interface NexusGenCustomOutputProperties<TypeName extends string> {
-    entity: any
-    crud: any
+    entity: NexusTypeORMEntityProperty<TypeName>
+    crud: NexusTypeORMCRUDProperty<TypeName>
   }
 }
 

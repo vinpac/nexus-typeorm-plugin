@@ -11,12 +11,8 @@ import {
   createConnection,
   ManyToMany,
 } from 'typeorm'
-import {
-  NexusEntity,
-  nexusTypeORMPlugin,
-  entityType,
-  FindManyResolveFnContext,
-} from 'nexus-typeorm-plugin'
+import { NexusEntity, nexusTypeORMPlugin } from 'nexus-typeorm-plugin'
+import { entityType } from 'nexus-typeorm-plugin/dist/nexus/nexus-types'
 import { queryType, makeSchema } from 'nexus'
 import { propertyPathToAlias } from 'nexus-typeorm-plugin/dist/query-builder'
 
@@ -144,7 +140,7 @@ async function main() {
   const schema = makeSchema({
     types: [
       nexusTypeORMPlugin({
-        outputs: {
+        output: {
           typegen: path.resolve('generated', 'nexus-typeorm-typegen.ts'),
         },
       }),
