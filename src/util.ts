@@ -1,6 +1,6 @@
 import { getConnection } from 'typeorm'
 import { getDatabaseObjectMetadata } from './decorators'
-import { SchemaBuilder } from './schema-builder'
+import { EntityTypeDefManager } from './entity-type-def-manager'
 import { GraphQLResolveInfo, SelectionSetNode } from 'graphql'
 import { EntityJoin } from './query-builder'
 import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
@@ -24,7 +24,7 @@ export const getEntityPrimaryColumn = (entity: Function) => {
 export const grapQLInfoToEntityJoins = (
   info: GraphQLResolveInfo,
   entity: any,
-  schemaBuilder: SchemaBuilder,
+  manager: EntityTypeDefManager,
 ): EntityJoin[] => {
   const joins: EntityJoin[] = []
   const iterate = ({ selectionSet }: { selectionSet?: SelectionSetNode }, prefix = '') => {
@@ -33,7 +33,7 @@ export const grapQLInfoToEntityJoins = (
         if (selection.kind === 'Field') {
           const propertyPath = `${prefix}${selection.name.value}`
 
-          const relation = getDeepEntityRelation(entity, propertyPath, schemaBuilder)
+          const relation = getDeepEntityRelation(entity, propertyPath, manager)
           if (relation) {
             if (selection.arguments && selection.arguments.length) {
               // If the selection has arguments we can't join anymore
@@ -63,19 +63,19 @@ export const grapQLInfoToEntityJoins = (
 export const getDeepEntityRelation = (
   entity: any,
   relationPath: string,
-  schemaBuilder: SchemaBuilder,
+  manager: EntityTypeDefManager,
 ) => {
   let parentEntity = entity
   let relation: RelationMetadata | undefined
   relationPath.split('.').some(propertyName => {
-    const metadata = schemaBuilder.entitiesMetadata[parentEntity.name]
+    const metadata = manager.entitiesMetadata[parentEntity.name]
 
     relation = metadata.findRelationWithPropertyPath(propertyName)
     if (!relation) {
       return true
     }
 
-    parentEntity = schemaBuilder.entitiesMetadata[relation.inverseEntityMetadata.name]
+    parentEntity = manager.entitiesMetadata[relation.inverseEntityMetadata.name]
     return false
   })
 

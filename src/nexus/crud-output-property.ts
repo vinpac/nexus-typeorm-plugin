@@ -1,18 +1,12 @@
-import { SchemaBuilder } from '../schema-builder'
+import { EntityTypeDefManager } from '../entity-type-def-manager'
 import { CRUDFieldConfigResolveFn } from './crud-output-method'
 import * as Nexus from 'nexus'
 import { namingStrategy } from './naming-strategy'
 import { dynamicOutputProperty } from 'nexus'
 import { getEntityTypeName } from '../util'
-import { FindOneFieldNextFnExtraContext } from './crud/find-one-field'
+import { FindOneFieldNextFnExtraContext, CRUDFindOneMethod } from './crud/find-one-field'
 import { ArgsRecord } from 'nexus/dist/core'
 import { MapArgsFn } from '../args'
-
-declare global {
-  export interface NexusGenCustomOutputProperties<TypeName extends string> {
-    crud: CRUDOutputProperty
-  }
-}
 
 export interface CRUDPropertyFieldConfig<TType> {
   type?: Nexus.AllOutputTypes
@@ -21,17 +15,19 @@ export interface CRUDPropertyFieldConfig<TType> {
   resolve?: CRUDFieldConfigResolveFn<TType, FindOneFieldNextFnExtraContext>
 }
 
+type CRUDOutputPropertyMethod = CRUDFindOneMethod<any>
 export interface CRUDOutputProperty {
-  [key: string]: (fieldName?: string, config?: CRUDPropertyFieldConfig<any>) => CRUDOutputProperty
+  [key: string]: CRUDOutputPropertyMethod
 }
 
-export function buildCRUDOutputProperty(schemaBuilder: SchemaBuilder) {
+export function buildCRUDOutputProperty(manager: EntityTypeDefManager) {
   return dynamicOutputProperty({
     name: 'crud',
+    typeDefinition: `: NexusTypeORMCRUDProperty<TypeName>`,
     factory: factoryConfig => {
       const { typeDef: t } = factoryConfig
-      const entitiesStrategy = Object.keys(schemaBuilder.entities).map(key =>
-        getEntityTypeName(schemaBuilder.entities[key]),
+      const entitiesStrategy = Object.keys(manager.entities).map(key =>
+        getEntityTypeName(manager.entities[key]),
       )
       const crudOutputProperty: CRUDOutputProperty = {}
 

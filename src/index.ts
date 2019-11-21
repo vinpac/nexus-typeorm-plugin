@@ -1,7 +1,2 @@
 export * from './decorators'
-export * from './schema-builder'
-export * from './nexus/crud-output-method'
-export * from './nexus/entity-output-property'
-export * from './nexus/entity-fields-output-method'
-export * from './nexus/nexus-types'
 export * from './plugin'

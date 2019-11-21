@@ -13,6 +13,7 @@ import { namingStrategy } from './nexus/naming-strategy'
 import { getEntityTypeName } from './util'
 import { orderTypes } from './args/arg-order-by'
 import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
+import * as Nexus from 'nexus'
 
 export interface EntitiesMap {
   [entityName: string]: Function
@@ -31,13 +32,21 @@ export interface ResolversMap {
 }
 
 interface TypesDictionary {
-  enum: { [entityName: string]: { [propertyName: string]: string } }
+  enum: {
+    [entityName: string]: {
+      [propertyName: string]: Nexus.AllOutputTypes
+    }
+  }
 
-  whereInput: { [entityName: string]: string }
-  orderByInput: { [entityName: string]: string }
-  createOneInput: { [entityName: string]: string }
-  relationInputType: { [sourceEntityName: string]: { [relatedEntityName: string]: string } }
-  createWithoutSourceInput: { [entityName: string]: { [columnEntityName: string]: string } }
+  whereInput: { [entityName: string]: Nexus.core.AllInputTypes }
+  orderByInput: { [entityName: string]: Nexus.core.AllInputTypes }
+  createOneInput: { [entityName: string]: Nexus.core.AllInputTypes }
+  relationInputType: {
+    [sourceEntityName: string]: { [relatedEntityName: string]: Nexus.core.AllInputTypes }
+  }
+  createWithoutSourceInput: {
+    [entityName: string]: { [columnEntityName: string]: Nexus.core.AllInputTypes }
+  }
 }
 
 interface RequiredGetOrCreateTypeConfig {
@@ -51,8 +60,7 @@ interface BuildCreateOneInputTypeConfig extends RequiredGetOrCreateTypeConfig {
 
 export type GetOrCreateTypeConfig = BuildCreateOneInputTypeConfig
 
-// TODO: Rename to something like EntityManager?
-export class SchemaBuilder {
+export class EntityTypeDefManager {
   /**
    * Create a new SchemaBuilder instance from an Entity array
    */
@@ -66,7 +74,7 @@ export class SchemaBuilder {
       entitiesMetadataMap[entity.name] = connection.getMetadata(entity)
     })
 
-    return new SchemaBuilder(entitiesMap, entitiesMetadataMap)
+    return new EntityTypeDefManager(entitiesMap, entitiesMetadataMap)
   }
 
   private typesDictionary: TypesDictionary
@@ -90,7 +98,7 @@ export class SchemaBuilder {
     entity: Function,
     column: ColumnMetadata,
     nexusBuilder: NexusSchemaBuilder,
-  ): string {
+  ): Nexus.AllOutputTypes | Nexus.core.AllInputTypes {
     if (column.isPrimary) {
       return 'ID'
     }
@@ -111,7 +119,7 @@ export class SchemaBuilder {
 
   useCreateOneInputType = (entity: Function, nexusBuilder: NexusSchemaBuilder) => {
     const entityTypeName = getEntityTypeName(entity)
-    const typeName = namingStrategy.createInputType(entityTypeName)
+    const typeName = namingStrategy.createInputType(entityTypeName) as Nexus.core.AllInputTypes
 
     if (this.typesDictionary.createOneInput[entityTypeName]) {
       return this.typesDictionary.createOneInput[entityTypeName]
@@ -128,7 +136,11 @@ export class SchemaBuilder {
             }
 
             t.field(column.propertyName, {
-              type: this.entityColumnToTypeName(entity, column, nexusBuilder),
+              type: this.entityColumnToTypeName(
+                entity,
+                column,
+                nexusBuilder,
+              ) as Nexus.core.AllInputTypes,
               required: !column.isNullable && !column.isCreateDate && !column.isUpdateDate,
             })
           })
@@ -151,14 +163,14 @@ export class SchemaBuilder {
     entity: Function,
     relation: RelationMetadata,
     nexusBuilder: NexusSchemaBuilder,
-  ): string {
+  ): Nexus.core.AllInputTypes {
     const entityTypeName = getEntityTypeName(entity)
     const relatedEntity = this.entities[relation.inverseEntityMetadata.name]
     const relatedEntityTypeName = getEntityTypeName(relatedEntity)
     const typeName = namingStrategy.createManyWithoutSourceInputType(
       entityTypeName,
       relatedEntityTypeName,
-    )
+    ) as Nexus.core.AllInputTypes
 
     const { relationInputType } = this.typesDictionary
     if (
@@ -191,6 +203,7 @@ export class SchemaBuilder {
         [relatedEntityTypeName]: typeName,
       },
     }
+
     return typeName
   }
 
@@ -198,7 +211,7 @@ export class SchemaBuilder {
     entity: Function,
     sourceRelation: RelationMetadata,
     nexusBuilder: NexusSchemaBuilder,
-  ): string {
+  ): Nexus.core.AllInputTypes {
     const entityMetadata = this.getEntityMetadata(entity)
     const entityTypeName = getEntityTypeName(entity)
     const { createWithoutSourceInput } = this.typesDictionary
@@ -212,7 +225,7 @@ export class SchemaBuilder {
     const typeName = namingStrategy.createWithoutSourceInputType(
       entityTypeName,
       excludedPropertyName,
-    )
+    ) as Nexus.core.AllInputTypes
 
     const foreignKeys = sourceRelation.inverseRelation!.foreignKeys
     nexusBuilder.addType(
@@ -233,7 +246,11 @@ export class SchemaBuilder {
             }
 
             t.field(column.propertyName, {
-              type: this.entityColumnToTypeName(entity, column, nexusBuilder),
+              type: this.entityColumnToTypeName(
+                entity,
+                column,
+                nexusBuilder,
+              ) as Nexus.core.AllInputTypes,
               required: !column.isNullable && !column.isCreateDate && !column.isUpdateDate,
             })
           })
@@ -263,9 +280,12 @@ export class SchemaBuilder {
     entity: Function,
     column: ColumnMetadata,
     nexusBuilder: NexusSchemaBuilder,
-  ): string {
+  ): Nexus.AllOutputTypes {
     const entityTypeName = getEntityTypeName(entity)
-    const typeName = namingStrategy.enumType(entityTypeName, column.propertyName)
+    const typeName = namingStrategy.enumType(
+      entityTypeName,
+      column.propertyName,
+    ) as Nexus.AllOutputTypes
 
     if (
       this.typesDictionary.enum[entityTypeName] &&
@@ -276,7 +296,7 @@ export class SchemaBuilder {
 
     nexusBuilder.addType(
       enumType({
-        name: typeName,
+        name: typeName as string,
         members: column.enum!.map(String)!,
       }),
     )
@@ -288,7 +308,7 @@ export class SchemaBuilder {
     return typeName
   }
 
-  useWhereInputType(entity: Function, nexusBuilder: NexusSchemaBuilder): string {
+  useWhereInputType(entity: Function, nexusBuilder: NexusSchemaBuilder): Nexus.core.AllInputTypes {
     const entityTypeName = getEntityTypeName(entity)
 
     if (this.typesDictionary.whereInput[entityTypeName]) {
@@ -296,7 +316,7 @@ export class SchemaBuilder {
     }
 
     const { columns: entityColumns } = getConnection().getMetadata(entity)
-    const typeName = namingStrategy.whereInputType(entityTypeName)
+    const typeName = namingStrategy.whereInputType(entityTypeName) as Nexus.core.AllInputTypes
     nexusBuilder.addType(
       inputObjectType({
         name: typeName,
@@ -309,7 +329,11 @@ export class SchemaBuilder {
               return
             }
 
-            const columnTypeName = this.entityColumnToTypeName(entity, column, nexusBuilder)
+            const columnTypeName = this.entityColumnToTypeName(
+              entity,
+              column,
+              nexusBuilder,
+            ) as Nexus.core.AllInputTypes
             if (columnTypeName === 'String') {
               singleOperandOperations.forEach(singleOperandOperation => {
                 t.field(`${column.propertyName}_${singleOperandOperation}`, {
@@ -344,7 +368,10 @@ export class SchemaBuilder {
     return typeName
   }
 
-  useOrderByInputType(entity: Function, nexusBuilder: NexusSchemaBuilder): string {
+  useOrderByInputType(
+    entity: Function,
+    nexusBuilder: NexusSchemaBuilder,
+  ): Nexus.core.AllInputTypes {
     const entityTypeName = getEntityTypeName(entity)
 
     if (this.typesDictionary.orderByInput[entityTypeName]) {
@@ -352,7 +379,7 @@ export class SchemaBuilder {
     }
 
     const { columns: entityColumns } = getConnection().getMetadata(entity)
-    const typeName = namingStrategy.orderByInputType(entityTypeName)
+    const typeName = namingStrategy.orderByInputType(entityTypeName) as Nexus.core.AllInputTypes
     const members: string[] = []
     entityColumns.forEach(column => {
       orderTypes.forEach(orderType => {

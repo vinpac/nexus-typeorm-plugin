@@ -1,6 +1,6 @@
 import { namingStrategy } from '../naming-strategy'
 import { getEntityTypeName } from '../../util'
-import { SchemaBuilder } from '../../schema-builder'
+import { EntityTypeDefManager } from '../../entity-type-def-manager'
 import * as Nexus from 'nexus'
 import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { MapArgsFn } from '../../args'
@@ -9,11 +9,15 @@ import { CRUDFieldConfigResolveFn } from '../crud-output-method'
 import { getConnection } from 'typeorm'
 import { translateWhereClause, ArgWhereType } from '../../args/arg-where'
 
-export interface CreateOneFieldConfig<TType> {
+export interface CreateOneFieldConfig<TEntity> {
   type?: Nexus.core.AllOutputTypes
   args?: ArgsRecord | MapArgsFn
-  resolve?: CRUDFieldConfigResolveFn<TType>
+  resolve?: CRUDFieldConfigResolveFn<TEntity>
   nullable?: boolean
+}
+
+export interface CRUDCreateOneMethod<TEntity> {
+  (fieldName?: string, config?: CreateOneFieldConfig<TEntity>): void
 }
 
 interface AnyEntityInput {
@@ -27,13 +31,13 @@ interface RelationInput {
 
 async function createEntityFromInputObject(
   entity: any,
-  schemaBuilder: SchemaBuilder,
+  manager: EntityTypeDefManager,
   inputObject: AnyEntityInput,
   save: <TEntity>(instance: TEntity) => Promise<TEntity>,
   initialValues?: AnyEntityInput,
 ): Promise<any> {
   const entityInstance = new entity()
-  const entityMetadata = schemaBuilder.getEntityMetadata(entity)
+  const entityMetadata = manager.getEntityMetadata(entity)
   const waitBeforeSaving: Promise<(<U>(savedEntityInstance: U) => U) | void>[] = []
   const executeAfterSaved: Function[] = []
 
@@ -49,7 +53,7 @@ async function createEntityFromInputObject(
     const relationInput: RelationInput = inputObject[relation.propertyName]
 
     if (relationInput) {
-      const relatedEntity = schemaBuilder.entities[relation.inverseEntityMetadata.name]
+      const relatedEntity = manager.entities[relation.inverseEntityMetadata.name]
       if (relationInput.connect) {
         const where = translateWhereClause('node', relationInput.connect)
         waitBeforeSaving.push(
@@ -75,7 +79,7 @@ async function createEntityFromInputObject(
               ...relationInput.create.map(item => (savedEntityInstance: any) =>
                 createEntityFromInputObject(
                   relatedEntity,
-                  schemaBuilder,
+                  manager,
                   item,
                   save,
 
@@ -89,7 +93,7 @@ async function createEntityFromInputObject(
           } else {
             waitBeforeSaving.push(
               ...relationInput.create.map(item =>
-                createEntityFromInputObject(relatedEntity, schemaBuilder, item, save).then(
+                createEntityFromInputObject(relatedEntity, manager, item, save).then(
                   relatedEntityInstance => {
                     entityInstance[relation.propertyName].push(relatedEntityInstance)
                   },
@@ -101,7 +105,7 @@ async function createEntityFromInputObject(
           executeAfterSaved.push((savedEntityInstance: any) => {
             return createEntityFromInputObject(
               relatedEntity,
-              schemaBuilder,
+              manager,
               relationInput.create as AnyEntityInput,
               save,
               { [relation.inverseRelation!.propertyName]: savedEntityInstance },
@@ -128,7 +132,7 @@ async function createEntityFromInputObject(
 export function defineCreateOneField(
   entity: any,
   factoryConfig: OutputPropertyFactoryConfig<any>,
-  schemaBuilder: SchemaBuilder,
+  manager: EntityTypeDefManager,
   givenFieldName?: string,
   config: CreateOneFieldConfig<any> = {},
 ) {
@@ -140,7 +144,7 @@ export function defineCreateOneField(
     nullable: config.nullable,
     args: {
       data: Nexus.arg({
-        type: schemaBuilder.useCreateOneInputType(entity, builder),
+        type: manager.useCreateOneInputType(entity, builder),
         nullable: false,
       }),
     },
@@ -149,7 +153,7 @@ export function defineCreateOneField(
       return await conn.transaction(async transaction => {
         return await createEntityFromInputObject(
           entity,
-          schemaBuilder,
+          manager,
           args.data,
           transaction.save.bind(transaction),
         )

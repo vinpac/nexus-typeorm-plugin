@@ -5,7 +5,7 @@ import { ArgsRecord, arg } from 'nexus/dist/core'
 import { namingStrategy } from '../naming-strategy'
 import { MapArgsFn } from '../../args'
 import { grapQLInfoToEntityJoins, getEntityTypeName } from '../../util'
-import { SchemaBuilder } from '../../schema-builder'
+import { EntityTypeDefManager } from '../../entity-type-def-manager'
 import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { GraphQLResolveInfo } from 'graphql'
 import { OverrideQueryBuilderConfigFn, CRUDFieldConfigResolveFn } from '../crud-output-method'
@@ -28,17 +28,21 @@ interface FindOneResolver<TType> {
   ): Promise<TType>
 }
 
-export interface FindOneFieldConfig<TType> {
+export interface FindOneFieldConfig<TEntity> {
   type?: Nexus.core.AllOutputTypes
   args?: ArgsRecord | MapArgsFn
   nullable?: boolean
-  resolve?: CRUDFieldConfigResolveFn<TType, FindOneFieldNextFnExtraContext>
+  resolve?: CRUDFieldConfigResolveFn<TEntity, FindOneFieldNextFnExtraContext>
+}
+
+export interface CRUDFindOneMethod<TEntity> {
+  (fieldName?: string, config?: FindOneFieldConfig<TEntity>): void
 }
 
 export function defineFindOneField(
   entity: Function,
   factoryConfig: OutputPropertyFactoryConfig<any>,
-  schemaBuilder: SchemaBuilder,
+  manager: EntityTypeDefManager,
   givenFieldName?: string,
   config: FindOneFieldConfig<any> = {},
 ) {
@@ -47,7 +51,7 @@ export function defineFindOneField(
   const resolver: FindOneResolver<any> = async (_, args, ctx, info) => {
     const queryBuilderConfig = createQueryBuilderConfig(entity, {
       ...args,
-      joins: grapQLInfoToEntityJoins(info, entity, schemaBuilder),
+      joins: grapQLInfoToEntityJoins(info, entity, manager),
     })
     const queryBuilder = createQueryBuilder<any>(
       ctx && ctx.queryBuilderConfig
@@ -59,9 +63,9 @@ export function defineFindOneField(
   }
 
   let args: ArgsRecord = {
-    where: arg({ type: schemaBuilder.useWhereInputType(entity, builder) }),
+    where: arg({ type: manager.useWhereInputType(entity, builder) }),
     orderBy: arg({
-      type: schemaBuilder.useOrderByInputType(entity, builder),
+      type: manager.useOrderByInputType(entity, builder),
       list: true,
     }),
     ...config.args,

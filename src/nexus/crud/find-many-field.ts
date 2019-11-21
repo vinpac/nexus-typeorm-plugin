@@ -9,7 +9,7 @@ import { ArgsRecord, arg } from 'nexus/dist/core'
 import { namingStrategy } from '../naming-strategy'
 import { MapArgsFn } from '../../args'
 import { grapQLInfoToEntityJoins, getEntityTypeName } from '../../util'
-import { SchemaBuilder } from '../../schema-builder'
+import { EntityTypeDefManager } from '../../entity-type-def-manager'
 import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { GraphQLResolveInfo } from 'graphql'
 import { OverrideQueryBuilderConfigFn, CRUDFieldConfigResolveFn } from '../crud-output-method'
@@ -39,14 +39,18 @@ interface FindManyResolver<TType> {
 export interface FindManyFieldConfig<TType> {
   type?: Nexus.core.AllOutputTypes
   args?: ArgsRecord | MapArgsFn
-  resolve?: CRUDFieldConfigResolveFn<Promise<TType[]> | TType[], FindManyFieldNextFnExtraContext>
+  resolve?: CRUDFieldConfigResolveFn<TType[], FindManyFieldNextFnExtraContext>
   nullable?: boolean
+}
+
+export interface CRUDFindManyMethod<TEntity> {
+  (fieldName?: string, config?: FindManyFieldConfig<TEntity>): void
 }
 
 export function defineFindManyField(
   entity: Function,
   { typeDef: t, builder }: OutputPropertyFactoryConfig<any>,
-  schemaBuilder: SchemaBuilder,
+  manager: EntityTypeDefManager,
   givenFieldName?: string,
   config: FindManyFieldConfig<any> = {},
 ) {
@@ -55,7 +59,7 @@ export function defineFindManyField(
   const resolver: FindManyResolver<any> = async (_, args, ctx, info) => {
     const queryBuilderConfig: QueryBuilderConfig = createQueryBuilderConfig(entity, {
       ...args,
-      joins: grapQLInfoToEntityJoins(info, entity, schemaBuilder),
+      joins: grapQLInfoToEntityJoins(info, entity, manager),
     })
     const queryBuilder = createQueryBuilder<any>(
       ctx && ctx.queryBuilderConfig
@@ -70,9 +74,9 @@ export function defineFindManyField(
     first: intArg(),
     last: intArg(),
     skip: intArg(),
-    where: arg({ type: schemaBuilder.useWhereInputType(entity, builder) }),
+    where: arg({ type: manager.useWhereInputType(entity, builder) }),
     orderBy: arg({
-      type: schemaBuilder.useOrderByInputType(entity, builder),
+      type: manager.useOrderByInputType(entity, builder),
       list: true,
     }),
   }

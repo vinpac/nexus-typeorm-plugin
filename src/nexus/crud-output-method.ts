@@ -1,5 +1,5 @@
 import { dynamicOutputMethod } from 'nexus'
-import { SchemaBuilder } from '../schema-builder'
+import { EntityTypeDefManager } from '../entity-type-def-manager'
 import { QueryBuilderConfig } from '../query-builder'
 import { CreateOneFieldConfig, defineCreateOneField } from './crud/create-one-field'
 import { FindOneFieldConfig, defineFindOneField } from './crud/find-one-field'
@@ -7,8 +7,8 @@ import { FindManyFieldConfig, defineFindManyField } from './crud/find-many-field
 import { GraphQLResolveInfo } from 'graphql'
 
 declare global {
-  export interface NexusGenCustomOutputMethods<TypeName extends string> {
-    crudField: CRUDFieldOutputMethod<any>
+  export interface NexusTypeORMCRUDMethod<TType> {
+    (fieldName: string, config: CRUDOutputMethodConfig<TType>): void
   }
 }
 
@@ -23,7 +23,7 @@ interface CRUDFieldConfigResolveContext<
   info: GraphQLResolveInfo
 }
 
-interface CRUDFiedConfigResolveFnArg<
+interface CRUDFiedConfigResolveFnContext<
   TPayload,
   TExtraNextConfig = {},
   TSource = any,
@@ -32,7 +32,7 @@ interface CRUDFiedConfigResolveFnArg<
 > extends CRUDFieldConfigResolveContext<TSource, TArgs, TContext> {
   next: (
     config: CRUDFieldConfigResolveContext<TSource, TArgs, TContext> & TExtraNextConfig,
-  ) => TPayload
+  ) => Promise<TPayload>
 }
 
 export interface CRUDFieldConfigResolveFn<
@@ -42,7 +42,7 @@ export interface CRUDFieldConfigResolveFn<
   TArgs = { [argName: string]: any },
   TContext = any
 > {
-  (arg: CRUDFiedConfigResolveFnArg<TPayload, TExtraNextConfig, TSource, TArgs, TContext>): TPayload
+  (ctx: CRUDFiedConfigResolveFnContext<TPayload, TExtraNextConfig, TSource, TArgs, TContext>): any
 }
 
 export interface OverrideQueryBuilderConfigFn {
@@ -64,33 +64,30 @@ export interface CRUDFieldCreateOneOutputMethodConfig<TType> extends CreateOneFi
   method: 'createOne'
 }
 
-export type CRUDFieldOutputMethodConfig<TType> =
+export type CRUDOutputMethodConfig<TType> =
   | CRUDFieldFindOneOutputMethodConfig<TType>
   | CRUDFieldFindManyOutputMethodConfig<TType>
   | CRUDFieldCreateOneOutputMethodConfig<TType>
 
-interface CRUDFieldOutputMethod<TType> {
-  (fieldName: string, config: CRUDFieldOutputMethodConfig<TType>): void
-}
-
-export function buildCRUDOutputMethod(schemaBuilder: SchemaBuilder) {
+export function buildCRUDOutputMethod(manager: EntityTypeDefManager) {
   const cache = {}
   return dynamicOutputMethod({
     name: 'crudField',
+    typeDefinition: ': NexusTypeORMCRUDMethod<NexusTypeORMEntity<TypeName>>',
     factory: factoryConfig => {
-      const [fieldName, config] = factoryConfig.args as [string, CRUDFieldOutputMethodConfig<any>]
-      const [entity] = schemaBuilder.getEntityDataTupleByTypeName(config.entity)
+      const [fieldName, config] = factoryConfig.args as [string, CRUDOutputMethodConfig<any>]
+      const [entity] = manager.getEntityDataTupleByTypeName(config.entity)
 
       if (!cache[config.entity]) {
         cache[config.entity] = {}
       }
 
       if (config.method === 'findMany') {
-        defineFindManyField(entity, factoryConfig, schemaBuilder, fieldName, config)
+        defineFindManyField(entity, factoryConfig, manager, fieldName, config)
       } else if (config.method === 'findOne') {
-        defineFindOneField(entity, factoryConfig, schemaBuilder, fieldName, config)
+        defineFindOneField(entity, factoryConfig, manager, fieldName, config)
       } else if (config.method === 'createOne') {
-        defineCreateOneField(entity, factoryConfig, schemaBuilder, fieldName, config)
+        defineCreateOneField(entity, factoryConfig, manager, fieldName, config)
       }
     },
   })

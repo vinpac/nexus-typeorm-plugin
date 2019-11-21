@@ -52,7 +52,6 @@ describe('CRUD', () => {
       })
       expect(getDatabaseQueriesCount()).toBe(1)
     })
-
     test('find one entity with where argument', async () => {
       const result = await query(`{
         john: user(where: { name: "John" }) {

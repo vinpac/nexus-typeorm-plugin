@@ -1,39 +1,32 @@
 import { dynamicOutputProperty } from 'nexus'
-import { SchemaBuilder } from '../schema-builder'
+import { EntityTypeDefManager } from '../entity-type-def-manager'
 import { EntityOutputMethodConfig } from './entity-field-output-method'
 
-declare global {
-  export interface NexusGenCustomOutputProperties<TypeName extends string> {
-    entity: EntityOutputProperty<string>
-  }
+export interface EntityFieldPublisher<TEntity> {
+  (config?: EntityOutputMethodConfig<TEntity>): void
 }
 
-export interface FieldPublisher<TFieldName extends string> {
-  (config?: EntityOutputMethodConfig<any>): EntityOutputProperty<TFieldName>
+export type EntityOutputProperty<TEntity, TFieldName extends string> = {
+  [key in TFieldName]: EntityFieldPublisher<TEntity>
 }
 
-export type EntityOutputProperty<TFieldName extends string> = {
-  [key in TFieldName]: FieldPublisher<TFieldName>
-}
-
-export function buildEntityOutputProperty(schemaBuilder: SchemaBuilder) {
+export function buildEntityOutputProperty(manager: EntityTypeDefManager) {
   return dynamicOutputProperty({
     name: 'entity',
+    typeDefinition: ': NexusTypeORMEntityProperty<TypeName>',
     factory: factoryConfig => {
       const { typeName, typeDef: t } = factoryConfig
-      const [, entityMetadata] = schemaBuilder.getEntityDataTupleByTypeName(typeName)
-      const entityOutputProperty: EntityOutputProperty<string> = {}
+      const [, entityMetadata] = manager.getEntityDataTupleByTypeName(typeName)
+      const entityOutputProperty: EntityOutputProperty<any, string> = {}
       entityMetadata.columns.forEach(column => {
         entityOutputProperty[column.propertyName] = config => {
           t.entityField(column.propertyName, config)
-          return entityOutputProperty
         }
       })
 
       entityMetadata.relations.forEach(relation => {
         entityOutputProperty[relation.propertyName] = config => {
           t.entityField(relation.propertyName, config)
-          return entityOutputProperty
         }
       })
 

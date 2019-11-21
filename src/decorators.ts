@@ -1,10 +1,11 @@
 import * as TypeORM from 'typeorm'
 import { EntityOptions } from 'typeorm'
+import * as Nexus from 'nexus'
 
 export const nexusEntityMetadata = Symbol('nexusEntityMetadata')
 
 export interface NexusEntityMetadata extends Omit<NexusEntityOptions, 'name'> {
-  typeName: string
+  typeName: Nexus.core.AllOutputTypes
 }
 
 export function getDatabaseObjectMetadata(target: any): NexusEntityMetadata {
@@ -27,7 +28,7 @@ export function NexusEntity(prevOptions?: NexusEntityOptions): ClassDecorator {
     decoratedEntities.push(target)
     const options: NexusEntityMetadata = {
       ...prevOptions,
-      typeName: (prevOptions && prevOptions.typeName) || target.name,
+      typeName: ((prevOptions && prevOptions.typeName) || target.name) as Nexus.core.AllOutputTypes,
     }
 
     Reflect.defineMetadata(nexusEntityMetadata, options, target)
