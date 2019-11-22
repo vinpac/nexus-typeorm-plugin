@@ -1,4 +1,7 @@
-import {
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Typegen Typegen snapshot 1`] = `
+"import {
   EntityPropertyColumnDefFieldPublisher,
   EntityPropertyFindOneFieldPublisher,
   EntityPropertyFindManyFieldPublisher,
@@ -171,3 +174,5 @@ declare global {
     TypeName
   > = TypeName extends keyof NexusTypeORMEntityPropertyMap ? (() => void) : undefined
 }
+"
+`;

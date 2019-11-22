@@ -173,15 +173,23 @@ ${convertSubInterfaceMapToString('NexusTypeORMCRUDPropertyMap', crudPropertyInte
 
 ${convertSubInterfaceMapToString('NexusTypeORMEntityPropertyMap', entityPropertyInterfaces, '  ')}
 
-  export type NexusTypeORMEntityProperty<TypeName> = TypeName extends keyof NexusTypeORMEntityPropertyMap
-    ? NexusTypeORMEntityPropertyMap[TypeName]
-    : undefined
+  export type NexusTypeORMEntityProperty<TypeName> =
+    TypeName extends keyof NexusTypeORMEntityPropertyMap
+      ? NexusTypeORMEntityPropertyMap[TypeName]
+      : undefined
+
   export type NexusTypeORMCRUDProperty<TypeName> = TypeName extends 'Mutation'
     ? NexusTypeORMCRUDPropertyMap['Mutation']
     : NexusTypeORMCRUDPropertyMap['Query']
+
   export type NexusTypeORMEntity<
     TypeName
   > = TypeName extends keyof NexusTypeORMEntities ? NexusTypeORMEntities[TypeName] : undefined
+
+  export type NexusTypeORMEntityFieldsOutputMethod<TypeName> =
+    TypeName extends keyof NexusTypeORMEntityPropertyMap
+      ? (() => void)
+      : undefined
 }
 `
 

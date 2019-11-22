@@ -12,7 +12,7 @@ declare global {
   interface NexusGenCustomOutputMethods<TypeName extends string> {
     entityField: NexusTypeORMEntityOutputMethod<NexusTypeORMEntity<TypeName>>
     crudField: NexusTypeORMCRUDMethod<NexusTypeORMEntity<TypeName>>
-    entityFields(...args: any): void
+    entityFields: NexusTypeORMEntityFieldsOutputMethod<TypeName>
   }
 }
 declare global {

@@ -12,12 +12,14 @@ import { nexusTypeORMPlugin } from 'src/plugin'
 import { Category } from 'test/entities/category'
 import { propertyPathToAlias } from 'src/query-builder'
 import * as path from 'path'
+import * as prettier from 'prettier'
 
-declare global {
-  export interface NexusGenCustomOutputProperties<TypeName extends string> {
-    entity: NexusTypeORMEntityProperty<TypeName>
-    crud: NexusTypeORMCRUDProperty<TypeName>
-  }
+const prettierConfig: prettier.Options = {
+  parser: 'typescript',
+  semi: false,
+  trailingComma: 'all',
+  singleQuote: true,
+  printWidth: 100,
 }
 
 export let schema: GraphQLSchema | undefined
@@ -28,7 +30,8 @@ export function createTestSchemaSingleton() {
         nexusTypeORMPlugin({
           outputs: {
             typegen: path.resolve('test', '__generated__', 'nexus-typeorm-typegen.ts'),
-            format: str => str.replace("'nexus-typeorm-plugin'", "'../../src'"),
+            format: str =>
+              prettier.format(str.replace("'nexus-typeorm-plugin'", "'../../src'"), prettierConfig),
           },
         }),
         queryType({
@@ -121,10 +124,13 @@ export function createTestSchemaSingleton() {
       formatTypegen: (content, type) =>
         type === 'schema'
           ? content
-          : `/* eslint-disable */\n\n${content.replace(
-              `import { core } from "nexus"`,
-              `// @ts-ignore\nimport { core } from "nexus"`,
-            )}`,
+          : prettier.format(
+              `/* eslint-disable */\n\n${content.replace(
+                `import { core } from "nexus"`,
+                `// @ts-ignore\nimport { core } from "nexus"`,
+              )}`,
+              prettierConfig,
+            ),
     })
   }
 

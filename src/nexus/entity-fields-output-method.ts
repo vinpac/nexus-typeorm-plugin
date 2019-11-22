@@ -36,6 +36,7 @@ function argsToFieldNames(args: any[], manager: EntityTypeDefManager, typeName: 
 export function buildEntityFieldsOutputMethod(manager: EntityTypeDefManager) {
   return dynamicOutputMethod({
     name: 'entityFields',
+    typeDefinition: ': NexusTypeORMEntityFieldsOutputMethod<TypeName>',
     factory({ typeDef: t, typeName, args }) {
       const fieldNames = argsToFieldNames(args, manager, typeName)
 
