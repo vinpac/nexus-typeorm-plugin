@@ -135,15 +135,21 @@ export function defineCreateOneField(
   const { typeDef: t, builder } = factoryConfig
   const typeName = config.type || getEntityTypeName(entity)
 
+  let args: ArgsRecord = {
+    data: Nexus.arg({
+      type: manager.useCreateOneInputType(entity, builder),
+      nullable: false,
+    }),
+  }
+
+  if (config.args) {
+    args = typeof config.args === 'function' ? config.args(args) : config.args
+  }
+
   t.field(givenFieldName || namingStrategy.createInputType(typeName), {
+    args,
     type: typeName,
     nullable: config.nullable,
-    args: {
-      data: Nexus.arg({
-        type: manager.useCreateOneInputType(entity, builder),
-        nullable: false,
-      }),
-    },
     resolve: async (_, args) => {
       const conn = getConnection()
       return await conn.transaction(async transaction => {

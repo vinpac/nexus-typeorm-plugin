@@ -146,6 +146,12 @@ export class EntityTypeDefManager {
           })
 
           entityMetadata.relations.forEach(relation => {
+            if (relation.isManyToMany && !relation.junctionEntityMetadata) {
+              throw new Error(
+                `Missing @JoinTable together with @ManyToMany on "${relation.entityMetadata.name}"."${relation.propertyName}"`,
+              )
+            }
+
             t.field(relation.propertyName, {
               type: this.useCreateRelationInputType(entity, relation, nexusBuilder),
               required: false,

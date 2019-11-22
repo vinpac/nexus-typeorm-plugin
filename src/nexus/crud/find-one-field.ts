@@ -67,11 +67,7 @@ export function defineFindOneField(
     ...config.args,
   }
   if (config && config.args) {
-    if (typeof config.args === 'function') {
-      args = config.args(args)
-    } else {
-      args = { ...args, ...config.args }
-    }
+    args = typeof config.args === 'function' ? config.args(args) : config.args
   }
 
   t.field(givenFieldName || namingStrategy.findOneField(type), {

@@ -25,6 +25,9 @@ declare global {
 }
 
 export interface NexusGenInputs {
+  CategoryCreateWithoutPostsInput: { // input type
+    name: string; // String!
+  }
   CategoryWhereInput: { // input type
     AND?: NexusGenInputs['CategoryWhereInput'][] | null; // [CategoryWhereInput!]
     id?: string | null; // ID
@@ -35,48 +38,36 @@ export interface NexusGenInputs {
     NOT?: NexusGenInputs['CategoryWhereInput'][] | null; // [CategoryWhereInput!]
     OR?: NexusGenInputs['CategoryWhereInput'][] | null; // [CategoryWhereInput!]
   }
-  CreateCategoriesWithoutPostsInput: { // input type
-    name: string; // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutCategoryInput'] | null; // CreateManyPostsWithoutCategoryInput
-  }
-  CreateManyCategoriesWithoutPostInput: { // input type
-    connect?: NexusGenInputs['CategoryWhereInput'] | null; // CategoryWhereInput
-    create?: NexusGenInputs['CreateCategoriesWithoutPostsInput'][] | null; // [CreateCategoriesWithoutPostsInput!]
-  }
-  CreateManyCategoriesWithoutUserInput: { // input type
-    connect?: NexusGenInputs['CategoryWhereInput'] | null; // CategoryWhereInput
-    create?: NexusGenInputs['CreateCategoriesWithoutPostsInput'][] | null; // [CreateCategoriesWithoutPostsInput!]
-  }
-  CreateManyPostsWithoutCategoryInput: { // input type
-    connect?: NexusGenInputs['PostWhereInput'] | null; // PostWhereInput
-    create?: NexusGenInputs['CreatePostsWithoutCategoriesInput'][] | null; // [CreatePostsWithoutCategoriesInput!]
-  }
-  CreateManyPostsWithoutUserInput: { // input type
-    connect?: NexusGenInputs['PostWhereInput'] | null; // PostWhereInput
-    create?: NexusGenInputs['CreatePostsWithoutAuthorInput'][] | null; // [CreatePostsWithoutAuthorInput!]
-  }
-  CreateManyUsersWithoutPostInput: { // input type
+  CreatePostToAuthorRelationInput: { // input type
     connect?: NexusGenInputs['UserWhereInput'] | null; // UserWhereInput
-    create?: NexusGenInputs['CreateUsersWithoutPostsInput'] | null; // CreateUsersWithoutPostsInput
+    create?: NexusGenInputs['UserCreateWithoutPostsInput'] | null; // UserCreateWithoutPostsInput
   }
-  CreatePostsWithoutAuthorInput: { // input type
-    author?: NexusGenInputs['CreateManyUsersWithoutPostInput'] | null; // CreateManyUsersWithoutPostInput
-    categories?: NexusGenInputs['CreateManyCategoriesWithoutPostInput'] | null; // CreateManyCategoriesWithoutPostInput
+  CreatePostsCategoriesRelationInput: { // input type
+    connect?: NexusGenInputs['CategoryWhereInput'] | null; // CategoryWhereInput
+    create?: NexusGenInputs['CategoryCreateWithoutPostsInput'][] | null; // [CategoryCreateWithoutPostsInput!]
+  }
+  CreateUsersPostsRelationInput: { // input type
+    connect?: NexusGenInputs['PostWhereInput'] | null; // PostWhereInput
+    create?: NexusGenInputs['PostCreateWithoutAuthorInput'][] | null; // [PostCreateWithoutAuthorInput!]
+  }
+  PostCreateInput: { // input type
+    author?: NexusGenInputs['CreatePostToAuthorRelationInput'] | null; // CreatePostToAuthorRelationInput
+    authorId: number; // Int!
+    categories?: NexusGenInputs['CreatePostsCategoriesRelationInput'] | null; // CreatePostsCategoriesRelationInput
     title: string; // String!
   }
-  CreatePostsWithoutCategoriesInput: { // input type
-    author?: NexusGenInputs['CreateManyUsersWithoutPostInput'] | null; // CreateManyUsersWithoutPostInput
-    categories?: NexusGenInputs['CreateManyCategoriesWithoutPostInput'] | null; // CreateManyCategoriesWithoutPostInput
+  PostCreateWithoutAuthorInput: { // input type
+    categories?: NexusGenInputs['CreatePostsCategoriesRelationInput'] | null; // CreatePostsCategoriesRelationInput
     title: string; // String!
-  }
-  CreateUsersWithoutPostsInput: { // input type
-    age: number; // Int!
-    categories?: NexusGenInputs['CreateManyCategoriesWithoutUserInput'] | null; // CreateManyCategoriesWithoutUserInput
-    name: string; // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutUserInput'] | null; // CreateManyPostsWithoutUserInput
   }
   PostWhereInput: { // input type
     AND?: NexusGenInputs['PostWhereInput'][] | null; // [PostWhereInput!]
+    authorId?: number | null; // Int
+    authorId_gt?: number | null; // Int
+    authorId_gte?: number | null; // Int
+    authorId_in?: number[] | null; // [Int!]
+    authorId_lt?: number | null; // Int
+    authorId_lte?: number | null; // Int
     id?: string | null; // ID
     id_in?: string[] | null; // [ID!]
     NOT?: NexusGenInputs['PostWhereInput'][] | null; // [PostWhereInput!]
@@ -87,9 +78,12 @@ export interface NexusGenInputs {
   }
   UserCreateInput: { // input type
     age: number; // Int!
-    categories?: NexusGenInputs['CreateManyCategoriesWithoutUserInput'] | null; // CreateManyCategoriesWithoutUserInput
     name: string; // String!
-    posts?: NexusGenInputs['CreateManyPostsWithoutUserInput'] | null; // CreateManyPostsWithoutUserInput
+    posts?: NexusGenInputs['CreateUsersPostsRelationInput'] | null; // CreateUsersPostsRelationInput
+  }
+  UserCreateWithoutPostsInput: { // input type
+    age: number; // Int!
+    name: string; // String!
   }
   UserWhereInput: { // input type
     age?: number | null; // Int
@@ -111,7 +105,7 @@ export interface NexusGenInputs {
 
 export interface NexusGenEnums {
   CategoryOrderByInput: "id_ASC" | "id_DESC" | "name_ASC" | "name_DESC"
-  PostOrderByInput: "author_ASC" | "author_DESC" | "id_ASC" | "id_DESC" | "title_ASC" | "title_DESC"
+  PostOrderByInput: "authorId_ASC" | "authorId_DESC" | "id_ASC" | "id_DESC" | "title_ASC" | "title_DESC"
   UserOrderByInput: "age_ASC" | "age_DESC" | "id_ASC" | "id_DESC" | "name_ASC" | "name_DESC"
 }
 
@@ -122,6 +116,7 @@ export interface NexusGenRootTypes {
   }
   Mutation: {};
   Post: { // root type
+    authorId: number; // Int!
     id: string; // ID!
     title: string; // String!
   }
@@ -140,18 +135,16 @@ export interface NexusGenRootTypes {
 }
 
 export interface NexusGenAllTypes extends NexusGenRootTypes {
+  CategoryCreateWithoutPostsInput: NexusGenInputs['CategoryCreateWithoutPostsInput'];
   CategoryWhereInput: NexusGenInputs['CategoryWhereInput'];
-  CreateCategoriesWithoutPostsInput: NexusGenInputs['CreateCategoriesWithoutPostsInput'];
-  CreateManyCategoriesWithoutPostInput: NexusGenInputs['CreateManyCategoriesWithoutPostInput'];
-  CreateManyCategoriesWithoutUserInput: NexusGenInputs['CreateManyCategoriesWithoutUserInput'];
-  CreateManyPostsWithoutCategoryInput: NexusGenInputs['CreateManyPostsWithoutCategoryInput'];
-  CreateManyPostsWithoutUserInput: NexusGenInputs['CreateManyPostsWithoutUserInput'];
-  CreateManyUsersWithoutPostInput: NexusGenInputs['CreateManyUsersWithoutPostInput'];
-  CreatePostsWithoutAuthorInput: NexusGenInputs['CreatePostsWithoutAuthorInput'];
-  CreatePostsWithoutCategoriesInput: NexusGenInputs['CreatePostsWithoutCategoriesInput'];
-  CreateUsersWithoutPostsInput: NexusGenInputs['CreateUsersWithoutPostsInput'];
+  CreatePostToAuthorRelationInput: NexusGenInputs['CreatePostToAuthorRelationInput'];
+  CreatePostsCategoriesRelationInput: NexusGenInputs['CreatePostsCategoriesRelationInput'];
+  CreateUsersPostsRelationInput: NexusGenInputs['CreateUsersPostsRelationInput'];
+  PostCreateInput: NexusGenInputs['PostCreateInput'];
+  PostCreateWithoutAuthorInput: NexusGenInputs['PostCreateWithoutAuthorInput'];
   PostWhereInput: NexusGenInputs['PostWhereInput'];
   UserCreateInput: NexusGenInputs['UserCreateInput'];
+  UserCreateWithoutPostsInput: NexusGenInputs['UserCreateWithoutPostsInput'];
   UserWhereInput: NexusGenInputs['UserWhereInput'];
   CategoryOrderByInput: NexusGenEnums['CategoryOrderByInput'];
   PostOrderByInput: NexusGenEnums['PostOrderByInput'];
@@ -165,10 +158,12 @@ export interface NexusGenFieldTypes {
     posts: NexusGenRootTypes['Post'][]; // [Post!]!
   }
   Mutation: { // field return type
+    createOnePost: NexusGenRootTypes['Post']; // Post!
     createOneUser: NexusGenRootTypes['User']; // User!
   }
   Post: { // field return type
     author: NexusGenRootTypes['User']; // User!
+    authorId: number; // Int!
     categories: NexusGenRootTypes['Category'][]; // [Category!]!
     id: string; // ID!
     title: string; // String!
@@ -181,7 +176,6 @@ export interface NexusGenFieldTypes {
   }
   User: { // field return type
     age: number; // Int!
-    categories: NexusGenRootTypes['Category'][]; // [Category!]!
     id: string; // ID!
     name: string; // String!
     posts: NexusGenRootTypes['Post'][]; // [Post!]!
@@ -199,6 +193,9 @@ export interface NexusGenArgTypes {
     }
   }
   Mutation: {
+    createOnePost: { // args
+      data: NexusGenInputs['PostCreateInput']; // PostCreateInput!
+    }
     createOneUser: { // args
       data: NexusGenInputs['UserCreateInput']; // UserCreateInput!
     }
@@ -243,13 +240,6 @@ export interface NexusGenArgTypes {
     }
   }
   User: {
-    categories: { // args
-      first?: number | null; // Int
-      last?: number | null; // Int
-      orderBy?: NexusGenEnums['CategoryOrderByInput'][] | null; // [CategoryOrderByInput!]
-      skip?: number | null; // Int
-      where?: NexusGenInputs['CategoryWhereInput'] | null; // CategoryWhereInput
-    }
     posts: { // args
       first?: number | null; // Int
       last?: number | null; // Int
@@ -267,7 +257,7 @@ export interface NexusGenInheritedFields {}
 
 export type NexusGenObjectNames = "Category" | "Mutation" | "Post" | "Query" | "User";
 
-export type NexusGenInputNames = "CategoryWhereInput" | "CreateCategoriesWithoutPostsInput" | "CreateManyCategoriesWithoutPostInput" | "CreateManyCategoriesWithoutUserInput" | "CreateManyPostsWithoutCategoryInput" | "CreateManyPostsWithoutUserInput" | "CreateManyUsersWithoutPostInput" | "CreatePostsWithoutAuthorInput" | "CreatePostsWithoutCategoriesInput" | "CreateUsersWithoutPostsInput" | "PostWhereInput" | "UserCreateInput" | "UserWhereInput";
+export type NexusGenInputNames = "CategoryCreateWithoutPostsInput" | "CategoryWhereInput" | "CreatePostToAuthorRelationInput" | "CreatePostsCategoriesRelationInput" | "CreateUsersPostsRelationInput" | "PostCreateInput" | "PostCreateWithoutAuthorInput" | "PostWhereInput" | "UserCreateInput" | "UserCreateWithoutPostsInput" | "UserWhereInput";
 
 export type NexusGenEnumNames = "CategoryOrderByInput" | "PostOrderByInput" | "UserOrderByInput";
 

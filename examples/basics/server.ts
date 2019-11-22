@@ -10,9 +10,10 @@ import {
   PrimaryGeneratedColumn,
   createConnection,
   ManyToMany,
+  JoinTable,
 } from 'typeorm'
 import { NexusEntity, nexusTypeORMPlugin, entityType } from 'nexus-typeorm-plugin'
-import { queryType, makeSchema, mutationType } from 'nexus'
+import { queryType, makeSchema, mutationType, stringArg, intArg } from 'nexus'
 import { propertyPathToAlias } from 'nexus-typeorm-plugin/dist/query-builder'
 
 dotenv.config()
@@ -31,14 +32,10 @@ export class User {
   @OneToMany(() => Post, post => post.author)
   public posts: Post[]
 
-  @ManyToMany(() => Category, category => category.posts)
-  public categories?: Category[]
-
-  constructor(name: string, age: number, posts: Post[], categories?: Category[]) {
+  constructor(name: string, age: number, posts: Post[]) {
     this.name = name
     this.age = age
     this.posts = posts
-    this.categories = categories
   }
 }
 
@@ -51,6 +48,7 @@ class Category {
   public name: string
 
   @ManyToMany(() => Post, post => post.categories)
+  @JoinTable()
   public posts?: Post[]
 
   constructor(name: string, posts?: Post[]) {
@@ -69,6 +67,8 @@ class Post {
 
   @ManyToOne(() => User, user => user.posts)
   public author: User
+  @Column({ nullable: false })
+  public authorId!: string
 
   @ManyToMany(() => Category, category => category.posts)
   public categories?: Category[]
@@ -102,7 +102,8 @@ async function main() {
         resolve: ctx => {
           ctx.args.where = {
             ...ctx.args.where,
-            name: 'John',
+            // eslint-disable-next-line
+            name_contains: 'John',
           }
 
           return ctx.next(ctx)
@@ -138,7 +139,16 @@ async function main() {
 
   const mutation = mutationType({
     definition: t => {
-      t.crud.createOneUser()
+      t.crud.createOneUser('createOneUser', {
+        args: {
+          name: stringArg({ nullable: false }),
+          age: intArg({ nullable: false }),
+        },
+        resolve: ctx => {
+          return ctx.next(ctx)
+        },
+      })
+      t.crud.createOnePost()
     },
   })
 

@@ -15,7 +15,6 @@ declare global {
       name: string
       age: number
       posts: NexusTypeORMEntity<'Post'>[]| null
-      categories: NexusTypeORMEntity<'Category'>[]| null
     }
     'Category': {
       id: number
@@ -25,6 +24,7 @@ declare global {
     'Post': {
       id: number
       title: string
+      authorId: number
       author: NexusTypeORMEntity<'User'>| null
       categories: NexusTypeORMEntity<'Category'>[]| null
     }
@@ -52,7 +52,6 @@ declare global {
       name: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'User'>>
       age: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'User'>>
       posts: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Post'>>
-      categories: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
     }
     'Category': {
       id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Category'>>
@@ -62,6 +61,7 @@ declare global {
     'Post': {
       id: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
       title: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
+      authorId: EntityPropertyColumnDefFieldPublisher<NexusTypeORMEntity<'Post'>>
       author: EntityPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
       categories: EntityPropertyFindManyFieldPublisher<NexusTypeORMEntity<'Category'>>
     }

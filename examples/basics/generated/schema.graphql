@@ -8,6 +8,10 @@ type Category {
   posts(first: Int, last: Int, orderBy: [PostOrderByInput!], skip: Int, where: PostWhereInput): [Post!]!
 }
 
+input CategoryCreateWithoutPostsInput {
+  name: String!
+}
+
 enum CategoryOrderByInput {
   id_ASC
   id_DESC
@@ -26,53 +30,19 @@ input CategoryWhereInput {
   OR: [CategoryWhereInput!]
 }
 
-input CreateCategoriesWithoutPostsInput {
-  name: String!
-  posts: CreateManyPostsWithoutCategoryInput
-}
-
-input CreateManyCategoriesWithoutPostInput {
+input CreatePostsCategoriesRelationInput {
   connect: CategoryWhereInput
-  create: [CreateCategoriesWithoutPostsInput!]
+  create: [CategoryCreateWithoutPostsInput!]
 }
 
-input CreateManyCategoriesWithoutUserInput {
-  connect: CategoryWhereInput
-  create: [CreateCategoriesWithoutPostsInput!]
-}
-
-input CreateManyPostsWithoutCategoryInput {
-  connect: PostWhereInput
-  create: [CreatePostsWithoutCategoriesInput!]
-}
-
-input CreateManyPostsWithoutUserInput {
-  connect: PostWhereInput
-  create: [CreatePostsWithoutAuthorInput!]
-}
-
-input CreateManyUsersWithoutPostInput {
+input CreatePostToAuthorRelationInput {
   connect: UserWhereInput
-  create: CreateUsersWithoutPostsInput
+  create: UserCreateWithoutPostsInput
 }
 
-input CreatePostsWithoutAuthorInput {
-  author: CreateManyUsersWithoutPostInput
-  categories: CreateManyCategoriesWithoutPostInput
-  title: String!
-}
-
-input CreatePostsWithoutCategoriesInput {
-  author: CreateManyUsersWithoutPostInput
-  categories: CreateManyCategoriesWithoutPostInput
-  title: String!
-}
-
-input CreateUsersWithoutPostsInput {
-  age: Int!
-  categories: CreateManyCategoriesWithoutUserInput
-  name: String!
-  posts: CreateManyPostsWithoutUserInput
+input CreateUsersPostsRelationInput {
+  connect: PostWhereInput
+  create: [PostCreateWithoutAuthorInput!]
 }
 
 """
@@ -83,19 +53,33 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the
 scalar DateTime
 
 type Mutation {
+  createOnePost(data: PostCreateInput!): Post!
   createOneUser(data: UserCreateInput!): User!
 }
 
 type Post {
   author: User!
+  authorId: Int!
   categories(first: Int, last: Int, orderBy: [CategoryOrderByInput!], skip: Int, where: CategoryWhereInput): [Category!]!
   id: ID!
   title: String!
 }
 
+input PostCreateInput {
+  author: CreatePostToAuthorRelationInput
+  authorId: Int!
+  categories: CreatePostsCategoriesRelationInput
+  title: String!
+}
+
+input PostCreateWithoutAuthorInput {
+  categories: CreatePostsCategoriesRelationInput
+  title: String!
+}
+
 enum PostOrderByInput {
-  author_ASC
-  author_DESC
+  authorId_ASC
+  authorId_DESC
   id_ASC
   id_DESC
   title_ASC
@@ -104,6 +88,12 @@ enum PostOrderByInput {
 
 input PostWhereInput {
   AND: [PostWhereInput!]
+  authorId: Int
+  authorId_gt: Int
+  authorId_gte: Int
+  authorId_in: [Int!]
+  authorId_lt: Int
+  authorId_lte: Int
   id: ID
   id_in: [ID!]
   NOT: [PostWhereInput!]
@@ -122,7 +112,6 @@ type Query {
 
 type User {
   age: Int!
-  categories(first: Int, last: Int, orderBy: [CategoryOrderByInput!], skip: Int, where: CategoryWhereInput): [Category!]!
   id: ID!
   name: String!
   posts(first: Int, last: Int, orderBy: [PostOrderByInput!], skip: Int, where: PostWhereInput): [Post!]!
@@ -130,9 +119,13 @@ type User {
 
 input UserCreateInput {
   age: Int!
-  categories: CreateManyCategoriesWithoutUserInput
   name: String!
-  posts: CreateManyPostsWithoutUserInput
+  posts: CreateUsersPostsRelationInput
+}
+
+input UserCreateWithoutPostsInput {
+  age: Int!
+  name: String!
 }
 
 enum UserOrderByInput {
