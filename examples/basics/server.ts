@@ -145,7 +145,12 @@ async function main() {
           age: intArg({ nullable: false }),
         },
         resolve: ctx => {
-          return ctx.next(ctx)
+          return ctx.next({
+            ...ctx,
+            args: {
+              data: ctx.args,
+            },
+          })
         },
       })
       t.crud.createOnePost()

@@ -54,7 +54,7 @@ scalar DateTime
 
 type Mutation {
   createOnePost(data: PostCreateInput!): Post!
-  createOneUser(data: UserCreateInput!): User!
+  createOneUser(age: Int!, name: String!): User!
 }
 
 type Post {

@@ -8,6 +8,7 @@ import { ArgsRecord } from 'nexus/dist/core'
 import { CRUDFieldConfigResolveFn } from '../crud-field-output-method'
 import { getConnection } from 'typeorm'
 import { translateWhereClause, ArgWhereType } from '../../args/arg-where'
+import { GraphQLFieldResolver } from 'graphql'
 
 export interface CreateOneFieldPublisherConfig<TEntity> {
   type?: Nexus.core.AllOutputTypes
@@ -146,20 +147,30 @@ export function defineCreateOneField(
     args = typeof config.args === 'function' ? config.args(args) : config.args
   }
 
+  const resolve: GraphQLFieldResolver<any, any> = async (_, args) => {
+    const conn = getConnection()
+    return await conn.transaction(async transaction => {
+      return await createEntityFromInputObject(
+        entity,
+        manager,
+        args.data,
+        transaction.save.bind(transaction),
+      )
+    })
+  }
   t.field(givenFieldName || namingStrategy.createInputType(typeName), {
     args,
     type: typeName,
     nullable: config.nullable,
-    resolve: async (_, args) => {
-      const conn = getConnection()
-      return await conn.transaction(async transaction => {
-        return await createEntityFromInputObject(
-          entity,
-          manager,
-          args.data,
-          transaction.save.bind(transaction),
-        )
-      })
-    },
+    resolve: config.resolve
+      ? (source, args, context, info) =>
+          config.resolve!({
+            source,
+            args,
+            context,
+            info,
+            next: ctx => resolve(ctx.source, ctx.args, ctx.context, ctx.info),
+          })
+      : resolve,
   })
 }

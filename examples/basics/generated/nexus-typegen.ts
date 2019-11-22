@@ -197,7 +197,8 @@ export interface NexusGenArgTypes {
       data: NexusGenInputs['PostCreateInput']; // PostCreateInput!
     }
     createOneUser: { // args
-      data: NexusGenInputs['UserCreateInput']; // UserCreateInput!
+      age: number; // Int!
+      name: string; // String!
     }
   }
   Post: {
