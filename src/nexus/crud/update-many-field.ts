@@ -70,7 +70,7 @@ export function defineUpdateManyField(
       where: args.where,
     })
 
-    return { affectedRows: result.affected }
+    return { affectedRows: result.affected || result.raw.affectedRows }
   }
 
   t.field(fieldName, {
