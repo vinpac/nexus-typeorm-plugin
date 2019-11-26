@@ -72,7 +72,7 @@ describe('CRUD', () => {
           },
         ]),
       })
-      // 1. UPDATE
+      // UPDATE AND SELECT
       expect(getDatabaseQueriesCount()).toBe(2)
     })
   })

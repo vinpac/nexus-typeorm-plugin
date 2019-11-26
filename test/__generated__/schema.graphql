@@ -128,6 +128,7 @@ type Mutation {
   createOnePost(data: PostCreateInput!): Post!
   createOneUser(data: UserCreateInput!): User!
   updateManyUsers(data: UserUpdateInput!, where: UserWhereInput!): UpdateManyResult!
+  updateOnePost(data: PostUpdateInput!, where: PostWhereInput!): Post!
   updateOneUser(data: UserUpdateInput!, where: UserWhereInput!): User!
 }
 
@@ -210,6 +211,16 @@ enum PostOrderByInput {
   userId_DESC
   viewCount_ASC
   viewCount_DESC
+}
+
+input PostUpdateInput {
+  createdAt: DateTime
+  isPublic: Boolean
+  liked: String
+  title: String
+  totalLikes: Int
+  userId: Int
+  viewCount: Int
 }
 
 input PostWhereInput {

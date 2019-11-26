@@ -45,6 +45,12 @@ describe('CRUD', () => {
             name
             age
           }
+          updateOnePost(data: {
+            title: "post updated"
+          }, where: { title: "post 1", }) {
+            id
+            title
+          }
         }`)
 
       expect(result).toMatchObject({
@@ -53,11 +59,16 @@ describe('CRUD', () => {
           age: 55,
           name: 'Updated Jack',
         },
+        updateOnePost: {
+          id: expect.any(String),
+          title: 'post updated',
+        },
       })
-      // 1.SELECT
-      // 2. UPDATE
-      // 3. SELECT
-      expect(getDatabaseQueriesCount()).toBe(3)
+
+      // 1. SELECT  |
+      // 2. UPDATE  |
+      // 3. SELECT  | x2
+      expect(getDatabaseQueriesCount()).toBe(6)
     })
   })
 })

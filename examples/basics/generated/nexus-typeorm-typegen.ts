@@ -5,7 +5,9 @@ import {
   EntityPropertyFindManyFieldPublisher,
   CRUDPropertyFindOneFieldPublisher,
   CRUDPropertyFindManyFieldPublisher,
-  CRUDPropertyCreateOneFieldPublisher
+  CRUDPropertyCreateOneFieldPublisher,
+  CRUDPropertyUpdateOneFieldPublisher,
+  CRUDPropertyUpdateManyFieldPublisher
 } from 'nexus-typeorm-plugin'
 
 declare global {
@@ -33,8 +35,14 @@ declare global {
   export interface NexusTypeORMCRUDPropertyMap {
     'Mutation': {
       createOneUser: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      updateOneUser: CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      updateManyUsers: CRUDPropertyUpdateManyFieldPublisher<NexusTypeORMEntity<'User'>>
       createOneCategory: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      updateOneCategory: CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      updateManyCategories: CRUDPropertyUpdateManyFieldPublisher<NexusTypeORMEntity<'Category'>>
       createOnePost: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Post'>>
+      updateOnePost: CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'Post'>>
+      updateManyPosts: CRUDPropertyUpdateManyFieldPublisher<NexusTypeORMEntity<'Post'>>
     }
     'Query': {
       user: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'User'>>
@@ -67,13 +75,21 @@ declare global {
     }
   }
 
-  export type NexusTypeORMEntityProperty<TypeName> = TypeName extends keyof NexusTypeORMEntityPropertyMap
-    ? NexusTypeORMEntityPropertyMap[TypeName]
-    : undefined
+  export type NexusTypeORMEntityProperty<TypeName> =
+    TypeName extends keyof NexusTypeORMEntityPropertyMap
+      ? NexusTypeORMEntityPropertyMap[TypeName]
+      : undefined
+
   export type NexusTypeORMCRUDProperty<TypeName> = TypeName extends 'Mutation'
     ? NexusTypeORMCRUDPropertyMap['Mutation']
     : NexusTypeORMCRUDPropertyMap['Query']
+
   export type NexusTypeORMEntity<
     TypeName
   > = TypeName extends keyof NexusTypeORMEntities ? NexusTypeORMEntities[TypeName] : undefined
+
+  export type NexusTypeORMEntityFieldsOutputMethod<TypeName> =
+    TypeName extends keyof NexusTypeORMEntityPropertyMap
+      ? (() => void)
+      : undefined
 }

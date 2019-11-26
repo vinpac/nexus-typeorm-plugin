@@ -104,9 +104,11 @@ export function createQueryBuilderConfig(
     last: options.last,
   }
 }
-export function createQueryBuilder<Model>(config: QueryBuilderConfig): SelectQueryBuilder<Model> {
+export function createQueryBuilder<TEntity>(
+  config: QueryBuilderConfig,
+): SelectQueryBuilder<TEntity> {
   const conn = getConnection()
-  const queryBuilder = conn.getRepository<Model>(config.entity).createQueryBuilder(config.alias)
+  const queryBuilder = conn.getRepository<TEntity>(config.entity).createQueryBuilder(config.alias)
 
   return populateQueryBuilder(queryBuilder, config)
 }

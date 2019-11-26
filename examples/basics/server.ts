@@ -13,7 +13,7 @@ import {
   JoinTable,
 } from 'typeorm'
 import { NexusEntity, nexusTypeORMPlugin, entityType } from 'nexus-typeorm-plugin'
-import { queryType, makeSchema, mutationType, stringArg, intArg } from 'nexus'
+import { queryType, makeSchema, mutationType } from 'nexus'
 import { propertyPathToAlias } from 'nexus-typeorm-plugin/dist/query-builder'
 
 dotenv.config()
@@ -24,19 +24,13 @@ export class User {
   public id!: number
 
   @Column()
-  public name: string
+  public name!: string
 
   @Column()
-  public age: number
+  public age!: number
 
   @OneToMany(() => Post, post => post.author)
-  public posts: Post[]
-
-  constructor(name: string, age: number, posts: Post[]) {
-    this.name = name
-    this.age = age
-    this.posts = posts
-  }
+  public posts!: Post[]
 }
 
 @NexusEntity()
@@ -45,16 +39,11 @@ class Category {
   public id!: number
 
   @Column()
-  public name: string
+  public name!: string
 
   @ManyToMany(() => Post, post => post.categories)
   @JoinTable()
   public posts?: Post[]
-
-  constructor(name: string, posts?: Post[]) {
-    this.name = name
-    this.posts = posts
-  }
 }
 
 @NexusEntity()
@@ -94,69 +83,6 @@ async function main() {
     synchronize: true,
   })
 
-  const query = queryType({
-    definition: t => {
-      t.crud.posts()
-      t.crud.users('listUsers')
-      t.crud.users('listUsersWithNameJohn', {
-        resolve: ctx => {
-          ctx.args.where = {
-            ...ctx.args.where,
-            // eslint-disable-next-line
-            name_contains: 'John',
-          }
-
-          return ctx.next(ctx)
-        },
-      })
-      t.crudField('listPostsWithCategoryFoo', {
-        entity: 'Post',
-        type: 'Post',
-        method: 'findMany',
-        resolve: ctx => {
-          return ctx.next({
-            ...ctx,
-            queryBuilderConfig: config => ({
-              ...config,
-              joins: [
-                ...(config.joins || []),
-                {
-                  type: 'inner',
-                  select: false,
-                  propertyPath: 'categories',
-                  where: {
-                    expression: `${propertyPathToAlias('categories')}.id = :id`,
-                    params: { id: 1 },
-                  },
-                },
-              ],
-            }),
-          })
-        },
-      })
-    },
-  })
-
-  const mutation = mutationType({
-    definition: t => {
-      t.crud.createOneUser('createOneUser', {
-        args: {
-          name: stringArg({ nullable: false }),
-          age: intArg({ nullable: false }),
-        },
-        resolve: ctx => {
-          return ctx.next({
-            ...ctx,
-            args: {
-              data: ctx.args,
-            },
-          })
-        },
-      })
-      t.crud.createOnePost()
-    },
-  })
-
   const schema = makeSchema({
     types: [
       nexusTypeORMPlugin({
@@ -164,8 +90,56 @@ async function main() {
           typegen: path.resolve('generated', 'nexus-typeorm-typegen.ts'),
         },
       }),
-      query,
-      mutation,
+      queryType({
+        definition: t => {
+          t.crud.posts()
+          t.crud.users('listUsers')
+          t.crud.users('listUsersWithNameJohn', {
+            resolve: ctx => {
+              ctx.args.where = {
+                ...ctx.args.where,
+                // eslint-disable-next-line
+                name_contains: 'John',
+              }
+
+              return ctx.next(ctx)
+            },
+          })
+          t.crudField('listPostsWithCategoryFoo', {
+            entity: 'Post',
+            type: 'Post',
+            method: 'findMany',
+            resolve: ctx => {
+              return ctx.next({
+                ...ctx,
+                queryBuilderConfig: config => ({
+                  ...config,
+                  joins: [
+                    ...(config.joins || []),
+                    {
+                      type: 'inner',
+                      select: false,
+                      propertyPath: 'categories',
+                      where: {
+                        expression: `${propertyPathToAlias('categories')}.id = :id`,
+                        params: { id: 1 },
+                      },
+                    },
+                  ],
+                }),
+              })
+            },
+          })
+        },
+      }),
+      mutationType({
+        definition: t => {
+          t.crud.createOneUser()
+          t.crud.createOnePost()
+          t.crud.updateOneUser()
+          t.crud.updateManyUsers()
+        },
+      }),
       entityType(User),
       entityType(Post),
       entityType(Category),
@@ -175,7 +149,7 @@ async function main() {
       typegen: path.resolve('generated', 'nexus-typegen.ts'),
     },
   })
-  new ApolloServer({ schema }).listen(3000)
+  await new ApolloServer({ schema }).listen(3000)
   // eslint-disable-next-line no-console
   console.log('Server running at http://localhost:3000')
 }

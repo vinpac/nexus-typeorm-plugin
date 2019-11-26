@@ -10,7 +10,7 @@ declare global {
   interface NexusGenCustomOutputMethods<TypeName extends string> {
     entityField: NexusTypeORMEntityOutputMethod<NexusTypeORMEntity<TypeName>>
     crudField: NexusTypeORMCRUDMethod<NexusTypeORMEntity<TypeName>>
-    entityFields(...args: any): void
+    entityFields: NexusTypeORMEntityFieldsOutputMethod<TypeName>
   }
 }
 declare global {
@@ -85,6 +85,10 @@ export interface NexusGenInputs {
     age: number; // Int!
     name: string; // String!
   }
+  UserUpdateInput: { // input type
+    age?: number | null; // Int
+    name?: string | null; // String
+  }
   UserWhereInput: { // input type
     age?: number | null; // Int
     age_gt?: number | null; // Int
@@ -121,6 +125,9 @@ export interface NexusGenRootTypes {
     title: string; // String!
   }
   Query: {};
+  UpdateManyResult: { // root type
+    affectedRows: number; // Int!
+  }
   User: { // root type
     age: number; // Int!
     id: string; // ID!
@@ -145,6 +152,7 @@ export interface NexusGenAllTypes extends NexusGenRootTypes {
   PostWhereInput: NexusGenInputs['PostWhereInput'];
   UserCreateInput: NexusGenInputs['UserCreateInput'];
   UserCreateWithoutPostsInput: NexusGenInputs['UserCreateWithoutPostsInput'];
+  UserUpdateInput: NexusGenInputs['UserUpdateInput'];
   UserWhereInput: NexusGenInputs['UserWhereInput'];
   CategoryOrderByInput: NexusGenEnums['CategoryOrderByInput'];
   PostOrderByInput: NexusGenEnums['PostOrderByInput'];
@@ -160,6 +168,8 @@ export interface NexusGenFieldTypes {
   Mutation: { // field return type
     createOnePost: NexusGenRootTypes['Post']; // Post!
     createOneUser: NexusGenRootTypes['User']; // User!
+    updateManyUsers: NexusGenRootTypes['UpdateManyResult']; // UpdateManyResult!
+    updateOneUser: NexusGenRootTypes['User']; // User!
   }
   Post: { // field return type
     author: NexusGenRootTypes['User']; // User!
@@ -173,6 +183,9 @@ export interface NexusGenFieldTypes {
     listUsers: NexusGenRootTypes['User'][]; // [User!]!
     listUsersWithNameJohn: NexusGenRootTypes['User'][]; // [User!]!
     posts: NexusGenRootTypes['Post'][]; // [Post!]!
+  }
+  UpdateManyResult: { // field return type
+    affectedRows: number; // Int!
   }
   User: { // field return type
     age: number; // Int!
@@ -197,8 +210,15 @@ export interface NexusGenArgTypes {
       data: NexusGenInputs['PostCreateInput']; // PostCreateInput!
     }
     createOneUser: { // args
-      age: number; // Int!
-      name: string; // String!
+      data: NexusGenInputs['UserCreateInput']; // UserCreateInput!
+    }
+    updateManyUsers: { // args
+      data: NexusGenInputs['UserUpdateInput']; // UserUpdateInput!
+      where: NexusGenInputs['UserWhereInput']; // UserWhereInput!
+    }
+    updateOneUser: { // args
+      data: NexusGenInputs['UserUpdateInput']; // UserUpdateInput!
+      where: NexusGenInputs['UserWhereInput']; // UserWhereInput!
     }
   }
   Post: {
@@ -256,9 +276,9 @@ export interface NexusGenAbstractResolveReturnTypes {
 
 export interface NexusGenInheritedFields {}
 
-export type NexusGenObjectNames = "Category" | "Mutation" | "Post" | "Query" | "User";
+export type NexusGenObjectNames = "Category" | "Mutation" | "Post" | "Query" | "UpdateManyResult" | "User";
 
-export type NexusGenInputNames = "CategoryCreateWithoutPostsInput" | "CategoryWhereInput" | "CreatePostToAuthorRelationInput" | "CreatePostsCategoriesRelationInput" | "CreateUsersPostsRelationInput" | "PostCreateInput" | "PostCreateWithoutAuthorInput" | "PostWhereInput" | "UserCreateInput" | "UserCreateWithoutPostsInput" | "UserWhereInput";
+export type NexusGenInputNames = "CategoryCreateWithoutPostsInput" | "CategoryWhereInput" | "CreatePostToAuthorRelationInput" | "CreatePostsCategoriesRelationInput" | "CreateUsersPostsRelationInput" | "PostCreateInput" | "PostCreateWithoutAuthorInput" | "PostWhereInput" | "UserCreateInput" | "UserCreateWithoutPostsInput" | "UserUpdateInput" | "UserWhereInput";
 
 export type NexusGenEnumNames = "CategoryOrderByInput" | "PostOrderByInput" | "UserOrderByInput";
 

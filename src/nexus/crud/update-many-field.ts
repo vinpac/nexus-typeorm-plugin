@@ -4,12 +4,12 @@ import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { MapArgsFn } from '../../args'
 import { ArgsRecord } from 'nexus/dist/core'
 import { CRUDFieldConfigResolveFn } from '../crud-field-output-method'
-import { ArgWhereType, translateWhereClause } from '../../args/arg-where'
+import { ArgWhereType } from '../../args/arg-where'
 import { GraphQLFieldResolver } from 'graphql'
-import { getConnection } from 'typeorm'
+import { createQueryBuilder, createQueryBuilderConfig } from '../../query-builder'
 
 interface UpdateManyEntitiesArgs {
-  set: { [propertyName: string]: any }
+  data: { [propertyName: string]: any }
   where: ArgWhereType
 }
 
@@ -18,23 +18,6 @@ export interface UpdateManyFieldPublisherConfig<TEntity> {
   args?: ArgsRecord | MapArgsFn
   resolve?: CRUDFieldConfigResolveFn<TEntity>
   nullable?: boolean
-}
-
-async function updateManyEntities<TEntity extends Function>(
-  entity: TEntity,
-  manager: EntityTypeDefManager,
-  { set, where: whereRawExpression }: UpdateManyEntitiesArgs,
-) {
-  const conn = getConnection()
-  const entityMetadata = manager.getEntityMetadata(entity)
-  const where = translateWhereClause(entityMetadata.tableName, whereRawExpression)
-  const entityRepository = conn.getRepository<TEntity>(entity)
-  return await entityRepository
-    .createQueryBuilder()
-    .update(entity)
-    .set(set)
-    .where(where.expression, where.params)
-    .execute()
 }
 
 export function defineUpdateManyField(
@@ -62,13 +45,18 @@ export function defineUpdateManyField(
     args = typeof config.args === 'function' ? config.args(args) : config.args
   }
 
-  const resolve: GraphQLFieldResolver<any, any> = async (_, args) => {
-    const result = await updateManyEntities(entity, manager, {
-      // args.data is deleted for after before `qb.set` being excuted for some reason.
-      // We must copy it
-      set: { ...args.data },
-      where: args.where,
-    })
+  const resolve: GraphQLFieldResolver<unknown, unknown, UpdateManyEntitiesArgs> = async (
+    _,
+    args,
+  ) => {
+    const result = await createQueryBuilder(createQueryBuilderConfig(entity, { where: args.where }))
+      .update(entity)
+      .set(
+        // args.data is deleted for after before `qb.set` being excuted for some reason.
+        // We must copy it
+        { ...args.data },
+      )
+      .execute()
 
     return { affectedRows: result.affected || result.raw.affectedRows }
   }
@@ -84,7 +72,7 @@ export function defineUpdateManyField(
             args,
             context,
             info,
-            next: ctx => resolve(ctx.source, ctx.args, ctx.context, ctx.info),
+            next: ctx => resolve(ctx.source, ctx.args as any, ctx.context, ctx.info),
           })
       : resolve,
   })

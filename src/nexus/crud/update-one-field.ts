@@ -6,9 +6,10 @@ import { MapArgsFn } from '../../args'
 import { ArgsRecord } from 'nexus/dist/core'
 import { CRUDFieldConfigResolveFn } from '../crud-field-output-method'
 import { getConnection } from 'typeorm'
-import { translateWhereClause, ArgWhereType } from '../../args/arg-where'
+import { ArgWhereType } from '../../args/arg-where'
 import { GraphQLFieldResolver } from 'graphql'
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
+import { createQueryBuilder, createQueryBuilderConfig } from '../../query-builder'
 
 export interface UpdateOneFieldPublisherConfig<TEntity> {
   type?: Nexus.core.AllOutputTypes
@@ -31,18 +32,14 @@ interface UpdateOneEntityArgs {
 
 async function updateOneEntity<TEntity extends Function>(
   entity: TEntity,
-  manager: EntityTypeDefManager,
-  { set, where: whereRawExpression }: UpdateOneEntityArgs,
+  { set, where }: UpdateOneEntityArgs,
 ): Promise<TEntity> {
   const conn = getConnection()
-  const entityMetadata = manager.getEntityMetadata(entity)
-  const where = translateWhereClause(entityMetadata.tableName, whereRawExpression)
   const entityRepository = conn.getRepository<TEntity>(entity)
   const entityPrimaryColumn = getEntityPrimaryColumn(entity)
-  const entityInstance = await entityRepository
-    .createQueryBuilder()
-    .where(where.expression, where.params)
-    .getOne()
+  const entityInstance = await createQueryBuilder<TEntity>(
+    createQueryBuilderConfig(entity, { where }),
+  ).getOne()
 
   if (!entityInstance) {
     throw new Error('Unable to find entity')
@@ -84,8 +81,8 @@ export function defineUpdateOneField(
     args = typeof config.args === 'function' ? config.args(args) : config.args
   }
 
-  const resolve: GraphQLFieldResolver<any, any> = async (_, args) =>
-    updateOneEntity(entity, manager, {
+  const resolve: GraphQLFieldResolver<unknown, unknown> = async (_, args) =>
+    updateOneEntity(entity, {
       // args.data is deleted for after before `qb.set` being excuted for some reason.
       // We must copy it
       set: { ...args.data },

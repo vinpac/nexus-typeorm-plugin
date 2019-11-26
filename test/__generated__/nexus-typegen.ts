@@ -170,6 +170,16 @@ export interface NexusGenInputs {
     userId?: number | null // Int
     viewCount?: number | null // Int
   }
+  PostUpdateInput: {
+    // input type
+    createdAt?: any | null // DateTime
+    isPublic?: boolean | null // Boolean
+    liked?: string | null // String
+    title?: string | null // String
+    totalLikes?: number | null // Int
+    userId?: number | null // Int
+    viewCount?: number | null // Int
+  }
   PostWhereInput: {
     // input type
     AND?: NexusGenInputs['PostWhereInput'][] | null // [PostWhereInput!]
@@ -476,6 +486,7 @@ export interface NexusGenAllTypes extends NexusGenRootTypes {
   PostCreateWithoutCategoriesInput: NexusGenInputs['PostCreateWithoutCategoriesInput']
   PostCreateWithoutUserInput: NexusGenInputs['PostCreateWithoutUserInput']
   PostCreateWithoutUserLikesPostsInput: NexusGenInputs['PostCreateWithoutUserLikesPostsInput']
+  PostUpdateInput: NexusGenInputs['PostUpdateInput']
   PostWhereInput: NexusGenInputs['PostWhereInput']
   UserCreateInput: NexusGenInputs['UserCreateInput']
   UserCreateWithoutFolloweesInput: NexusGenInputs['UserCreateWithoutFolloweesInput']
@@ -516,6 +527,7 @@ export interface NexusGenFieldTypes {
     createOnePost: NexusGenRootTypes['Post'] // Post!
     createOneUser: NexusGenRootTypes['User'] // User!
     updateManyUsers: NexusGenRootTypes['UpdateManyResult'] // UpdateManyResult!
+    updateOnePost: NexusGenRootTypes['Post'] // Post!
     updateOneUser: NexusGenRootTypes['User'] // User!
   }
   Post: {
@@ -613,6 +625,11 @@ export interface NexusGenArgTypes {
       // args
       data: NexusGenInputs['UserUpdateInput'] // UserUpdateInput!
       where: NexusGenInputs['UserWhereInput'] // UserWhereInput!
+    }
+    updateOnePost: {
+      // args
+      data: NexusGenInputs['PostUpdateInput'] // PostUpdateInput!
+      where: NexusGenInputs['PostWhereInput'] // PostWhereInput!
     }
     updateOneUser: {
       // args
@@ -763,6 +780,7 @@ export type NexusGenInputNames =
   | 'PostCreateWithoutCategoriesInput'
   | 'PostCreateWithoutUserInput'
   | 'PostCreateWithoutUserLikesPostsInput'
+  | 'PostUpdateInput'
   | 'PostWhereInput'
   | 'UserCreateInput'
   | 'UserCreateWithoutFolloweesInput'

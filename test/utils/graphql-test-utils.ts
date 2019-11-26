@@ -88,6 +88,7 @@ export function createTestSchemaSingleton() {
             t.crud.createOnePost()
             t.crud.createOneCategory()
             t.crud.updateOneUser()
+            t.crud.updateOnePost()
             t.crud.updateManyUsers()
           },
         }),

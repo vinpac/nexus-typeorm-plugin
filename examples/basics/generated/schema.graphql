@@ -54,7 +54,9 @@ scalar DateTime
 
 type Mutation {
   createOnePost(data: PostCreateInput!): Post!
-  createOneUser(age: Int!, name: String!): User!
+  createOneUser(data: UserCreateInput!): User!
+  updateManyUsers(data: UserUpdateInput!, where: UserWhereInput!): UpdateManyResult!
+  updateOneUser(data: UserUpdateInput!, where: UserWhereInput!): User!
 }
 
 type Post {
@@ -110,6 +112,10 @@ type Query {
   posts(first: Int, last: Int, orderBy: [PostOrderByInput!], skip: Int, where: PostWhereInput): [Post!]!
 }
 
+type UpdateManyResult {
+  affectedRows: Int!
+}
+
 type User {
   age: Int!
   id: ID!
@@ -135,6 +141,11 @@ enum UserOrderByInput {
   id_DESC
   name_ASC
   name_DESC
+}
+
+input UserUpdateInput {
+  age: Int
+  name: String
 }
 
 input UserWhereInput {
