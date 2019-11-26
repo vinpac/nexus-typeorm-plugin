@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/vinpac/nexus-typeorm-plugin/tree/master.svg?style=svg)](https://circleci.com/gh/vinpac/nexus-typeorm-plugin/tree/master)
+
 # nexus-typeorm-plugin
 
 Create a [GraphQL.js](https://github.com/graphql/graphql-js) schema from your [TypeORM](https://github.com/typeorm/typeorm) Entities.
