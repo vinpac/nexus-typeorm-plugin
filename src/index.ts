@@ -9,5 +9,7 @@ export {
 export {
   CRUDPropertyFindManyFieldPublisher,
   CRUDPropertyCreateOneFieldPublisher,
+  CRUDPropertyUpdateOneFieldPublisher,
+  CRUDPropertyUpdateManyFieldPublisher,
   CRUDPropertyFindOneFieldPublisher,
 } from './nexus/crud-output-property'

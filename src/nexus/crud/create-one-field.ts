@@ -1,4 +1,3 @@
-import { namingStrategy } from '../naming-strategy'
 import { getEntityTypeName } from '../../util'
 import { EntityTypeDefManager } from '../../entity-type-def-manager'
 import * as Nexus from 'nexus'
@@ -50,7 +49,7 @@ async function createEntityFromInputObject(
     const relationInput: RelationInput = inputObject[relation.propertyName]
 
     if (relationInput) {
-      const relatedEntity = manager.entities[relation.inverseEntityMetadata.name]
+      const relatedEntity = manager.getEntity(relation.inverseEntityMetadata.name)
       if (relationInput.connect) {
         const where = translateWhereClause('node', relationInput.connect)
         waitBeforeSaving.push(
@@ -130,7 +129,7 @@ export function defineCreateOneField(
   entity: any,
   factoryConfig: OutputPropertyFactoryConfig<any>,
   manager: EntityTypeDefManager,
-  givenFieldName?: string,
+  fieldName: string,
   config: CreateOneFieldPublisherConfig<any> = {},
 ) {
   const { typeDef: t, builder } = factoryConfig
@@ -158,7 +157,7 @@ export function defineCreateOneField(
       )
     })
   }
-  t.field(givenFieldName || namingStrategy.createInputType(typeName), {
+  t.field(fieldName, {
     args,
     type: typeName,
     nullable: config.nullable,

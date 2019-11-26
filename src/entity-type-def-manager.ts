@@ -31,24 +31,6 @@ export interface ResolversMap {
   [typeName: string]: TypeResolversMap | GraphQLType
 }
 
-interface TypesDictionary {
-  enum: {
-    [entityName: string]: {
-      [propertyName: string]: Nexus.AllOutputTypes
-    }
-  }
-
-  whereInput: { [entityName: string]: Nexus.core.AllInputTypes }
-  orderByInput: { [entityName: string]: Nexus.core.AllInputTypes }
-  createOneInput: { [entityName: string]: Nexus.core.AllInputTypes }
-  relationInputType: {
-    [sourceEntityName: string]: { [relatedEntityName: string]: Nexus.core.AllInputTypes }
-  }
-  createWithoutSourceInput: {
-    [entityName: string]: { [columnEntityName: string]: Nexus.core.AllInputTypes }
-  }
-}
-
 interface RequiredGetOrCreateTypeConfig {
   entity: Function
   nexusBuilder: NexusSchemaBuilder
@@ -77,21 +59,14 @@ export class EntityTypeDefManager {
     return new EntityTypeDefManager(entitiesMap, entitiesMetadataMap)
   }
 
-  private typesDictionary: TypesDictionary
-  public entities: EntitiesMap
-  public entitiesMetadata: EntitiesMetadataMap
+  private typesDictionary: string[]
 
-  constructor(entities: EntitiesMap, entitiesMetadata: EntitiesMetadataMap) {
-    this.entities = entities
-    this.entitiesMetadata = entitiesMetadata
-    this.typesDictionary = {
-      enum: {},
-      whereInput: {},
-      orderByInput: {},
-      createOneInput: {},
-      relationInputType: {},
-      createWithoutSourceInput: {},
-    }
+  constructor(public entities: EntitiesMap, public entitiesMetadata: EntitiesMetadataMap) {
+    this.typesDictionary = []
+  }
+
+  getEntity(name: string) {
+    return this.entities[name]
   }
 
   entityColumnToTypeName(
@@ -121,8 +96,8 @@ export class EntityTypeDefManager {
     const entityTypeName = getEntityTypeName(entity)
     const typeName = namingStrategy.createInputType(entityTypeName) as Nexus.core.AllInputTypes
 
-    if (this.typesDictionary.createOneInput[entityTypeName]) {
-      return this.typesDictionary.createOneInput[entityTypeName]
+    if (this.typesDictionary.includes(typeName)) {
+      return typeName
     }
 
     const entityMetadata = this.getEntityMetadata(entity)
@@ -161,7 +136,7 @@ export class EntityTypeDefManager {
       }),
     )
 
-    this.typesDictionary.createOneInput[entityTypeName] = typeName
+    this.typesDictionary.push(typeName)
     return typeName
   }
 
@@ -173,17 +148,12 @@ export class EntityTypeDefManager {
     const isRelationAnArray = relation.isOneToMany || relation.isManyToMany
     const entityTypeName = getEntityTypeName(entity)
     const relatedEntity = this.entities[relation.inverseEntityMetadata.name]
-    const relatedEntityTypeName = getEntityTypeName(relatedEntity)
     const typeName = namingStrategy[
       isRelationAnArray ? 'createManyRelationInputType' : 'createOneRelationInputType'
     ](entityTypeName, relation.propertyName) as Nexus.core.AllInputTypes
 
-    const { relationInputType } = this.typesDictionary
-    if (
-      relationInputType[entityTypeName] &&
-      relationInputType[entityTypeName][relatedEntityTypeName]
-    ) {
-      return relationInputType[entityTypeName][relatedEntityTypeName]
+    if (this.typesDictionary.includes(typeName)) {
+      return typeName
     }
 
     nexusBuilder.addType(
@@ -206,14 +176,7 @@ export class EntityTypeDefManager {
         },
       }),
     )
-    this.typesDictionary.relationInputType = {
-      ...relationInputType,
-      [entityTypeName]: {
-        ...relationInputType[entityTypeName],
-        [relatedEntityTypeName]: typeName,
-      },
-    }
-
+    this.typesDictionary.push(typeName)
     return typeName
   }
 
@@ -224,18 +187,15 @@ export class EntityTypeDefManager {
   ): Nexus.core.AllInputTypes {
     const entityMetadata = this.getEntityMetadata(entity)
     const entityTypeName = getEntityTypeName(entity)
-    const { createWithoutSourceInput: createWithoutRelationInput } = this.typesDictionary
     const { propertyName: excludedPropertyName } = excludedRelation
-    if (
-      createWithoutRelationInput[entityTypeName] &&
-      createWithoutRelationInput[entityTypeName][excludedPropertyName]
-    ) {
-      return createWithoutRelationInput[entityTypeName][excludedPropertyName]
-    }
     const typeName = namingStrategy.entityWithoutRelationInputType(
       entityTypeName,
       excludedPropertyName,
     ) as Nexus.core.AllInputTypes
+
+    if (this.typesDictionary.includes(typeName)) {
+      return typeName
+    }
 
     const foreignKeys = excludedRelation.foreignKeys
     nexusBuilder.addType(
@@ -279,10 +239,58 @@ export class EntityTypeDefManager {
       }),
     )
 
-    this.typesDictionary.createWithoutSourceInput[entityTypeName] = {
-      ...this.typesDictionary.createWithoutSourceInput[entityTypeName],
-      [excludedPropertyName]: typeName,
+    this.typesDictionary.push(typeName)
+    return typeName
+  }
+
+  useUpdateInputType = (entity: Function, nexusBuilder: NexusSchemaBuilder) => {
+    const entityTypeName = getEntityTypeName(entity)
+    const typeName = namingStrategy.updateInputType(entityTypeName) as Nexus.core.AllInputTypes
+
+    if (this.typesDictionary.includes(typeName)) {
+      return typeName
     }
+
+    const entityMetadata = this.getEntityMetadata(entity)
+    nexusBuilder.addType(
+      inputObjectType({
+        name: typeName,
+        definition: t => {
+          entityMetadata.columns.forEach(column => {
+            if (column.isGenerated) {
+              return
+            }
+
+            t.field(column.propertyName, {
+              type: this.entityColumnToTypeName(
+                entity,
+                column,
+                nexusBuilder,
+              ) as Nexus.core.AllInputTypes,
+              required: false,
+            })
+          })
+        },
+      }),
+    )
+
+    this.typesDictionary.push(typeName)
+    return typeName
+  }
+
+  useUpdateManyType(nexusBuilder: NexusSchemaBuilder): 'UpdateManyResult' {
+    const typeName = 'UpdateManyResult'
+    if (this.typesDictionary.includes(typeName)) {
+      return typeName
+    }
+
+    nexusBuilder.addType(
+      Nexus.objectType({
+        name: typeName,
+        definition: t => [t.int('affectedRows')],
+      }),
+    )
+    this.typesDictionary.push(typeName)
     return typeName
   }
 
@@ -297,11 +305,8 @@ export class EntityTypeDefManager {
       column.propertyName,
     ) as Nexus.AllOutputTypes
 
-    if (
-      this.typesDictionary.enum[entityTypeName] &&
-      this.typesDictionary.enum[entityTypeName][column.propertyName]
-    ) {
-      return this.typesDictionary.enum[entityTypeName][column.propertyName]
+    if (this.typesDictionary.includes(typeName)) {
+      return typeName
     }
 
     nexusBuilder.addType(
@@ -311,22 +316,20 @@ export class EntityTypeDefManager {
       }),
     )
 
-    this.typesDictionary.enum[entityTypeName] = {
-      ...this.typesDictionary.enum[entityTypeName],
-      [column.propertyName]: typeName,
-    }
+    this.typesDictionary.push(typeName)
     return typeName
   }
 
   useWhereInputType(entity: Function, nexusBuilder: NexusSchemaBuilder): Nexus.core.AllInputTypes {
     const entityTypeName = getEntityTypeName(entity)
+    const typeName = namingStrategy.whereInputType(entityTypeName) as Nexus.core.AllInputTypes
 
-    if (this.typesDictionary.whereInput[entityTypeName]) {
-      return this.typesDictionary.whereInput[entityTypeName]
+    if (this.typesDictionary.includes(typeName)) {
+      return typeName
     }
 
     const { columns: entityColumns } = getConnection().getMetadata(entity)
-    const typeName = namingStrategy.whereInputType(entityTypeName) as Nexus.core.AllInputTypes
+
     nexusBuilder.addType(
       inputObjectType({
         name: typeName,
@@ -374,7 +377,7 @@ export class EntityTypeDefManager {
       }),
     )
 
-    this.typesDictionary.whereInput[entityTypeName] = typeName
+    this.typesDictionary.push(typeName)
     return typeName
   }
 
@@ -383,13 +386,13 @@ export class EntityTypeDefManager {
     nexusBuilder: NexusSchemaBuilder,
   ): Nexus.core.AllInputTypes {
     const entityTypeName = getEntityTypeName(entity)
+    const typeName = namingStrategy.orderByInputType(entityTypeName) as Nexus.core.AllInputTypes
 
-    if (this.typesDictionary.orderByInput[entityTypeName]) {
-      return this.typesDictionary.orderByInput[entityTypeName]
+    if (this.typesDictionary.includes(typeName)) {
+      return typeName
     }
 
     const { columns: entityColumns } = getConnection().getMetadata(entity)
-    const typeName = namingStrategy.orderByInputType(entityTypeName) as Nexus.core.AllInputTypes
     const members: string[] = []
     entityColumns.forEach(column => {
       orderTypes.forEach(orderType => {
@@ -403,7 +406,7 @@ export class EntityTypeDefManager {
       }),
     )
 
-    this.typesDictionary.orderByInput[entityTypeName] = typeName
+    this.typesDictionary.push(typeName)
     return typeName
   }
 

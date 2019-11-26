@@ -9,6 +9,10 @@ import { ArgsRecord } from 'nexus/dist/core'
 import { MapArgsFn } from '../args'
 import { FindManyFieldPublisherConfig } from './crud/find-many-field'
 import { CreateOneFieldPublisherConfig } from './crud/create-one-field'
+import {
+  UpdateOneFieldPublisherConfig,
+  UpdateManyFieldPublisherConfig,
+} from './crud/update-one-field'
 
 export interface CRUDPropertyFieldPublisherConfig<TType> {
   type?: Nexus.AllOutputTypes
@@ -25,6 +29,14 @@ export interface CRUDPropertyFindManyFieldPublisher<TEntity> {
 }
 export interface CRUDPropertyCreateOneFieldPublisher<TEntity> {
   (fieldName?: string, config?: CreateOneFieldPublisherConfig<TEntity>): void
+}
+
+export interface CRUDPropertyUpdateOneFieldPublisher<TEntity> {
+  (fieldName?: string, config?: UpdateOneFieldPublisherConfig<TEntity>): void
+}
+
+export interface CRUDPropertyUpdateManyFieldPublisher<TEntity> {
+  (fieldName?: string, config?: UpdateManyFieldPublisherConfig<TEntity>): void
 }
 
 type CRUDOutputPropertyAnyMethod = CRUDPropertyFindOneFieldPublisher<any>
@@ -73,6 +85,28 @@ export function buildCRUDOutputProperty(manager: EntityTypeDefManager) {
           ;(t as any).crudField(fieldName, {
             method: 'createOne',
             type: entityTypeName,
+            ...config,
+            entity: entityTypeName,
+          })
+
+          return crudOutputProperty
+        }
+
+        const updateOneFieldName = namingStrategy.updateOneFieldName(entityTypeName)
+        crudOutputProperty[updateOneFieldName] = (fieldName = updateOneFieldName, config) => {
+          ;(t as any).crudField(fieldName, {
+            method: 'updateOne',
+            ...config,
+            entity: entityTypeName,
+          })
+
+          return crudOutputProperty
+        }
+
+        const updateManyFieldName = namingStrategy.updateManyFieldName(entityTypeName)
+        crudOutputProperty[updateManyFieldName] = (fieldName = updateManyFieldName, config) => {
+          ;(t as any).crudField(fieldName, {
+            method: 'updateMany',
             ...config,
             entity: entityTypeName,
           })

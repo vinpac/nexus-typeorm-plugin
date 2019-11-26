@@ -317,6 +317,13 @@ export interface NexusGenInputs {
     userId_lt?: number | null // Int
     userId_lte?: number | null // Int
   }
+  UserUpdateInput: {
+    // input type
+    age?: number | null // Int
+    email?: number | null // Int
+    name?: string | null // String
+    type?: NexusGenEnums['UserTypeEnum'] | null // UserTypeEnum
+  }
   UserWhereInput: {
     // input type
     age?: number | null // Int
@@ -409,6 +416,10 @@ export interface NexusGenRootTypes {
     viewCount?: number | null // Int
   }
   Query: {}
+  UpdateManyResult: {
+    // root type
+    affectedRows: number // Int!
+  }
   User: {
     // root type
     age?: number | null // Int
@@ -476,6 +487,7 @@ export interface NexusGenAllTypes extends NexusGenRootTypes {
   UserLikesPostWhereInput: NexusGenInputs['UserLikesPostWhereInput']
   UserProfileCreateWithoutUserInput: NexusGenInputs['UserProfileCreateWithoutUserInput']
   UserProfileWhereInput: NexusGenInputs['UserProfileWhereInput']
+  UserUpdateInput: NexusGenInputs['UserUpdateInput']
   UserWhereInput: NexusGenInputs['UserWhereInput']
   CategoryOrderByInput: NexusGenEnums['CategoryOrderByInput']
   PostOrderByInput: NexusGenEnums['PostOrderByInput']
@@ -503,6 +515,8 @@ export interface NexusGenFieldTypes {
     createOneCategory: NexusGenRootTypes['Category'] // Category!
     createOnePost: NexusGenRootTypes['Post'] // Post!
     createOneUser: NexusGenRootTypes['User'] // User!
+    updateManyUsers: NexusGenRootTypes['UpdateManyResult'] // UpdateManyResult!
+    updateOneUser: NexusGenRootTypes['User'] // User!
   }
   Post: {
     // field return type
@@ -527,6 +541,10 @@ export interface NexusGenFieldTypes {
     user: NexusGenRootTypes['User'] // User!
     users: NexusGenRootTypes['User'][] // [User!]!
     usersByName: NexusGenRootTypes['User'][] // [User!]!
+  }
+  UpdateManyResult: {
+    // field return type
+    affectedRows: number // Int!
   }
   User: {
     // field return type
@@ -590,6 +608,16 @@ export interface NexusGenArgTypes {
     createOneUser: {
       // args
       data: NexusGenInputs['UserCreateInput'] // UserCreateInput!
+    }
+    updateManyUsers: {
+      // args
+      data: NexusGenInputs['UserUpdateInput'] // UserUpdateInput!
+      where: NexusGenInputs['UserWhereInput'] // UserWhereInput!
+    }
+    updateOneUser: {
+      // args
+      data: NexusGenInputs['UserUpdateInput'] // UserUpdateInput!
+      where: NexusGenInputs['UserWhereInput'] // UserWhereInput!
     }
   }
   Post: {
@@ -707,6 +735,7 @@ export type NexusGenObjectNames =
   | 'Mutation'
   | 'Post'
   | 'Query'
+  | 'UpdateManyResult'
   | 'User'
   | 'UserFollows'
   | 'UserLikesPost'
@@ -745,6 +774,7 @@ export type NexusGenInputNames =
   | 'UserLikesPostWhereInput'
   | 'UserProfileCreateWithoutUserInput'
   | 'UserProfileWhereInput'
+  | 'UserUpdateInput'
   | 'UserWhereInput'
 
 export type NexusGenEnumNames =

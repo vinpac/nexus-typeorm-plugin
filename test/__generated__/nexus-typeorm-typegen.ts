@@ -5,6 +5,8 @@ import {
   CRUDPropertyFindOneFieldPublisher,
   CRUDPropertyFindManyFieldPublisher,
   CRUDPropertyCreateOneFieldPublisher,
+  CRUDPropertyUpdateOneFieldPublisher,
+  CRUDPropertyUpdateManyFieldPublisher,
 } from '../../src'
 
 declare global {
@@ -71,12 +73,32 @@ declare global {
       createOneUserLikesPost: CRUDPropertyCreateOneFieldPublisher<
         NexusTypeORMEntity<'UserLikesPost'>
       >
+      updateOneUserLikesPost: CRUDPropertyUpdateOneFieldPublisher<
+        NexusTypeORMEntity<'UserLikesPost'>
+      >
+      updateManyUserLikesPosts: CRUDPropertyUpdateManyFieldPublisher<
+        NexusTypeORMEntity<'UserLikesPost'>
+      >
       createOneCategory: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      updateOneCategory: CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'Category'>>
+      updateManyCategories: CRUDPropertyUpdateManyFieldPublisher<NexusTypeORMEntity<'Category'>>
       createOnePost: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Post'>>
+      updateOnePost: CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'Post'>>
+      updateManyPosts: CRUDPropertyUpdateManyFieldPublisher<NexusTypeORMEntity<'Post'>>
       createOneEmail: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'Email'>>
+      updateOneEmail: CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'Email'>>
+      updateManyEmails: CRUDPropertyUpdateManyFieldPublisher<NexusTypeORMEntity<'Email'>>
       createOneUserFollows: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
+      updateOneUserFollows: CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
+      updateManyUserFollows: CRUDPropertyUpdateManyFieldPublisher<NexusTypeORMEntity<'UserFollows'>>
       createOneUserProfile: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+      updateOneUserProfile: CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'UserProfile'>>
+      updateManyUserProfiles: CRUDPropertyUpdateManyFieldPublisher<
+        NexusTypeORMEntity<'UserProfile'>
+      >
       createOneUser: CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      updateOneUser: CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'User'>>
+      updateManyUsers: CRUDPropertyUpdateManyFieldPublisher<NexusTypeORMEntity<'User'>>
     }
     Query: {
       userLikesPost: CRUDPropertyFindOneFieldPublisher<NexusTypeORMEntity<'UserLikesPost'>>

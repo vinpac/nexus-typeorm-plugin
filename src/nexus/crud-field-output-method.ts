@@ -2,6 +2,8 @@ import { dynamicOutputMethod } from 'nexus'
 import { EntityTypeDefManager } from '../entity-type-def-manager'
 import { QueryBuilderConfig } from '../query-builder'
 import { CreateOneFieldPublisherConfig, defineCreateOneField } from './crud/create-one-field'
+import { UpdateOneFieldPublisherConfig, defineUpdateOneField } from './crud/update-one-field'
+import { UpdateManyFieldPublisherConfig, defineUpdateManyField } from './crud/update-many-field'
 import { FindOneFieldPublisherConfig, defineFindOneField } from './crud/find-one-field'
 import { FindManyFieldPublisherConfig, defineFindManyField } from './crud/find-many-field'
 import { GraphQLResolveInfo } from 'graphql'
@@ -67,10 +69,23 @@ export interface CRUDFieldCreateOneOutputMethodConfig<TType>
   method: 'createOne'
 }
 
+export interface CRUDFieldUpdateOneOutputMethodConfig<TType>
+  extends UpdateOneFieldPublisherConfig<TType> {
+  entity: string
+  method: 'updateOne'
+}
+export interface CRUDFieldUpdateManyOutputMethodConfig<TType>
+  extends UpdateManyFieldPublisherConfig<TType> {
+  entity: string
+  method: 'updateMany'
+}
+
 export type CRUDOutputMethodConfig<TType> =
   | CRUDFieldFindOneOutputMethodConfig<TType>
   | CRUDFieldFindManyOutputMethodConfig<TType>
   | CRUDFieldCreateOneOutputMethodConfig<TType>
+  | CRUDFieldUpdateOneOutputMethodConfig<TType>
+  | CRUDFieldUpdateManyOutputMethodConfig<TType>
 
 export function buildCRUDOutputMethod(manager: EntityTypeDefManager) {
   const cache = {}
@@ -91,6 +106,10 @@ export function buildCRUDOutputMethod(manager: EntityTypeDefManager) {
         defineFindOneField(entity, factoryConfig, manager, fieldName, config)
       } else if (config.method === 'createOne') {
         defineCreateOneField(entity, factoryConfig, manager, fieldName, config)
+      } else if (config.method === 'updateOne') {
+        defineUpdateOneField(entity, factoryConfig, manager, fieldName, config)
+      } else if (config.method === 'updateMany') {
+        defineUpdateManyField(entity, factoryConfig, manager, fieldName, config)
       }
     },
   })

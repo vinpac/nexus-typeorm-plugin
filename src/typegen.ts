@@ -136,6 +136,12 @@ export function writeTypeGen(
     crudPropertyInterfaces.Mutation[
       namingStrategy.createOneFieldName(entityTypeName)
     ] = `CRUDPropertyCreateOneFieldPublisher<NexusTypeORMEntity<'${entityTypeName}'>>`
+    crudPropertyInterfaces.Mutation[
+      namingStrategy.updateOneFieldName(entityTypeName)
+    ] = `CRUDPropertyUpdateOneFieldPublisher<NexusTypeORMEntity<'${entityTypeName}'>>`
+    crudPropertyInterfaces.Mutation[
+      namingStrategy.updateManyFieldName(entityTypeName)
+    ] = `CRUDPropertyUpdateManyFieldPublisher<NexusTypeORMEntity<'${entityTypeName}'>>`
   })
 
   const convertSubInterfaceMapToString = (
@@ -163,7 +169,9 @@ import {
   EntityPropertyFindManyFieldPublisher,
   CRUDPropertyFindOneFieldPublisher,
   CRUDPropertyFindManyFieldPublisher,
-  CRUDPropertyCreateOneFieldPublisher
+  CRUDPropertyCreateOneFieldPublisher,
+  CRUDPropertyUpdateOneFieldPublisher,
+  CRUDPropertyUpdateManyFieldPublisher
 } from 'nexus-typeorm-plugin'
 
 declare global {

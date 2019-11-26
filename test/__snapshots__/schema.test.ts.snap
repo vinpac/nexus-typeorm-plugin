@@ -130,6 +130,8 @@ type Mutation {
   createOneCategory(data: CategoryCreateInput!): Category!
   createOnePost(data: PostCreateInput!): Post!
   createOneUser(data: UserCreateInput!): User!
+  updateManyUsers(data: UserUpdateInput!, where: UserWhereInput!): UpdateManyResult!
+  updateOneUser(data: UserUpdateInput!, where: UserWhereInput!): User!
 }
 
 type Post {
@@ -257,6 +259,10 @@ type Query {
   user(orderBy: [UserOrderByInput!], where: UserWhereInput): User!
   users(first: Int, last: Int, orderBy: [UserOrderByInput!], skip: Int, where: UserWhereInput): [User!]!
   usersByName(first: Int, last: Int, name: String!, orderBy: [UserOrderByInput!], skip: Int, where: UserWhereInput): [User!]!
+}
+
+type UpdateManyResult {
+  affectedRows: Int!
 }
 
 type User {
@@ -441,6 +447,13 @@ input UserProfileWhereInput {
 enum UserTypeEnum {
   ADMIN
   NORMAL
+}
+
+input UserUpdateInput {
+  age: Int
+  email: Int
+  name: String
+  type: UserTypeEnum
 }
 
 input UserWhereInput {

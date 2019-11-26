@@ -87,6 +87,8 @@ export function createTestSchemaSingleton() {
             t.crud.createOneUser()
             t.crud.createOnePost()
             t.crud.createOneCategory()
+            t.crud.updateOneUser()
+            t.crud.updateManyUsers()
           },
         }),
         objectType({
