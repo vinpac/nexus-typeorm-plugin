@@ -10,6 +10,13 @@ import { buildEntityFieldOutputMethod } from './nexus/entity-field-output-method
 import { buildCRUDOutputProperty } from './nexus/crud-output-property'
 import { buildCRUDOutputMethod } from './nexus/crud-field-output-method'
 import { writeTypeGen } from './typegen'
+import {
+  singleOperandOperations,
+  numberOperandOperations,
+  multipleOperandOperations,
+} from './args/arg-where'
+
+import { inputObjectType } from 'nexus/dist/core'
 
 export interface NexusTypeORMPluginConfig {
   outputs:
@@ -33,6 +40,24 @@ export function nexusTypeORMPlugin(
     writeTypeGen(config.outputs.typegen, manager, config.outputs.format)
   }
 
+  const StringFilterInput = inputObjectType({
+    name: 'StringFilterInput',
+    definition(t) {
+      t.string('equals')
+      singleOperandOperations.map(operator => t.string(operator))
+      multipleOperandOperations.map(operator => t.list.string(operator))
+    },
+  })
+
+  const IntFilterInput = inputObjectType({
+    name: 'IntFilterInput',
+    definition(t) {
+      t.int('equals')
+      numberOperandOperations.map(operator => t.int(operator))
+      multipleOperandOperations.map(operator => t.list.int(operator))
+    },
+  })
+
   return [
     buildEntityFieldOutputMethod(manager),
     buildCRUDOutputMethod(manager),
@@ -40,5 +65,8 @@ export function nexusTypeORMPlugin(
     buildEntityFieldsOutputMethod(manager),
     buildCRUDOutputProperty(manager),
     GraphQLDateTime,
+
+    IntFilterInput,
+    StringFilterInput,
   ]
 }

@@ -3,11 +3,6 @@ import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 import { getConnection, EntityMetadata } from 'typeorm'
 import { SchemaBuilder as NexusSchemaBuilder, inputObjectType, enumType } from 'nexus/dist/core'
 import { typeORMColumnTypeToGraphQLType } from './type'
-import {
-  singleOperandOperations,
-  numberOperandOperations,
-  multipleOperandOperations,
-} from './args/arg-where'
 import { getDatabaseObjectMetadata } from './decorators'
 import { namingStrategy } from './nexus/naming-strategy'
 import { getEntityTypeName } from './util'
@@ -39,24 +34,6 @@ interface RequiredGetOrCreateTypeConfig {
 interface BuildCreateOneInputTypeConfig extends RequiredGetOrCreateTypeConfig {
   kind: 'CreateOneInput'
 }
-
-const whereStringInputType = inputObjectType({
-  name: 'whereStringInputType',
-  definition(t) {
-    t.string('eq')
-    singleOperandOperations.map(operator => t.string(operator))
-    multipleOperandOperations.map(operator => t.list.string(operator))
-  },
-})
-
-const whereIntInputType = inputObjectType({
-  name: 'whereIntInputType',
-  definition(t) {
-    t.int('eq')
-    numberOperandOperations.map(operator => t.int(operator))
-    multipleOperandOperations.map(operator => t.list.int(operator))
-  },
-})
 
 export type GetOrCreateTypeConfig = BuildCreateOneInputTypeConfig
 
@@ -366,16 +343,12 @@ export class EntityTypeDefManager {
               nexusBuilder,
             ) as Nexus.core.AllInputTypes
             if (columnTypeName === 'String') {
-              singleOperandOperations.forEach(singleOperandOperation => {
-                t.field(column.propertyName, {
-                  type: whereStringInputType!,
-                })
+              t.field(column.propertyName, {
+                type: 'StringFilterInput',
               })
             } else if (columnTypeName === 'Int' || columnTypeName === 'Float') {
-              numberOperandOperations.forEach(numberOperandOperation => {
-                t.field(column.propertyName, {
-                  type: whereIntInputType!,
-                })
+              t.field(column.propertyName, {
+                type: 'IntFilterInput',
               })
             }
           })

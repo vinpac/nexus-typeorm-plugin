@@ -55,7 +55,7 @@ export function translateWhereClause(alias: string, where: any, idx = 0): Transl
       return
     }
 
-    for (let operation in where[key]) {
+    for (const operation in where[key]) {
       idx += 1
 
       const value = where[key][operation]
