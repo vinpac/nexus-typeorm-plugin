@@ -55,35 +55,39 @@ export function translateWhereClause(alias: string, where: any, idx = 0): Transl
       return
     }
 
-    idx += 1
-    const value = where[key]
-    const [fieldName, operation] = key.split('_')
-    const paramName = `${fieldName}${idx}`
-    translated.params[paramName] = value
+    for (let operation in where[key]) {
+      idx += 1
 
-    if (translated.expression) {
-      translated.expression += ' AND '
+      const value = where[key][operation]
+      const fieldName = key
+
+      const paramName = `${fieldName}${idx}`
+      translated.params[paramName] = value
+
+      if (translated.expression) {
+        translated.expression += ' AND '
+      }
+      const columnSelection = `${escape(alias)}.${escape(fieldName)}`
+
+      if (operation === 'contains') {
+        translated.params[paramName] = `%${translated.params[paramName]}%`
+        translated.expression += `${columnSelection} LIKE :${paramName}`
+        return
+      }
+
+      const operator = numberOperandOperationToOperator(operation)
+      if (operator) {
+        translated.expression += `${columnSelection} ${operator} :${paramName}`
+        return
+      }
+
+      if (operation === 'in') {
+        translated.expression += `${columnSelection} IN (:...${paramName})`
+        return
+      }
+
+      translated.expression += `${columnSelection} = :${paramName}`
     }
-    const columnSelection = `${escape(alias)}.${escape(fieldName)}`
-
-    if (operation === 'contains') {
-      translated.params[paramName] = `%${translated.params[paramName]}%`
-      translated.expression += `${columnSelection} LIKE :${paramName}`
-      return
-    }
-
-    const operator = numberOperandOperationToOperator(operation)
-    if (operator) {
-      translated.expression += `${columnSelection} ${operator} :${paramName}`
-      return
-    }
-
-    if (operation === 'in') {
-      translated.expression += `${columnSelection} IN (:...${paramName})`
-      return
-    }
-
-    translated.expression += `${columnSelection} = :${paramName}`
   })
 
   return translated

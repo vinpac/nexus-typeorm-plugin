@@ -40,6 +40,24 @@ interface BuildCreateOneInputTypeConfig extends RequiredGetOrCreateTypeConfig {
   kind: 'CreateOneInput'
 }
 
+const whereStringInputType = inputObjectType({
+  name: 'whereStringInputType',
+  definition(t) {
+    t.string('eq')
+    singleOperandOperations.map(operator => t.string(operator))
+    multipleOperandOperations.map(operator => t.list.string(operator))
+  },
+})
+
+const whereIntInputType = inputObjectType({
+  name: 'whereIntInputType',
+  definition(t) {
+    t.int('eq')
+    numberOperandOperations.map(operator => t.int(operator))
+    multipleOperandOperations.map(operator => t.list.int(operator))
+  },
+})
+
 export type GetOrCreateTypeConfig = BuildCreateOneInputTypeConfig
 
 export class EntityTypeDefManager {
@@ -349,29 +367,17 @@ export class EntityTypeDefManager {
             ) as Nexus.core.AllInputTypes
             if (columnTypeName === 'String') {
               singleOperandOperations.forEach(singleOperandOperation => {
-                t.field(`${column.propertyName}_${singleOperandOperation}`, {
-                  type: columnTypeName!,
+                t.field(column.propertyName, {
+                  type: whereStringInputType!,
                 })
               })
             } else if (columnTypeName === 'Int' || columnTypeName === 'Float') {
               numberOperandOperations.forEach(numberOperandOperation => {
-                t.field(`${column.propertyName}_${numberOperandOperation}`, {
-                  type: columnTypeName!,
+                t.field(column.propertyName, {
+                  type: whereIntInputType!,
                 })
               })
             }
-
-            // Define ${arg}_${operand}: Value[]
-            multipleOperandOperations.forEach(multipleOperandOperation => {
-              t.field(`${column.propertyName}_${multipleOperandOperation}`, {
-                type: columnTypeName!,
-                list: true,
-              })
-            })
-
-            t.field(column.propertyName, {
-              type: columnTypeName,
-            })
           })
         },
       }),
