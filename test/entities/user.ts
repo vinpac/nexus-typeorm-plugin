@@ -1,4 +1,4 @@
-import { Column, OneToMany, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm'
+import { Column, OneToMany, PrimaryGeneratedColumn, OneToOne, JoinColumn, Index } from 'typeorm'
 
 import { NexusEntity } from 'src/index'
 
@@ -19,6 +19,7 @@ export class User {
   public id: number
 
   @Column()
+  @Index({ unique: true })
   public name: string
 
   @Column({ nullable: true })

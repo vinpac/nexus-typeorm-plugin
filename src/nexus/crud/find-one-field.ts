@@ -9,10 +9,11 @@ import { EntityTypeDefManager } from '../../entity-type-def-manager'
 import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { GraphQLResolveInfo } from 'graphql'
 import { OverrideQueryBuilderConfigFn, CRUDFieldConfigResolveFn } from '../crud-field-output-method'
+import { ArgOrderType } from '../../args/arg-order-by'
 
 interface FindOneResolverArgs {
   where?: ArgWhereType
-  orderBy?: string[]
+  orderBy?: ArgOrderType
 }
 
 export interface FindOneFieldNextFnExtraContext {
@@ -59,11 +60,7 @@ export function defineFindOneField(
   }
 
   let args: ArgsRecord = {
-    where: arg({ type: manager.useWhereInputType(entity, builder) }),
-    orderBy: arg({
-      type: manager.useOrderByInputType(entity, builder),
-      list: true,
-    }),
+    where: arg({ type: manager.useWhereUniqueInputType(entity, builder) }),
     ...config.args,
   }
   if (config && config.args) {

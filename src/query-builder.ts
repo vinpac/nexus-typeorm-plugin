@@ -1,6 +1,6 @@
 import { TranslatedWhere, ArgWhereType, translateWhereClause } from './args/arg-where'
 import { getConnection, SelectQueryBuilder } from 'typeorm'
-import { OrderInfo, ArgOrder, orderNamesToOrderInfos } from './args/arg-order-by'
+import { OrderInfo, translateOrderClause, ArgOrderType } from './args/arg-order-by'
 
 export interface EntityJoin {
   type: 'inner' | 'left'
@@ -83,7 +83,7 @@ function populateQueryBuilder<Model>(
 interface CreateQueryBuilderConfigOptions {
   alias?: string
   where?: ArgWhereType
-  orderBy?: ArgOrder
+  orderBy?: ArgOrderType
   joins?: EntityJoin[]
   first?: number
   last?: number
@@ -98,7 +98,7 @@ export function createQueryBuilderConfig(
     entity,
     alias,
     where: options.where ? translateWhereClause(alias, options.where) : undefined,
-    orders: options.orderBy ? orderNamesToOrderInfos(options.orderBy) : undefined,
+    orders: options.orderBy ? translateOrderClause(options.orderBy) : undefined,
     joins: options.joins || [],
     first: options.first,
     last: options.last,

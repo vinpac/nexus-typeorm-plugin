@@ -46,7 +46,7 @@ describe('CRUD', () => {
 
     test('one to one', async () => {
       const result = await query(`{
-        user (where: { name: "Gina" }) {
+        user (where: { name:  "Gina"}) {
           name
           profile {
             slug
@@ -67,7 +67,7 @@ describe('CRUD', () => {
 
     test('one to many', async () => {
       const result = await query(`{
-        user (where: { name: "Gina" }) {
+        user (where: { name:  "Gina" }) {
           name
           posts {
             title
@@ -90,7 +90,7 @@ describe('CRUD', () => {
 
     test('one to many with filters', async () => {
       const result = await query(`{
-        user (where: { name: "Gina" }) {
+        user (where: { name:"Gina" }) {
           name
           posts (first: 10) {
             title
@@ -113,7 +113,7 @@ describe('CRUD', () => {
 
     test('many to one', async () => {
       const result = await query(`{
-        post (where: { title: "post 2" }) {
+        post (where: { title : "post 2" }) {
           title
           user {
             name
@@ -174,13 +174,13 @@ describe('CRUD', () => {
       const result = await query(`{
         post(where: { title: "post 2" }) {
           title
-          categories (orderBy: name_ASC) {
+          categories (orderBy: { name : ASC}) {
             name
           }
         }
-        postCategoriesFoo: post(where: { title: "post 2" }) {
+        postCategoriesFoo: post(where: { title:  "post 2" }) {
           title
-          categories (where: { name: "foo" }, orderBy: name_ASC) {
+          categories (where: { name: { equals : "foo"} }, orderBy: { name : ASC }) {
             name
           }
         }

@@ -7,6 +7,7 @@ import {
   JoinColumn,
   ManyToMany,
   JoinTable,
+  Index,
 } from 'typeorm'
 
 import { User } from 'test/entities/user'
@@ -20,6 +21,7 @@ export class Post {
   public id: number
 
   @Column()
+  @Index({ unique: true })
   public title: string
 
   @Column({ nullable: false, default: false })

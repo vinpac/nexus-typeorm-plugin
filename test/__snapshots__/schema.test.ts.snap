@@ -8,7 +8,7 @@ exports[`Schema schema.grapqhl snapshot 1`] = `
 type Category {
   id: ID!
   name: String!
-  posts(first: Int, last: Int, orderBy: [PostOrderByInput!], skip: Int, where: PostWhereInput): [Post!]!
+  posts(first: Int, last: Int, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): [Post!]!
 }
 
 input CategoryCreateInput {
@@ -20,22 +20,22 @@ input CategoryCreateWithoutPostsInput {
   name: String!
 }
 
-enum CategoryOrderByInput {
-  id_ASC
-  id_DESC
-  name_ASC
-  name_DESC
+input CategoryOrderByInput {
+  id: OrderByArgument
+  name: OrderByArgument
 }
 
 input CategoryWhereInput {
   AND: [CategoryWhereInput!]
-  id: ID
-  id_in: [ID!]
-  name: String
-  name_contains: String
-  name_in: [String!]
+  id: IdFilter
+  name: StringFilter
   NOT: [CategoryWhereInput!]
   OR: [CategoryWhereInput!]
+}
+
+input CategoryWhereUniqueInput {
+  id: ID
+  name: String
 }
 
 input CreateCategoriesPostsRelationInput {
@@ -54,22 +54,22 @@ input CreatePostsUserLikesPostsRelationInput {
 }
 
 input CreatePostToUserRelationInput {
-  connect: UserWhereInput
+  connect: UserWhereUniqueInput
   create: UserCreateWithoutPostsInput
 }
 
 input CreateUserFollowsToFollowerRelationInput {
-  connect: UserWhereInput
+  connect: UserWhereUniqueInput
   create: UserCreateWithoutFolloweesInput
 }
 
 input CreateUserLikesPostToPostRelationInput {
-  connect: PostWhereInput
+  connect: PostWhereUniqueInput
   create: PostCreateWithoutUserLikesPostsInput
 }
 
 input CreateUserLikesPostToUserRelationInput {
-  connect: UserWhereInput
+  connect: UserWhereUniqueInput
   create: UserCreateWithoutPostsInput
 }
 
@@ -89,12 +89,12 @@ input CreateUsersUserLikesPostsRelationInput {
 }
 
 input CreateUserToEmailRelationInput {
-  connect: EmailWhereInput
+  connect: EmailWhereUniqueInput
   create: EmailCreateWithoutUserInput
 }
 
 input CreateUserToProfileRelationInput {
-  connect: UserProfileWhereInput
+  connect: UserProfileWhereUniqueInput
   create: UserProfileCreateWithoutUserInput
 }
 
@@ -115,15 +115,22 @@ input EmailCreateWithoutUserInput {
   address: String!
 }
 
-input EmailWhereInput {
-  address: String
-  address_contains: String
-  address_in: [String!]
-  AND: [EmailWhereInput!]
+input EmailWhereUniqueInput {
   id: ID
-  id_in: [ID!]
-  NOT: [EmailWhereInput!]
-  OR: [EmailWhereInput!]
+}
+
+input IdFilter {
+  equals: ID
+  in: [ID!]
+}
+
+input IntFilter {
+  equals: Int
+  gt: Int
+  gte: Int
+  in: [Int!]
+  lt: Int
+  lte: Int
 }
 
 type Mutation {
@@ -135,8 +142,13 @@ type Mutation {
   updateOneUser(data: UserUpdateInput!, where: UserWhereInput!): User!
 }
 
+enum OrderByArgument {
+  ASC
+  DESC
+}
+
 type Post {
-  categories(first: Int, last: Int, orderBy: [CategoryOrderByInput!], skip: Int, where: CategoryWhereInput): [Category!]!
+  categories(first: Int, last: Int, orderBy: CategoryOrderByInput, skip: Int, where: CategoryWhereInput): [Category!]!
   createdAt: DateTime!
   id: ID!
   isPublic: Boolean!
@@ -145,7 +157,7 @@ type Post {
   totalLikes: Int
   user: User!
   userId: Int
-  userLikesPosts(first: Int, last: Int, orderBy: [UserLikesPostOrderByInput!], skip: Int, where: UserLikesPostWhereInput): [UserLikesPost!]!
+  userLikesPosts(first: Int, last: Int, orderBy: UserLikesPostOrderByInput, skip: Int, where: UserLikesPostWhereInput): [UserLikesPost!]!
   viewCount: Int
 }
 
@@ -197,23 +209,15 @@ input PostCreateWithoutUserLikesPostsInput {
   viewCount: Int
 }
 
-enum PostOrderByInput {
-  createdAt_ASC
-  createdAt_DESC
-  id_ASC
-  id_DESC
-  isPublic_ASC
-  isPublic_DESC
-  liked_ASC
-  liked_DESC
-  title_ASC
-  title_DESC
-  totalLikes_ASC
-  totalLikes_DESC
-  userId_ASC
-  userId_DESC
-  viewCount_ASC
-  viewCount_DESC
+input PostOrderByInput {
+  createdAt: OrderByArgument
+  id: OrderByArgument
+  isPublic: OrderByArgument
+  liked: OrderByArgument
+  title: OrderByArgument
+  totalLikes: OrderByArgument
+  userId: OrderByArgument
+  viewCount: OrderByArgument
 }
 
 input PostUpdateInput {
@@ -229,47 +233,36 @@ input PostUpdateInput {
 input PostWhereInput {
   AND: [PostWhereInput!]
   createdAt: DateTime
-  createdAt_in: [DateTime!]
-  id: ID
-  id_in: [ID!]
+  id: IdFilter
   isPublic: Boolean
-  isPublic_in: [Boolean!]
-  liked: String
-  liked_contains: String
-  liked_in: [String!]
+  liked: StringFilter
   NOT: [PostWhereInput!]
   OR: [PostWhereInput!]
+  title: StringFilter
+  totalLikes: IntFilter
+  userId: IntFilter
+  viewCount: IntFilter
+}
+
+input PostWhereUniqueInput {
+  id: ID
   title: String
-  title_contains: String
-  title_in: [String!]
-  totalLikes: Int
-  totalLikes_gt: Int
-  totalLikes_gte: Int
-  totalLikes_in: [Int!]
-  totalLikes_lt: Int
-  totalLikes_lte: Int
-  userId: Int
-  userId_gt: Int
-  userId_gte: Int
-  userId_in: [Int!]
-  userId_lt: Int
-  userId_lte: Int
-  viewCount: Int
-  viewCount_gt: Int
-  viewCount_gte: Int
-  viewCount_in: [Int!]
-  viewCount_lt: Int
-  viewCount_lte: Int
 }
 
 type Query {
-  category(orderBy: [CategoryOrderByInput!], where: CategoryWhereInput): Category!
-  post(orderBy: [PostOrderByInput!], where: PostWhereInput): Post!
-  posts(first: Int, last: Int, orderBy: [PostOrderByInput!], skip: Int, where: PostWhereInput): [Post!]!
-  postsByCategoryId(categoryId: String!, first: Int, last: Int, orderBy: [PostOrderByInput!], skip: Int, where: PostWhereInput): [Post!]!
-  user(orderBy: [UserOrderByInput!], where: UserWhereInput): User!
-  users(first: Int, last: Int, orderBy: [UserOrderByInput!], skip: Int, where: UserWhereInput): [User!]!
-  usersByName(first: Int, last: Int, name: String!, orderBy: [UserOrderByInput!], skip: Int, where: UserWhereInput): [User!]!
+  category(where: CategoryWhereUniqueInput): Category!
+  post(where: PostWhereUniqueInput): Post!
+  posts(first: Int, last: Int, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): [Post!]!
+  postsByCategoryId(categoryId: String!, first: Int, last: Int, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): [Post!]!
+  user(where: UserWhereUniqueInput): User!
+  users(first: Int, last: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User!]!
+  usersByName(first: Int, last: Int, name: String!, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User!]!
+}
+
+input StringFilter {
+  contains: String
+  equals: String
+  in: [String!]
 }
 
 type UpdateManyResult {
@@ -279,14 +272,14 @@ type UpdateManyResult {
 type User {
   age: Int
   email: Email!
-  followees(first: Int, last: Int, orderBy: [UserFollowsOrderByInput!], skip: Int, where: UserFollowsWhereInput): [UserFollows!]!
-  followers(first: Int, last: Int, orderBy: [UserFollowsOrderByInput!], skip: Int, where: UserFollowsWhereInput): [User!]!
+  followees(first: Int, last: Int, orderBy: UserFollowsOrderByInput, skip: Int, where: UserFollowsWhereInput): [UserFollows!]!
+  followers(first: Int, last: Int, orderBy: UserFollowsOrderByInput, skip: Int, where: UserFollowsWhereInput): [User!]!
   id: ID!
   name: String!
-  posts(first: Int, last: Int, orderBy: [PostOrderByInput!], skip: Int, where: PostWhereInput): [Post!]!
+  posts(first: Int, last: Int, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): [Post!]!
   profile: UserProfile!
   type: UserTypeEnum!
-  userLikesPosts(first: Int, last: Int, orderBy: [UserLikesPostOrderByInput!], skip: Int, where: UserLikesPostWhereInput): [UserLikesPost!]!
+  userLikesPosts(first: Int, last: Int, orderBy: UserLikesPostOrderByInput, skip: Int, where: UserLikesPostWhereInput): [UserLikesPost!]!
 }
 
 input UserCreateInput {
@@ -333,31 +326,17 @@ input UserFollowsCreateWithoutFolloweeInput {
   followerId: Int!
 }
 
-enum UserFollowsOrderByInput {
-  followeeId_ASC
-  followeeId_DESC
-  followerId_ASC
-  followerId_DESC
-  id_ASC
-  id_DESC
+input UserFollowsOrderByInput {
+  followeeId: OrderByArgument
+  followerId: OrderByArgument
+  id: OrderByArgument
 }
 
 input UserFollowsWhereInput {
   AND: [UserFollowsWhereInput!]
-  followeeId: Int
-  followeeId_gt: Int
-  followeeId_gte: Int
-  followeeId_in: [Int!]
-  followeeId_lt: Int
-  followeeId_lte: Int
-  followerId: Int
-  followerId_gt: Int
-  followerId_gte: Int
-  followerId_in: [Int!]
-  followerId_lt: Int
-  followerId_lte: Int
-  id: ID
-  id_in: [ID!]
+  followeeId: IntFilter
+  followerId: IntFilter
+  id: IdFilter
   NOT: [UserFollowsWhereInput!]
   OR: [UserFollowsWhereInput!]
 }
@@ -380,46 +359,27 @@ input UserLikesPostCreateWithoutUserInput {
   postId: Int!
 }
 
-enum UserLikesPostOrderByInput {
-  id_ASC
-  id_DESC
-  postId_ASC
-  postId_DESC
-  userId_ASC
-  userId_DESC
+input UserLikesPostOrderByInput {
+  id: OrderByArgument
+  postId: OrderByArgument
+  userId: OrderByArgument
 }
 
 input UserLikesPostWhereInput {
   AND: [UserLikesPostWhereInput!]
-  id: ID
-  id_in: [ID!]
+  id: IdFilter
   NOT: [UserLikesPostWhereInput!]
   OR: [UserLikesPostWhereInput!]
-  postId: Int
-  postId_gt: Int
-  postId_gte: Int
-  postId_in: [Int!]
-  postId_lt: Int
-  postId_lte: Int
-  userId: Int
-  userId_gt: Int
-  userId_gte: Int
-  userId_in: [Int!]
-  userId_lt: Int
-  userId_lte: Int
+  postId: IntFilter
+  userId: IntFilter
 }
 
-enum UserOrderByInput {
-  age_ASC
-  age_DESC
-  email_ASC
-  email_DESC
-  id_ASC
-  id_DESC
-  name_ASC
-  name_DESC
-  type_ASC
-  type_DESC
+input UserOrderByInput {
+  age: OrderByArgument
+  email: OrderByArgument
+  id: OrderByArgument
+  name: OrderByArgument
+  type: OrderByArgument
 }
 
 type UserProfile {
@@ -435,24 +395,9 @@ input UserProfileCreateWithoutUserInput {
   slug: String!
 }
 
-input UserProfileWhereInput {
-  AND: [UserProfileWhereInput!]
-  displayName: String
-  displayName_contains: String
-  displayName_in: [String!]
+input UserProfileWhereUniqueInput {
   id: ID
-  id_in: [ID!]
-  NOT: [UserProfileWhereInput!]
-  OR: [UserProfileWhereInput!]
-  slug: String
-  slug_contains: String
-  slug_in: [String!]
   userId: Int
-  userId_gt: Int
-  userId_gte: Int
-  userId_in: [Int!]
-  userId_lt: Int
-  userId_lte: Int
 }
 
 enum UserTypeEnum {
@@ -468,22 +413,18 @@ input UserUpdateInput {
 }
 
 input UserWhereInput {
-  age: Int
-  age_gt: Int
-  age_gte: Int
-  age_in: [Int!]
-  age_lt: Int
-  age_lte: Int
+  age: IntFilter
   AND: [UserWhereInput!]
-  id: ID
-  id_in: [ID!]
-  name: String
-  name_contains: String
-  name_in: [String!]
+  id: IdFilter
+  name: StringFilter
   NOT: [UserWhereInput!]
   OR: [UserWhereInput!]
   type: UserTypeEnum
-  type_in: [UserTypeEnum!]
+}
+
+input UserWhereUniqueInput {
+  id: ID
+  name: String
 }
 "
 `;

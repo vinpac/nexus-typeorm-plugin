@@ -36,16 +36,23 @@ export interface NexusGenInputs {
     // input type
     name: string // String!
   }
+  CategoryOrderByInput: {
+    // input type
+    id?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    name?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+  }
   CategoryWhereInput: {
     // input type
     AND?: NexusGenInputs['CategoryWhereInput'][] | null // [CategoryWhereInput!]
-    id?: string | null // ID
-    id_in?: string[] | null // [ID!]
-    name?: string | null // String
-    name_contains?: string | null // String
-    name_in?: string[] | null // [String!]
+    id?: NexusGenInputs['IdFilter'] | null // IdFilter
+    name?: NexusGenInputs['StringFilter'] | null // StringFilter
     NOT?: NexusGenInputs['CategoryWhereInput'][] | null // [CategoryWhereInput!]
     OR?: NexusGenInputs['CategoryWhereInput'][] | null // [CategoryWhereInput!]
+  }
+  CategoryWhereUniqueInput: {
+    // input type
+    id?: string | null // ID
+    name?: string | null // String
   }
   CreateCategoriesPostsRelationInput: {
     // input type
@@ -54,7 +61,7 @@ export interface NexusGenInputs {
   }
   CreatePostToUserRelationInput: {
     // input type
-    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
+    connect?: NexusGenInputs['UserWhereUniqueInput'] | null // UserWhereUniqueInput
     create?: NexusGenInputs['UserCreateWithoutPostsInput'] | null // UserCreateWithoutPostsInput
   }
   CreatePostsCategoriesRelationInput: {
@@ -69,27 +76,27 @@ export interface NexusGenInputs {
   }
   CreateUserFollowsToFollowerRelationInput: {
     // input type
-    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
+    connect?: NexusGenInputs['UserWhereUniqueInput'] | null // UserWhereUniqueInput
     create?: NexusGenInputs['UserCreateWithoutFolloweesInput'] | null // UserCreateWithoutFolloweesInput
   }
   CreateUserLikesPostToPostRelationInput: {
     // input type
-    connect?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
+    connect?: NexusGenInputs['PostWhereUniqueInput'] | null // PostWhereUniqueInput
     create?: NexusGenInputs['PostCreateWithoutUserLikesPostsInput'] | null // PostCreateWithoutUserLikesPostsInput
   }
   CreateUserLikesPostToUserRelationInput: {
     // input type
-    connect?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
+    connect?: NexusGenInputs['UserWhereUniqueInput'] | null // UserWhereUniqueInput
     create?: NexusGenInputs['UserCreateWithoutPostsInput'] | null // UserCreateWithoutPostsInput
   }
   CreateUserToEmailRelationInput: {
     // input type
-    connect?: NexusGenInputs['EmailWhereInput'] | null // EmailWhereInput
+    connect?: NexusGenInputs['EmailWhereUniqueInput'] | null // EmailWhereUniqueInput
     create?: NexusGenInputs['EmailCreateWithoutUserInput'] | null // EmailCreateWithoutUserInput
   }
   CreateUserToProfileRelationInput: {
     // input type
-    connect?: NexusGenInputs['UserProfileWhereInput'] | null // UserProfileWhereInput
+    connect?: NexusGenInputs['UserProfileWhereUniqueInput'] | null // UserProfileWhereUniqueInput
     create?: NexusGenInputs['UserProfileCreateWithoutUserInput'] | null // UserProfileCreateWithoutUserInput
   }
   CreateUsersFolloweesRelationInput: {
@@ -111,16 +118,23 @@ export interface NexusGenInputs {
     // input type
     address: string // String!
   }
-  EmailWhereInput: {
+  EmailWhereUniqueInput: {
     // input type
-    address?: string | null // String
-    address_contains?: string | null // String
-    address_in?: string[] | null // [String!]
-    AND?: NexusGenInputs['EmailWhereInput'][] | null // [EmailWhereInput!]
     id?: string | null // ID
-    id_in?: string[] | null // [ID!]
-    NOT?: NexusGenInputs['EmailWhereInput'][] | null // [EmailWhereInput!]
-    OR?: NexusGenInputs['EmailWhereInput'][] | null // [EmailWhereInput!]
+  }
+  IdFilter: {
+    // input type
+    equals?: string | null // ID
+    in?: string[] | null // [ID!]
+  }
+  IntFilter: {
+    // input type
+    equals?: number | null // Int
+    gt?: number | null // Int
+    gte?: number | null // Int
+    in?: number[] | null // [Int!]
+    lt?: number | null // Int
+    lte?: number | null // Int
   }
   PostCreateInput: {
     // input type
@@ -170,6 +184,17 @@ export interface NexusGenInputs {
     userId?: number | null // Int
     viewCount?: number | null // Int
   }
+  PostOrderByInput: {
+    // input type
+    createdAt?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    id?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    isPublic?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    liked?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    title?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    totalLikes?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    userId?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    viewCount?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+  }
   PostUpdateInput: {
     // input type
     createdAt?: any | null // DateTime
@@ -184,37 +209,26 @@ export interface NexusGenInputs {
     // input type
     AND?: NexusGenInputs['PostWhereInput'][] | null // [PostWhereInput!]
     createdAt?: any | null // DateTime
-    createdAt_in?: any[] | null // [DateTime!]
-    id?: string | null // ID
-    id_in?: string[] | null // [ID!]
+    id?: NexusGenInputs['IdFilter'] | null // IdFilter
     isPublic?: boolean | null // Boolean
-    isPublic_in?: boolean[] | null // [Boolean!]
-    liked?: string | null // String
-    liked_contains?: string | null // String
-    liked_in?: string[] | null // [String!]
+    liked?: NexusGenInputs['StringFilter'] | null // StringFilter
     NOT?: NexusGenInputs['PostWhereInput'][] | null // [PostWhereInput!]
     OR?: NexusGenInputs['PostWhereInput'][] | null // [PostWhereInput!]
+    title?: NexusGenInputs['StringFilter'] | null // StringFilter
+    totalLikes?: NexusGenInputs['IntFilter'] | null // IntFilter
+    userId?: NexusGenInputs['IntFilter'] | null // IntFilter
+    viewCount?: NexusGenInputs['IntFilter'] | null // IntFilter
+  }
+  PostWhereUniqueInput: {
+    // input type
+    id?: string | null // ID
     title?: string | null // String
-    title_contains?: string | null // String
-    title_in?: string[] | null // [String!]
-    totalLikes?: number | null // Int
-    totalLikes_gt?: number | null // Int
-    totalLikes_gte?: number | null // Int
-    totalLikes_in?: number[] | null // [Int!]
-    totalLikes_lt?: number | null // Int
-    totalLikes_lte?: number | null // Int
-    userId?: number | null // Int
-    userId_gt?: number | null // Int
-    userId_gte?: number | null // Int
-    userId_in?: number[] | null // [Int!]
-    userId_lt?: number | null // Int
-    userId_lte?: number | null // Int
-    viewCount?: number | null // Int
-    viewCount_gt?: number | null // Int
-    viewCount_gte?: number | null // Int
-    viewCount_in?: number[] | null // [Int!]
-    viewCount_lt?: number | null // Int
-    viewCount_lte?: number | null // Int
+  }
+  StringFilter: {
+    // input type
+    contains?: string | null // String
+    equals?: string | null // String
+    in?: string[] | null // [String!]
   }
   UserCreateInput: {
     // input type
@@ -252,23 +266,18 @@ export interface NexusGenInputs {
     follower?: NexusGenInputs['CreateUserFollowsToFollowerRelationInput'] | null // CreateUserFollowsToFollowerRelationInput
     followerId: number // Int!
   }
+  UserFollowsOrderByInput: {
+    // input type
+    followeeId?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    followerId?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    id?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+  }
   UserFollowsWhereInput: {
     // input type
     AND?: NexusGenInputs['UserFollowsWhereInput'][] | null // [UserFollowsWhereInput!]
-    followeeId?: number | null // Int
-    followeeId_gt?: number | null // Int
-    followeeId_gte?: number | null // Int
-    followeeId_in?: number[] | null // [Int!]
-    followeeId_lt?: number | null // Int
-    followeeId_lte?: number | null // Int
-    followerId?: number | null // Int
-    followerId_gt?: number | null // Int
-    followerId_gte?: number | null // Int
-    followerId_in?: number[] | null // [Int!]
-    followerId_lt?: number | null // Int
-    followerId_lte?: number | null // Int
-    id?: string | null // ID
-    id_in?: string[] | null // [ID!]
+    followeeId?: NexusGenInputs['IntFilter'] | null // IntFilter
+    followerId?: NexusGenInputs['IntFilter'] | null // IntFilter
+    id?: NexusGenInputs['IdFilter'] | null // IdFilter
     NOT?: NexusGenInputs['UserFollowsWhereInput'][] | null // [UserFollowsWhereInput!]
     OR?: NexusGenInputs['UserFollowsWhereInput'][] | null // [UserFollowsWhereInput!]
   }
@@ -282,50 +291,38 @@ export interface NexusGenInputs {
     post?: NexusGenInputs['CreateUserLikesPostToPostRelationInput'] | null // CreateUserLikesPostToPostRelationInput
     postId: number // Int!
   }
+  UserLikesPostOrderByInput: {
+    // input type
+    id?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    postId?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    userId?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+  }
   UserLikesPostWhereInput: {
     // input type
     AND?: NexusGenInputs['UserLikesPostWhereInput'][] | null // [UserLikesPostWhereInput!]
-    id?: string | null // ID
-    id_in?: string[] | null // [ID!]
+    id?: NexusGenInputs['IdFilter'] | null // IdFilter
     NOT?: NexusGenInputs['UserLikesPostWhereInput'][] | null // [UserLikesPostWhereInput!]
     OR?: NexusGenInputs['UserLikesPostWhereInput'][] | null // [UserLikesPostWhereInput!]
-    postId?: number | null // Int
-    postId_gt?: number | null // Int
-    postId_gte?: number | null // Int
-    postId_in?: number[] | null // [Int!]
-    postId_lt?: number | null // Int
-    postId_lte?: number | null // Int
-    userId?: number | null // Int
-    userId_gt?: number | null // Int
-    userId_gte?: number | null // Int
-    userId_in?: number[] | null // [Int!]
-    userId_lt?: number | null // Int
-    userId_lte?: number | null // Int
+    postId?: NexusGenInputs['IntFilter'] | null // IntFilter
+    userId?: NexusGenInputs['IntFilter'] | null // IntFilter
+  }
+  UserOrderByInput: {
+    // input type
+    age?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    email?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    id?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    name?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
+    type?: NexusGenEnums['OrderByArgument'] | null // OrderByArgument
   }
   UserProfileCreateWithoutUserInput: {
     // input type
     displayName: string // String!
     slug: string // String!
   }
-  UserProfileWhereInput: {
+  UserProfileWhereUniqueInput: {
     // input type
-    AND?: NexusGenInputs['UserProfileWhereInput'][] | null // [UserProfileWhereInput!]
-    displayName?: string | null // String
-    displayName_contains?: string | null // String
-    displayName_in?: string[] | null // [String!]
     id?: string | null // ID
-    id_in?: string[] | null // [ID!]
-    NOT?: NexusGenInputs['UserProfileWhereInput'][] | null // [UserProfileWhereInput!]
-    OR?: NexusGenInputs['UserProfileWhereInput'][] | null // [UserProfileWhereInput!]
-    slug?: string | null // String
-    slug_contains?: string | null // String
-    slug_in?: string[] | null // [String!]
     userId?: number | null // Int
-    userId_gt?: number | null // Int
-    userId_gte?: number | null // Int
-    userId_in?: number[] | null // [Int!]
-    userId_lt?: number | null // Int
-    userId_lte?: number | null // Int
   }
   UserUpdateInput: {
     // input type
@@ -336,69 +333,23 @@ export interface NexusGenInputs {
   }
   UserWhereInput: {
     // input type
-    age?: number | null // Int
-    age_gt?: number | null // Int
-    age_gte?: number | null // Int
-    age_in?: number[] | null // [Int!]
-    age_lt?: number | null // Int
-    age_lte?: number | null // Int
+    age?: NexusGenInputs['IntFilter'] | null // IntFilter
     AND?: NexusGenInputs['UserWhereInput'][] | null // [UserWhereInput!]
-    id?: string | null // ID
-    id_in?: string[] | null // [ID!]
-    name?: string | null // String
-    name_contains?: string | null // String
-    name_in?: string[] | null // [String!]
+    id?: NexusGenInputs['IdFilter'] | null // IdFilter
+    name?: NexusGenInputs['StringFilter'] | null // StringFilter
     NOT?: NexusGenInputs['UserWhereInput'][] | null // [UserWhereInput!]
     OR?: NexusGenInputs['UserWhereInput'][] | null // [UserWhereInput!]
     type?: NexusGenEnums['UserTypeEnum'] | null // UserTypeEnum
-    type_in?: NexusGenEnums['UserTypeEnum'][] | null // [UserTypeEnum!]
+  }
+  UserWhereUniqueInput: {
+    // input type
+    id?: string | null // ID
+    name?: string | null // String
   }
 }
 
 export interface NexusGenEnums {
-  CategoryOrderByInput: 'id_ASC' | 'id_DESC' | 'name_ASC' | 'name_DESC'
-  PostOrderByInput:
-    | 'createdAt_ASC'
-    | 'createdAt_DESC'
-    | 'id_ASC'
-    | 'id_DESC'
-    | 'isPublic_ASC'
-    | 'isPublic_DESC'
-    | 'liked_ASC'
-    | 'liked_DESC'
-    | 'title_ASC'
-    | 'title_DESC'
-    | 'totalLikes_ASC'
-    | 'totalLikes_DESC'
-    | 'userId_ASC'
-    | 'userId_DESC'
-    | 'viewCount_ASC'
-    | 'viewCount_DESC'
-  UserFollowsOrderByInput:
-    | 'followeeId_ASC'
-    | 'followeeId_DESC'
-    | 'followerId_ASC'
-    | 'followerId_DESC'
-    | 'id_ASC'
-    | 'id_DESC'
-  UserLikesPostOrderByInput:
-    | 'id_ASC'
-    | 'id_DESC'
-    | 'postId_ASC'
-    | 'postId_DESC'
-    | 'userId_ASC'
-    | 'userId_DESC'
-  UserOrderByInput:
-    | 'age_ASC'
-    | 'age_DESC'
-    | 'email_ASC'
-    | 'email_DESC'
-    | 'id_ASC'
-    | 'id_DESC'
-    | 'name_ASC'
-    | 'name_DESC'
-    | 'type_ASC'
-    | 'type_DESC'
+  OrderByArgument: 'ASC' | 'DESC'
   UserTypeEnum: 'ADMIN' | 'NORMAL'
 }
 
@@ -467,7 +418,9 @@ export interface NexusGenRootTypes {
 export interface NexusGenAllTypes extends NexusGenRootTypes {
   CategoryCreateInput: NexusGenInputs['CategoryCreateInput']
   CategoryCreateWithoutPostsInput: NexusGenInputs['CategoryCreateWithoutPostsInput']
+  CategoryOrderByInput: NexusGenInputs['CategoryOrderByInput']
   CategoryWhereInput: NexusGenInputs['CategoryWhereInput']
+  CategoryWhereUniqueInput: NexusGenInputs['CategoryWhereUniqueInput']
   CreateCategoriesPostsRelationInput: NexusGenInputs['CreateCategoriesPostsRelationInput']
   CreatePostToUserRelationInput: NexusGenInputs['CreatePostToUserRelationInput']
   CreatePostsCategoriesRelationInput: NexusGenInputs['CreatePostsCategoriesRelationInput']
@@ -481,30 +434,35 @@ export interface NexusGenAllTypes extends NexusGenRootTypes {
   CreateUsersPostsRelationInput: NexusGenInputs['CreateUsersPostsRelationInput']
   CreateUsersUserLikesPostsRelationInput: NexusGenInputs['CreateUsersUserLikesPostsRelationInput']
   EmailCreateWithoutUserInput: NexusGenInputs['EmailCreateWithoutUserInput']
-  EmailWhereInput: NexusGenInputs['EmailWhereInput']
+  EmailWhereUniqueInput: NexusGenInputs['EmailWhereUniqueInput']
+  IdFilter: NexusGenInputs['IdFilter']
+  IntFilter: NexusGenInputs['IntFilter']
   PostCreateInput: NexusGenInputs['PostCreateInput']
   PostCreateWithoutCategoriesInput: NexusGenInputs['PostCreateWithoutCategoriesInput']
   PostCreateWithoutUserInput: NexusGenInputs['PostCreateWithoutUserInput']
   PostCreateWithoutUserLikesPostsInput: NexusGenInputs['PostCreateWithoutUserLikesPostsInput']
+  PostOrderByInput: NexusGenInputs['PostOrderByInput']
   PostUpdateInput: NexusGenInputs['PostUpdateInput']
   PostWhereInput: NexusGenInputs['PostWhereInput']
+  PostWhereUniqueInput: NexusGenInputs['PostWhereUniqueInput']
+  StringFilter: NexusGenInputs['StringFilter']
   UserCreateInput: NexusGenInputs['UserCreateInput']
   UserCreateWithoutFolloweesInput: NexusGenInputs['UserCreateWithoutFolloweesInput']
   UserCreateWithoutPostsInput: NexusGenInputs['UserCreateWithoutPostsInput']
   UserFollowsCreateWithoutFolloweeInput: NexusGenInputs['UserFollowsCreateWithoutFolloweeInput']
+  UserFollowsOrderByInput: NexusGenInputs['UserFollowsOrderByInput']
   UserFollowsWhereInput: NexusGenInputs['UserFollowsWhereInput']
   UserLikesPostCreateWithoutPostInput: NexusGenInputs['UserLikesPostCreateWithoutPostInput']
   UserLikesPostCreateWithoutUserInput: NexusGenInputs['UserLikesPostCreateWithoutUserInput']
+  UserLikesPostOrderByInput: NexusGenInputs['UserLikesPostOrderByInput']
   UserLikesPostWhereInput: NexusGenInputs['UserLikesPostWhereInput']
+  UserOrderByInput: NexusGenInputs['UserOrderByInput']
   UserProfileCreateWithoutUserInput: NexusGenInputs['UserProfileCreateWithoutUserInput']
-  UserProfileWhereInput: NexusGenInputs['UserProfileWhereInput']
+  UserProfileWhereUniqueInput: NexusGenInputs['UserProfileWhereUniqueInput']
   UserUpdateInput: NexusGenInputs['UserUpdateInput']
   UserWhereInput: NexusGenInputs['UserWhereInput']
-  CategoryOrderByInput: NexusGenEnums['CategoryOrderByInput']
-  PostOrderByInput: NexusGenEnums['PostOrderByInput']
-  UserFollowsOrderByInput: NexusGenEnums['UserFollowsOrderByInput']
-  UserLikesPostOrderByInput: NexusGenEnums['UserLikesPostOrderByInput']
-  UserOrderByInput: NexusGenEnums['UserOrderByInput']
+  UserWhereUniqueInput: NexusGenInputs['UserWhereUniqueInput']
+  OrderByArgument: NexusGenEnums['OrderByArgument']
   UserTypeEnum: NexusGenEnums['UserTypeEnum']
 }
 
@@ -603,7 +561,7 @@ export interface NexusGenArgTypes {
       // args
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['PostOrderByInput'][] | null // [PostOrderByInput!]
+      orderBy?: NexusGenInputs['PostOrderByInput'] | null // PostOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
     }
@@ -642,7 +600,7 @@ export interface NexusGenArgTypes {
       // args
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['CategoryOrderByInput'][] | null // [CategoryOrderByInput!]
+      orderBy?: NexusGenInputs['CategoryOrderByInput'] | null // CategoryOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['CategoryWhereInput'] | null // CategoryWhereInput
     }
@@ -650,7 +608,7 @@ export interface NexusGenArgTypes {
       // args
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['UserLikesPostOrderByInput'][] | null // [UserLikesPostOrderByInput!]
+      orderBy?: NexusGenInputs['UserLikesPostOrderByInput'] | null // UserLikesPostOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['UserLikesPostWhereInput'] | null // UserLikesPostWhereInput
     }
@@ -658,19 +616,17 @@ export interface NexusGenArgTypes {
   Query: {
     category: {
       // args
-      orderBy?: NexusGenEnums['CategoryOrderByInput'][] | null // [CategoryOrderByInput!]
-      where?: NexusGenInputs['CategoryWhereInput'] | null // CategoryWhereInput
+      where?: NexusGenInputs['CategoryWhereUniqueInput'] | null // CategoryWhereUniqueInput
     }
     post: {
       // args
-      orderBy?: NexusGenEnums['PostOrderByInput'][] | null // [PostOrderByInput!]
-      where?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
+      where?: NexusGenInputs['PostWhereUniqueInput'] | null // PostWhereUniqueInput
     }
     posts: {
       // args
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['PostOrderByInput'][] | null // [PostOrderByInput!]
+      orderBy?: NexusGenInputs['PostOrderByInput'] | null // PostOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
     }
@@ -679,20 +635,19 @@ export interface NexusGenArgTypes {
       categoryId: string // String!
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['PostOrderByInput'][] | null // [PostOrderByInput!]
+      orderBy?: NexusGenInputs['PostOrderByInput'] | null // PostOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
     }
     user: {
       // args
-      orderBy?: NexusGenEnums['UserOrderByInput'][] | null // [UserOrderByInput!]
-      where?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
+      where?: NexusGenInputs['UserWhereUniqueInput'] | null // UserWhereUniqueInput
     }
     users: {
       // args
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['UserOrderByInput'][] | null // [UserOrderByInput!]
+      orderBy?: NexusGenInputs['UserOrderByInput'] | null // UserOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
     }
@@ -701,7 +656,7 @@ export interface NexusGenArgTypes {
       first?: number | null // Int
       last?: number | null // Int
       name: string // String!
-      orderBy?: NexusGenEnums['UserOrderByInput'][] | null // [UserOrderByInput!]
+      orderBy?: NexusGenInputs['UserOrderByInput'] | null // UserOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['UserWhereInput'] | null // UserWhereInput
     }
@@ -711,7 +666,7 @@ export interface NexusGenArgTypes {
       // args
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['UserFollowsOrderByInput'][] | null // [UserFollowsOrderByInput!]
+      orderBy?: NexusGenInputs['UserFollowsOrderByInput'] | null // UserFollowsOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['UserFollowsWhereInput'] | null // UserFollowsWhereInput
     }
@@ -719,7 +674,7 @@ export interface NexusGenArgTypes {
       // args
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['UserFollowsOrderByInput'][] | null // [UserFollowsOrderByInput!]
+      orderBy?: NexusGenInputs['UserFollowsOrderByInput'] | null // UserFollowsOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['UserFollowsWhereInput'] | null // UserFollowsWhereInput
     }
@@ -727,7 +682,7 @@ export interface NexusGenArgTypes {
       // args
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['PostOrderByInput'][] | null // [PostOrderByInput!]
+      orderBy?: NexusGenInputs['PostOrderByInput'] | null // PostOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['PostWhereInput'] | null // PostWhereInput
     }
@@ -735,7 +690,7 @@ export interface NexusGenArgTypes {
       // args
       first?: number | null // Int
       last?: number | null // Int
-      orderBy?: NexusGenEnums['UserLikesPostOrderByInput'][] | null // [UserLikesPostOrderByInput!]
+      orderBy?: NexusGenInputs['UserLikesPostOrderByInput'] | null // UserLikesPostOrderByInput
       skip?: number | null // Int
       where?: NexusGenInputs['UserLikesPostWhereInput'] | null // UserLikesPostWhereInput
     }
@@ -761,7 +716,9 @@ export type NexusGenObjectNames =
 export type NexusGenInputNames =
   | 'CategoryCreateInput'
   | 'CategoryCreateWithoutPostsInput'
+  | 'CategoryOrderByInput'
   | 'CategoryWhereInput'
+  | 'CategoryWhereUniqueInput'
   | 'CreateCategoriesPostsRelationInput'
   | 'CreatePostToUserRelationInput'
   | 'CreatePostsCategoriesRelationInput'
@@ -775,33 +732,36 @@ export type NexusGenInputNames =
   | 'CreateUsersPostsRelationInput'
   | 'CreateUsersUserLikesPostsRelationInput'
   | 'EmailCreateWithoutUserInput'
-  | 'EmailWhereInput'
+  | 'EmailWhereUniqueInput'
+  | 'IdFilter'
+  | 'IntFilter'
   | 'PostCreateInput'
   | 'PostCreateWithoutCategoriesInput'
   | 'PostCreateWithoutUserInput'
   | 'PostCreateWithoutUserLikesPostsInput'
+  | 'PostOrderByInput'
   | 'PostUpdateInput'
   | 'PostWhereInput'
+  | 'PostWhereUniqueInput'
+  | 'StringFilter'
   | 'UserCreateInput'
   | 'UserCreateWithoutFolloweesInput'
   | 'UserCreateWithoutPostsInput'
   | 'UserFollowsCreateWithoutFolloweeInput'
+  | 'UserFollowsOrderByInput'
   | 'UserFollowsWhereInput'
   | 'UserLikesPostCreateWithoutPostInput'
   | 'UserLikesPostCreateWithoutUserInput'
+  | 'UserLikesPostOrderByInput'
   | 'UserLikesPostWhereInput'
+  | 'UserOrderByInput'
   | 'UserProfileCreateWithoutUserInput'
-  | 'UserProfileWhereInput'
+  | 'UserProfileWhereUniqueInput'
   | 'UserUpdateInput'
   | 'UserWhereInput'
+  | 'UserWhereUniqueInput'
 
-export type NexusGenEnumNames =
-  | 'CategoryOrderByInput'
-  | 'PostOrderByInput'
-  | 'UserFollowsOrderByInput'
-  | 'UserLikesPostOrderByInput'
-  | 'UserOrderByInput'
-  | 'UserTypeEnum'
+export type NexusGenEnumNames = 'OrderByArgument' | 'UserTypeEnum'
 
 export type NexusGenInterfaceNames = never
 
