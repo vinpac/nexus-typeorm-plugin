@@ -39,7 +39,7 @@ describe('CRUD', () => {
         mutation {
           updateManyUsers(data: {
             age: 55
-          }, where: { age_lt: 32, }) {
+          }, where: { age : { lt: 32} }) {
             affectedRows
           }
         }`)

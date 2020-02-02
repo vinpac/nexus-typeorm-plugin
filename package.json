@@ -29,6 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^2.7.0",
     "@typescript-eslint/parser": "^2.7.0",
     "add": "^2.0.6",
+    "core-js": "^3.6.4",
     "dotenv": "^8.0.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^6.3.0",

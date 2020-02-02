@@ -71,12 +71,12 @@ describe('CRUD', () => {
 
     test('find many entities with where argument', async () => {
       const result = await query(`{
-        greaterThan24: users(where: { age_gte: 24 }) {
+        greaterThan24: users(where: { age : { gte: 24 } }) {
           id
           name
           age
         }
-        lastThan24: users(where: { age_lt: 24 }) {
+        lastThan24: users(where: { age : { lt: 24 } }) {
           id
           name
           age
@@ -109,7 +109,7 @@ describe('CRUD', () => {
 
     test('find many entities by relation', async () => {
       const result = await query(`{
-        user (where: { name: "Gina" }) {
+        user (where: { name:  "Gina" }) {
           name
           posts {
             title
@@ -137,10 +137,10 @@ describe('CRUD', () => {
 
     test('find many entities with ordering', async () => {
       const result = await query(`{
-        ageDesc: users(orderBy: age_DESC) {
+        ageDesc: users(orderBy: { age : DESC }) {
           name
         }
-        ageAsc: users(orderBy: age_ASC) {
+        ageAsc: users(orderBy: { age : ASC }) {
           name
         }
       }`)

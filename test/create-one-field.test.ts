@@ -101,7 +101,7 @@ describe('CRUD', () => {
 
       const userQuery = await query(
         `{
-        user (where: { id: ${result!.createOneUser.id} }) {
+        user (where: { id:  ${result!.createOneUser.id} }) {
           id
           age
           name
@@ -148,7 +148,7 @@ describe('CRUD', () => {
           }
         }`,
         // eslint-disable-next-line @typescript-eslint/camelcase
-        { connect: { id_in: postsQuery!.posts.map((post: any) => post.id) } },
+        { connect: { id: { in: postsQuery!.posts.map((post: any) => post.id) } } },
       )
 
       expect(result).toMatchObject({
@@ -362,7 +362,7 @@ describe('CRUD', () => {
         createOneCategory(data: {
           name: "category created"
           posts: {
-            connect: { title: "post 1" }
+            connect: { title: { equals : "post 1" } }
           }
         }) {
           id

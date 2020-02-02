@@ -1,4 +1,5 @@
 import { getConnection } from 'typeorm'
+import { inputObjectType } from 'nexus'
 
 export const singleOperandOperations = ['contains']
 export const numberOperandOperations = ['lt', 'lte', 'gt', 'gte']
@@ -55,36 +56,71 @@ export function translateWhereClause(alias: string, where: any, idx = 0): Transl
       return
     }
 
-    idx += 1
-    const value = where[key]
-    const [fieldName, operation] = key.split('_')
-    const paramName = `${fieldName}${idx}`
-    translated.params[paramName] = value
-
-    if (translated.expression) {
-      translated.expression += ' AND '
-    }
-    const columnSelection = `${escape(alias)}.${escape(fieldName)}`
-
-    if (operation === 'contains') {
-      translated.params[paramName] = `%${translated.params[paramName]}%`
-      translated.expression += `${columnSelection} LIKE :${paramName}`
-      return
+    if (typeof where[key] !== 'object') {
+      where[key] = { equals: where[key] }
     }
 
-    const operator = numberOperandOperationToOperator(operation)
-    if (operator) {
-      translated.expression += `${columnSelection} ${operator} :${paramName}`
-      return
-    }
+    for (const operation in where[key]) {
+      idx += 1
 
-    if (operation === 'in') {
-      translated.expression += `${columnSelection} IN (:...${paramName})`
-      return
-    }
+      const value = where[key][operation]
+      const fieldName = key
 
-    translated.expression += `${columnSelection} = :${paramName}`
+      const paramName = `${fieldName}${idx}`
+      translated.params[paramName] = value
+
+      if (translated.expression) {
+        translated.expression += ' AND '
+      }
+      const columnSelection = `${escape(alias)}.${escape(fieldName)}`
+
+      if (operation === 'contains') {
+        translated.params[paramName] = `%${translated.params[paramName]}%`
+        translated.expression += `${columnSelection} LIKE :${paramName}`
+        continue
+      }
+
+      const operator = numberOperandOperationToOperator(operation)
+      if (operator) {
+        translated.expression += `${columnSelection} ${operator} :${paramName}`
+        continue
+      }
+
+      if (operation === 'in') {
+        translated.expression += `${columnSelection} IN (:...${paramName})`
+        continue
+      }
+
+      translated.expression += `${columnSelection} = :${paramName}`
+      continue
+    }
   })
 
   return translated
 }
+
+export const StringFilter = inputObjectType({
+  name: 'StringFilter',
+  definition(t) {
+    t.string('equals')
+    singleOperandOperations.map(operator => t.string(operator))
+    multipleOperandOperations.map(operator => t.list.string(operator))
+  },
+})
+
+export const IntFilter = inputObjectType({
+  name: 'IntFilter',
+  definition(t) {
+    t.int('equals')
+    numberOperandOperations.map(operator => t.int(operator))
+    multipleOperandOperations.map(operator => t.list.int(operator))
+  },
+})
+
+export const IdFilter = inputObjectType({
+  name: 'IdFilter',
+  definition(t) {
+    t.id('equals')
+    multipleOperandOperations.map(operator => t.list.id(operator))
+  },
+})

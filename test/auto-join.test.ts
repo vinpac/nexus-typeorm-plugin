@@ -52,7 +52,7 @@ describe('Auto Join', () => {
   it('should auto join on not joined relation', async () => {
     expect(getDatabaseQueriesCount()).toBe(0)
     const result = await query(`{
-      user (where: { name: "foo" }) {
+      user (where: { name:  "foo" }) {
         name
         posts (first: 1) {
           title

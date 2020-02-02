@@ -14,13 +14,14 @@ import { OutputPropertyFactoryConfig } from 'nexus/dist/dynamicProperty'
 import { GraphQLResolveInfo } from 'graphql'
 import { OverrideQueryBuilderConfigFn, CRUDFieldConfigResolveFn } from '../crud-field-output-method'
 import { intArg } from 'nexus'
+import { ArgOrderType } from '../../args/arg-order-by'
 
 interface FindManyResolverArgs {
   where?: ArgWhereType
   first?: number
   last?: number
   skip?: number
-  orderBy?: string[]
+  orderBy?: ArgOrderType
 }
 
 export interface FindManyFieldNextFnExtraContext {
@@ -72,7 +73,6 @@ export function defineFindManyField(
     where: arg({ type: manager.useWhereInputType(entity, builder) }),
     orderBy: arg({
       type: manager.useOrderByInputType(entity, builder),
-      list: true,
     }),
   }
 

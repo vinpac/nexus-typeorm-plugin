@@ -3,15 +3,9 @@ import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 import { getConnection, EntityMetadata } from 'typeorm'
 import { SchemaBuilder as NexusSchemaBuilder, inputObjectType, enumType } from 'nexus/dist/core'
 import { typeORMColumnTypeToGraphQLType } from './type'
-import {
-  singleOperandOperations,
-  numberOperandOperations,
-  multipleOperandOperations,
-} from './args/arg-where'
 import { getDatabaseObjectMetadata } from './decorators'
 import { namingStrategy } from './nexus/naming-strategy'
 import { getEntityTypeName } from './util'
-import { orderTypes } from './args/arg-order-by'
 import { RelationMetadata } from 'typeorm/metadata/RelationMetadata'
 import * as Nexus from 'nexus'
 
@@ -161,7 +155,9 @@ export class EntityTypeDefManager {
         name: typeName,
         definition: t => {
           t.field('connect', {
-            type: this.useWhereInputType(relatedEntity, nexusBuilder),
+            type: isRelationAnArray
+              ? this.useWhereInputType(relatedEntity, nexusBuilder)
+              : this.useWhereUniqueInputType(relatedEntity, nexusBuilder),
             required: false,
           })
           t.field('create', {
@@ -348,30 +344,76 @@ export class EntityTypeDefManager {
               nexusBuilder,
             ) as Nexus.core.AllInputTypes
             if (columnTypeName === 'String') {
-              singleOperandOperations.forEach(singleOperandOperation => {
-                t.field(`${column.propertyName}_${singleOperandOperation}`, {
-                  type: columnTypeName!,
-                })
+              t.field(column.propertyName, {
+                type: 'StringFilter',
               })
             } else if (columnTypeName === 'Int' || columnTypeName === 'Float') {
-              numberOperandOperations.forEach(numberOperandOperation => {
-                t.field(`${column.propertyName}_${numberOperandOperation}`, {
-                  type: columnTypeName!,
-                })
+              t.field(column.propertyName, {
+                type: 'IntFilter',
+              })
+            } else if (columnTypeName === 'ID') {
+              t.field(column.propertyName, {
+                type: 'IdFilter',
+              })
+            } else {
+              t.field(column.propertyName, {
+                type: columnTypeName,
               })
             }
+          })
+        },
+      }),
+    )
 
-            // Define ${arg}_${operand}: Value[]
-            multipleOperandOperations.forEach(multipleOperandOperation => {
-              t.field(`${column.propertyName}_${multipleOperandOperation}`, {
-                type: columnTypeName!,
-                list: true,
+    this.typesDictionary.push(typeName)
+    return typeName
+  }
+
+  useWhereUniqueInputType(
+    entity: Function,
+    nexusBuilder: NexusSchemaBuilder,
+  ): Nexus.core.AllInputTypes {
+    const entityTypeName = getEntityTypeName(entity)
+    const typeName = namingStrategy.whereUniqueInputType(entityTypeName) as Nexus.core.AllInputTypes
+
+    if (this.typesDictionary.includes(typeName)) {
+      return typeName
+    }
+
+    const { columns: entityColumns, indices, uniques } = getConnection().getMetadata(entity)
+
+    // find indices columns, and for now only allow inices that registers only one column
+    const uniqueIndices = [
+      indices
+        .filter(index => index.isUnique)
+        .map(index => index.columns.map(column => column.propertyName)),
+      uniques.map(unique => unique.columns.map(column => column.propertyName)),
+    ].flat(10)
+
+    nexusBuilder.addType(
+      inputObjectType({
+        name: typeName,
+        definition: t => {
+          entityColumns.forEach(column => {
+            if (column.relationMetadata && column.isVirtual) {
+              return
+            }
+
+            const columnTypeName = this.entityColumnToTypeName(
+              entity,
+              column,
+              nexusBuilder,
+            ) as Nexus.core.AllInputTypes
+
+            if (columnTypeName === 'ID') {
+              t.field(column.propertyName, {
+                type: columnTypeName,
               })
-            })
-
-            t.field(column.propertyName, {
-              type: columnTypeName,
-            })
+            } else if (uniqueIndices.includes(column.propertyName)) {
+              t.field(column.propertyName, {
+                type: columnTypeName,
+              })
+            }
           })
         },
       }),
@@ -393,16 +435,13 @@ export class EntityTypeDefManager {
     }
 
     const { columns: entityColumns } = getConnection().getMetadata(entity)
-    const members: string[] = []
-    entityColumns.forEach(column => {
-      orderTypes.forEach(orderType => {
-        members.push(`${column.propertyName}_${orderType}`)
-      })
-    })
+
     nexusBuilder.addType(
-      enumType({
+      inputObjectType({
         name: typeName,
-        members,
+        definition: t => {
+          entityColumns.map(column => t.field(column.propertyName, { type: 'OrderByArgument' }))
+        },
       }),
     )
 

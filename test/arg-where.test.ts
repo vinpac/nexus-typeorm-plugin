@@ -37,13 +37,13 @@ describe('Where', () => {
         users(where: {
           OR: [
             {
-              age: 20
+              age: { equals :  20 }
             },
             {
-              name: "bar"
+              name: { equals : "bar" }
             },
             {
-              age: 50,
+              age: { equals : 50 },
             }
           ]
         }) {
@@ -79,8 +79,7 @@ describe('Where', () => {
     const result = await query(`
       query {
         users(where: {
-          age_gt: 35,
-          age_lt: 50
+          age : { gt: 35, lt: 50 }
         }) {
           id
           name
@@ -106,9 +105,9 @@ describe('Where', () => {
         users(where: {
           NOT: {
             OR: [{
-              age: $first,
+              age: { equals : $first },
             }, {
-              age: $second,
+              age: { equals : $second },
             }]
           }
         }) {
@@ -138,7 +137,7 @@ describe('Where', () => {
   it('handles {fieldName}_contain operation', async () => {
     const result = await query(
       `query UsersNameContainsZ {
-        users(first: 10, where: { name_contains: "z" }) {
+        users(first: 10, where: { name : { contains: "z" } }) {
           name
           age
         }
@@ -163,7 +162,7 @@ describe('Where', () => {
   it('handles NOT {fieldName}_contain operation', async () => {
     const result = await query(
       `query UsersNameContainsZ {
-        users(first: 10, where: { NOT: { name_contains: "z" }}) {
+        users(first: 10, where: { NOT: { name : { contains: "z" } }}) {
           name
           age
         }
@@ -189,12 +188,12 @@ describe('Where', () => {
     const result = await query(`
       query {
         users(where: {
-          name_in: ["foo", "bar"]
+          name : { in: ["foo", "bar"] }
         }) {
           id
           name
           posts(where: {
-            title: "foo post"
+            title: { equals : "foo post" }
           }) {
             id
             title

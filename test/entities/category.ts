@@ -1,4 +1,4 @@
-import { PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm'
+import { PrimaryGeneratedColumn, Column, ManyToMany, Index } from 'typeorm'
 import { NexusEntity } from 'src/index'
 import { Post } from './post'
 
@@ -8,6 +8,7 @@ export class Category {
   public id: number
 
   @Column()
+  @Index({ unique: true })
   name: string
 
   @ManyToMany(() => Post, post => post.categories)

@@ -8,6 +8,7 @@ export const namingStrategy = {
   createInputType: (entityName: string) => `${makeFirstLetterUpperCase(entityName)}CreateInput`,
   updateInputType: (entityName: string) => `${makeFirstLetterUpperCase(entityName)}UpdateInput`,
   whereInputType: (entityName: string) => `${entityName}WhereInput`,
+  whereUniqueInputType: (entityName: string) => `${entityName}WhereUniqueInput`,
   orderByInputType: (entityName: string) => `${entityName}OrderByInput`,
   enumType: (entityName: string, propertyName: string) =>
     `${entityName}${makeFirstLetterUpperCase(propertyName)}Enum`,

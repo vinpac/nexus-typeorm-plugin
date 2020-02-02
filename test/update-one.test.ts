@@ -40,14 +40,14 @@ describe('CRUD', () => {
           updateOneUser(data: {
             name: "Updated Jack"
             age: 55
-          }, where: { name: "Jack", }) {
+          }, where: { name: { equals : "Jack" } }) {
             id
             name
             age
           }
           updateOnePost(data: {
             title: "post updated"
-          }, where: { title: "post 1", }) {
+          }, where: { title: { equals : "post 1" } }) {
             id
             title
           }

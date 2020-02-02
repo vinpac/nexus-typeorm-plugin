@@ -1,9 +1,8 @@
-import { PrimaryGeneratedColumn, Column, Unique, OneToOne, JoinColumn } from 'typeorm'
+import { PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, Index } from 'typeorm'
 import { User } from './user'
 import { NexusEntity } from 'src/index'
 
 @NexusEntity()
-@Unique('user', ['userId'])
 export class UserProfile {
   @PrimaryGeneratedColumn('uuid')
   public id!: string
@@ -15,6 +14,7 @@ export class UserProfile {
   public slug: string
 
   @Column()
+  @Index({ unique: true })
   public userId: string
 
   @OneToOne(() => User, user => user.profile)
