@@ -380,12 +380,15 @@ export class EntityTypeDefManager {
       return typeName
     }
 
-    const { columns: entityColumns, indices } = getConnection().getMetadata(entity)
+    const { columns: entityColumns, indices, uniques } = getConnection().getMetadata(entity)
 
     // find indices columns, and for now only allow inices that registers only one column
-    const uniqueIndices = indices
-      .filter(index => index.isUnique && index.columns.length === 1)
-      .map(index => index.columns[0].propertyName)
+    const uniqueIndices = [
+      indices
+        .filter(index => index.isUnique)
+        .map(index => index.columns.map(column => column.propertyName)),
+      uniques.map(unique => unique.columns.map(column => column.propertyName)),
+    ].flat(10)
 
     nexusBuilder.addType(
       inputObjectType({
