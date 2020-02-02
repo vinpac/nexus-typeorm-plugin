@@ -19,4 +19,5 @@ module.exports = {
       tsConfig: './tsconfig.test.json',
     },
   },
+  setupFiles: ['core-js'],
 }
